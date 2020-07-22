@@ -15,7 +15,6 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   // 滚动控制器
   TabController _navController;
   List<CategoryModel> _categoryList = [];
@@ -76,19 +75,24 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
-        leading: InkWell(
-          child: Container(
-            margin: EdgeInsets.all(8),
-            child: CircleAvatar(
-              backgroundImage: AssetImage('assets/image/avatar.png'),
-            ),
-          ),
-          onTap: () {
-            _scaffoldKey.currentState.openDrawer();
-          },
-        ),
+        leading: Builder(builder: (BuildContext ctx) {
+          return IconButton(
+              icon: Container(
+                width: 34,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.red,
+                  image: DecorationImage(
+                    fit: BoxFit.fill,
+                    image: AssetImage('assets/image/avatar.png'),
+                  ),
+                ),
+              ),
+              onPressed: () {
+                Scaffold.of(ctx).openDrawer();
+              });
+        }),
         centerTitle: true,
         title: Text(_currentSource != null
             ? _currentSource.name
@@ -162,26 +166,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
         firstRefresh: true,
         // 首次加载
         firstRefreshWidget: Center(
-            child: SizedBox(
-              height: 200.0,
-              width: 300.0,
-              child: Card(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      width: 50.0,
-                      height: 50.0,
-                      child: CircularProgressIndicator(),
-                    ),
-                    Container(
-                      child: Text('加载中...'),
-                    )
-                  ],
-                ),
-              ),
-            )),
+          child: CircularProgressIndicator()
+        ),
         slivers: <Widget>[
           _isLandscape
             ? SliverList(
@@ -210,31 +196,31 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
         ],
         emptyWidget: _videoList.length == 0
             ? Container(
-          height: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Expanded(
-                child: SizedBox(),
-                flex: 2,
-              ),
-              SizedBox(
-                width: 100.0,
-                height: 100.0,
-                child: Image.asset('assets/image/nodata.png'),
-              ),
-              Text(
-                '没有找到视频',
-                style: TextStyle(fontSize: 16.0, color: Colors.grey[400]),
-              ),
-              Expanded(
-                child: SizedBox(),
-                flex: 3,
-              ),
-            ],
-          ),
-        )
+                height: double.infinity,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded(
+                      child: SizedBox(),
+                      flex: 2,
+                    ),
+                    SizedBox(
+                      width: 100.0,
+                      height: 100.0,
+                      child: Image.asset('assets/image/nodata.png'),
+                    ),
+                    Text(
+                      '没有找到视频',
+                      style: TextStyle(fontSize: 16.0, color: Colors.grey[400]),
+                    ),
+                    Expanded(
+                      child: SizedBox(),
+                      flex: 3,
+                    ),
+                  ],
+                ),
+              )
             : null,
         header: ClassicalHeader(
             refreshText: '下拉刷新',

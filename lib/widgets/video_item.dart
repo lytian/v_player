@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:v_player/models/video_model.dart';
+import 'package:v_player/router/application.dart';
+import 'package:v_player/router/routers.dart';
+import 'package:v_player/utils/fluro_convert_util.dart';
 
 /// 横向的
 class VideoItem extends StatelessWidget {
@@ -13,8 +16,8 @@ class VideoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-//        String name = FluroConvertUtils.fluroCnParamsEncode(video.name);
-//        Application.router.navigateTo(context, Routers.detailPage + '?id=${video.id}&name=$name');
+        String name = FluroConvertUtils.fluroCnParamsEncode(video.name);
+        Application.router.navigateTo(context, Routers.detailPage + '?id=${video.id}&name=$name');
       },
       child: this.type == 0 ? _buildPortraitItem() : _buildLandscapeItem()
     );

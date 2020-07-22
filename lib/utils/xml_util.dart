@@ -52,16 +52,13 @@ class XmlUtil {
       if (video == null) return null;
       List<Anthology> anthologies = [];
       String str = getNodeCData(video.findElements('dl').first, 'dd');
-      if (str != null && str.indexOf('#') > -1) {
+      if (str != null) {
         str.split('#').forEach((s) {
           if (s.indexOf('\$') > -1) {
             anthologies.add(Anthology(name: s.split('\$')[0], url: s.split('\$')[1]));
           }
         });
       }
-      anthologies.forEach((e) {
-        print(e.toJson());
-      });
       return VideoModel(
         id: getNodeText(video, 'id'),
         tid: getNodeText(video, 'tid'),

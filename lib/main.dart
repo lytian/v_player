@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/pages/splash_page.dart';
