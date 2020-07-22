@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +20,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
   TabController _navController;
   List<CategoryModel> _categoryList = [];
   String _type = '';
-  bool _isLanscape = false; // 是否横屏
+  bool _isLandscape = false; // 是否横屏
 
   EasyRefreshController _controller;
   int _pageNum = 1;
@@ -97,7 +96,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.search),
-            padding: EdgeInsets.all(4),
             onPressed: () {
               if (_currentSource == null) return;
 //              showSearch(context: context, delegate: SearchBarDelegate(hintText: '搜索【${_currentSource.name}】的资源'));
@@ -117,6 +115,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
     return PreferredSize(
       preferredSize: Size.fromHeight(40),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Expanded(
             flex: 1,
@@ -130,14 +129,27 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
               },
             ) : Container()
           ),
-          IconButton(
-            icon: Icon(_isLanscape ? Icons.list : Icons.table_chart),
-            color: Colors.white,
-            onPressed: () {
-              setState(() {
-                _isLanscape = !_isLanscape;
-              });
-            },
+          Container(
+            height: 20,
+            margin: EdgeInsets.only(left: 4),
+            child: VerticalDivider(
+              color: Colors.grey[200],
+            ),
+          ),
+          Container(
+              width: 40,
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(right: 4),
+              child: IconButton(
+                icon: Icon(_isLandscape ? Icons.list : Icons.table_chart),
+                padding: EdgeInsets.all(4),
+                color: Colors.white,
+                onPressed: () {
+                  setState(() {
+                    _isLandscape = !_isLandscape;
+                  });
+                },
+              )
           )
         ],
       ),
@@ -171,11 +183,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
               ),
             )),
         slivers: <Widget>[
-          _isLanscape
+          _isLandscape
             ? SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                  VideoModel video = _videoList[index];
-                  return LandscapeVideoItem(video);
+                  return VideoItem(video: _videoList[index], type: 0,);
                 },
                 childCount: _videoList.length,
               ),
@@ -184,8 +195,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
               padding: EdgeInsets.all(8),
               sliver: SliverGrid(
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  VideoModel video = _videoList[index];
-                  return PortraitVideoItem(video);
+                  return VideoItem(video: _videoList[index], type: 1,);
                 },
                   childCount: _videoList.length,
                 ),
