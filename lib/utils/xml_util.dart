@@ -28,19 +28,19 @@ class XmlUtil {
           tid: getNodeText(node, 'tid'),
           name: getNodeCData(node, 'name'),
           type: getNodeText(node, 'type'),
-          pic: getNodeText(node, 'pic'),
+          pic: getNodeText(node, 'pic') ?? '',
           lang: getNodeText(node, 'lang'),
           area: getNodeText(node, 'area'),
           year: getNodeText(node, 'year'),
-          state: int.parse(getNodeText(node, 'state') ?? 0),
+          state: getNodeText(node, 'state') == null ? 0 : int.parse(getNodeText(node, 'state')),
           note: getNodeCData(node, 'note'),
           actor: getNodeCData(node, 'actor'),
           director: getNodeCData(node, 'director'),
           des: getNodeCData(node, 'des')
         ));
       });
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      print(s);
     }
     return list;
   }

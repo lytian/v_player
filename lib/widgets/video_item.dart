@@ -22,7 +22,7 @@ class VideoItem extends StatelessWidget {
     );
   }
 
-  Widget _buildPortraitItem() {
+  Widget _buildLandscapeItem() {
     return Card(
       child: Column(
         children: <Widget>[
@@ -36,7 +36,7 @@ class VideoItem extends StatelessWidget {
                 ),
                 child: video.note == null || video.note.isEmpty
                     ? FadeInImage.assetNetwork(
-                  placeholder: 'assets/image/placeholder-p.jpg',
+                  placeholder: 'assets/image/placeholder-l.jpg',
                   image: video.pic,
                   fit: BoxFit.cover,
                   width: double.infinity,
@@ -45,7 +45,7 @@ class VideoItem extends StatelessWidget {
                     : Stack(
                   children: <Widget>[
                     FadeInImage.assetNetwork(
-                      placeholder: 'assets/image/placeholder-p.jpg',
+                      placeholder: 'assets/image/placeholder-l.jpg',
                       image: video.pic,
                       fit: BoxFit.cover,
                       width: double.infinity,
@@ -87,7 +87,7 @@ class VideoItem extends StatelessWidget {
     );
   }
 
-  Widget _buildLandscapeItem() {
+  Widget _buildPortraitItem() {
     return Column(
       children: <Widget>[
         Expanded(

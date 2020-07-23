@@ -42,6 +42,7 @@ class HttpUtils {
         params["t"] = type;
       }
       if (keyword != null) {
+        params["ac"] = "list";
         params["wd"] = keyword;
       }
       if (ids != null) {

@@ -5,6 +5,7 @@ import 'package:v_player/models/category_model.dart';
 import 'package:v_player/models/source_model.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/pages/main_left_page.dart';
+import 'package:v_player/pages/search_bar.dart';
 import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/http_utils.dart';
 import 'package:v_player/widgets/video_item.dart';
@@ -102,7 +103,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
             icon: Icon(Icons.search),
             onPressed: () {
               if (_currentSource == null) return;
-//              showSearch(context: context, delegate: SearchBarDelegate(hintText: '搜索【${_currentSource.name}】的资源'));
+              showSearch(context: context, delegate: SearchBarDelegate(hintText: '搜索【${_currentSource.name}】的资源'));
             },
           )
         ],
@@ -172,7 +173,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
           _isLandscape
             ? SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                  return VideoItem(video: _videoList[index], type: 0,);
+                  return VideoItem(video: _videoList[index], type: 1,);
                 },
                 childCount: _videoList.length,
               ),
@@ -181,7 +182,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
               padding: EdgeInsets.all(8),
               sliver: SliverGrid(
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  return VideoItem(video: _videoList[index], type: 1,);
+                  return VideoItem(video: _videoList[index], type: 0,);
                 },
                   childCount: _videoList.length,
                 ),
