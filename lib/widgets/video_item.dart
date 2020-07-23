@@ -14,10 +14,9 @@ class VideoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: () {
-        String name = FluroConvertUtils.fluroCnParamsEncode(video.name);
-        Application.router.navigateTo(context, Routers.detailPage + '?id=${video.id}&name=$name');
+        Application.router.navigateTo(context, Routers.detailPage + '?id=${video.id}');
       },
       child: this.type == 0 ? _buildPortraitItem() : _buildLandscapeItem()
     );
@@ -35,7 +34,7 @@ class VideoItem extends StatelessWidget {
                   topLeft: Radius.circular(5),
                   topRight: Radius.circular(5),
                 ),
-                child: video.note == null
+                child: video.note == null || video.note.isEmpty
                     ? FadeInImage.assetNetwork(
                   placeholder: 'assets/image/placeholder-p.jpg',
                   image: video.pic,
@@ -94,44 +93,44 @@ class VideoItem extends StatelessWidget {
         Expanded(
             flex: 1,
             child: ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: video.note == null
-                    ? FadeInImage.assetNetwork(
-                  placeholder: 'assets/image/placeholder-p.jpg',
-                  image: video.pic,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                )
-                    : Stack(
-                  children: <Widget>[
-                    FadeInImage.assetNetwork(
-                      placeholder: 'assets/image/placeholder-p.jpg',
-                      image: video.pic,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-                    Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                              color: Colors.black.withAlpha(125),
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(5)
-                              )
-                          ),
-                          child: Text(video.note, overflow: TextOverflow.ellipsis, style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),),
-                        )
-                    )
-                  ],
-                )
-            )
+              borderRadius: BorderRadius.circular(5),
+              child: video.note == null || video.note.isEmpty
+                  ? FadeInImage.assetNetwork(
+                    placeholder: 'assets/image/placeholder-p.jpg',
+                    image: video.pic,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  )
+                  : Stack(
+                    children: <Widget>[
+                      FadeInImage.assetNetwork(
+                        placeholder: 'assets/image/placeholder-p.jpg',
+                        image: video.pic,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                      Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(125),
+                                borderRadius: BorderRadius.only(
+                                    bottomLeft: Radius.circular(5)
+                                )
+                            ),
+                            child: Text(video.note, overflow: TextOverflow.ellipsis, style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),),
+                          )
+                      )
+                    ],
+                  )
+              )
         ),
         Padding(
           padding: EdgeInsets.only(top: 4),

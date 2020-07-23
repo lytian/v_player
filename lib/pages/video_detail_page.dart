@@ -1,54 +1,94 @@
 import 'dart:ui';
 
+import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/utils/http_utils.dart';
+import 'package:video_player/video_player.dart';
 
 class VideoDetailPage extends StatefulWidget {
   final String videoId;
-  final String name;
 
-  VideoDetailPage({@required this.videoId, this.name});
+  VideoDetailPage(this.videoId);
 
   @override
   _VideoDetailPageState createState() => _VideoDetailPageState();
 }
 
-class _VideoDetailPageState extends State<VideoDetailPage> with WidgetsBindingObserver {
+class _VideoDetailPageState extends State<VideoDetailPage> {
   Future<VideoModel> _futureFetch;
-  IjkMediaController _ijkMediaController = IjkMediaController();
+
+  VideoPlayerController _controller;
+  ChewieController _chewieController;
   String _url;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
 
     _futureFetch = _getVideoInfo();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    switch (state) {
-      case AppLifecycleState.resumed:// 应用程序可见，前台
-//        _videoPlayerController?.play();
-        break;
-      case AppLifecycleState.inactive: // 处于这种状态的应用程序应该假设它们可能在任何时候暂停。
-      case AppLifecycleState.paused: // 应用程序不可见，后台
-      case AppLifecycleState.detached:
-        _ijkMediaController?.pause();
-        break;
+  Future<VideoModel> _getVideoInfo() async {
+    VideoModel video  = await HttpUtils.getVideoById(widget.videoId);
+    if (video != null) {
+      if (video.anthologies.isNotEmpty) {
+        String url = video.anthologies.first.url;
+        String name = video.anthologies.first.name;
+        _startPlay(url, name);
+      }
     }
-    super.didChangeAppLifecycleState(state);
+    return video;
   }
+
+  void _startPlay(String url, String name) async {
+    setState(() {
+      _url = url;
+    });
+    if (_controller == null) {
+      _initController(url, name);
+      return;
+    }
+    // 备份旧的controller
+    final oldController = _controller;
+    // 在下一帧处理完成后
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 注销旧的controller;
+      await oldController.dispose();
+      _chewieController?.dispose();
+      // 初始化一个新的controller
+      _initController(url, name);
+    });
+    // 刷新状态
+    setState(() {
+      _controller = null;
+    });
+  }
+
+  void _initController(String url, String name) {
+    // 设置资源
+    _controller = VideoPlayerController.network(url);
+    _chewieController = ChewieController(
+      videoPlayerController: _controller,
+      aspectRatio: 16 / 9,
+      autoPlay: true,
+      title: name,
+      showControlsOnInitialize: false,
+      onDownload: () {
+        print(1111111111);
+      }
+    );
+    setState(() {});
+  }
+
+
 
   @override
   void dispose() {
-    _ijkMediaController?.dispose();
 //    db.close();
-    WidgetsBinding.instance.addObserver(this);
+    _controller?.dispose();
+    _chewieController?.dispose();
 
     super.dispose();
   }
@@ -58,15 +98,14 @@ class _VideoDetailPageState extends State<VideoDetailPage> with WidgetsBindingOb
     return Scaffold(
       body: Column(
         children: <Widget>[
-            Container(
-            color: Colors.black,
-            height: MediaQueryData.fromWindow(window).padding.top,
-          ),
           Container(
-            height: 240,
-            child: IjkPlayer(
-              mediaController: _ijkMediaController,
-            ),
+            padding: EdgeInsets.only(top: MediaQueryData.fromWindow(window).padding.top),
+            color: Colors.black,
+            child: _controller == null
+                ? _buildLoading()
+                : Chewie(
+                  controller: _chewieController,
+                )
           ),
           Expanded(
             flex: 1,
@@ -102,21 +141,21 @@ class _VideoDetailPageState extends State<VideoDetailPage> with WidgetsBindingOb
     );
   }
 
-  Future<VideoModel> _getVideoInfo() async {
-
-    VideoModel video  = await HttpUtils.getVideoById(widget.videoId);
-    if (video != null) {
-      if (video.anthologies.isNotEmpty) {
-        _url = video.anthologies.first.url;
-//        String videoName = video.name + ' ' + video.anthologies.first.name;
-        try {
-          await _ijkMediaController.setNetworkDataSource(_url, autoPlay: false);
-        } catch (e) {
-          print(e);
-        }
-      }
-    }
-    return video;
+  Widget _buildLoading() {
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Stack(
+        children: <Widget>[
+          Align(
+            alignment: Alignment.topLeft,
+            child: BackButton(color: Colors.white,),
+          ),
+          Center(
+            child: CircularProgressIndicator(),
+          )
+        ],
+      ),
+    );
   }
 
   Widget _buildText(String str) {
@@ -193,8 +232,10 @@ class _VideoDetailPageState extends State<VideoDetailPage> with WidgetsBindingOb
                   margin: EdgeInsets.only(right: 6),
                   child: MaterialButton(
                     padding: EdgeInsets.all(0),
-                    child: Icon(Icons.file_download, color: Colors.grey, size: 24,),
-                    onPressed: () {},
+                    child: Icon(Icons.star_border, color: Colors.grey, size: 24,),
+                    onPressed: () {
+                      print('收藏视频');
+                    },
                   ),
                 ),
               ],
@@ -215,13 +256,10 @@ class _VideoDetailPageState extends State<VideoDetailPage> with WidgetsBindingOb
                     fontSize: 14,
                     fontWeight: FontWeight.normal
                   ),),
-                  onPressed: () {
-                    setState(() {
-                      if (_url == e.url) return;
-                      _url = e.url;
-//                      _startVideoPlayer(video.name + ' ' + e.name);
-                      _ijkMediaController.setNetworkDataSource(_url);
-                    });
+                  onPressed: () async {
+                    if (_url == e.url) return;
+
+                    _startPlay(e.url, e.name);
                   },
                 );
               }).toList(),

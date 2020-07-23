@@ -88,7 +88,7 @@ class _SplashPageState extends State<SplashPage> {
           Positioned(
             bottom: 20,
             right: 20,
-            child: InkWell(
+            child: GestureDetector(
               onTap: () {
                 _goMain();
               },
