@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/utils/http_utils.dart';
 import 'package:video_player/video_player.dart';
@@ -302,11 +303,19 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
           ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Text(video.des ?? '', style: TextStyle(
-              height: 1.8,
-              fontSize: 14,
-              color: Colors.black
-            ),),
+            child: HtmlWidget(
+              video.des ?? '',
+              textStyle: TextStyle(
+                height: 1.8,
+                fontSize: 14,
+                color: Colors.black
+              ),
+            )
+//            Text(video.des ?? '', style: TextStyle(
+//              height: 1.8,
+//              fontSize: 14,
+//              color: Colors.black
+//            ),),
           ),
           SizedBox(
             height: 20,
