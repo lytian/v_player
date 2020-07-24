@@ -7,7 +7,10 @@ import 'package:v_player/models/video_model.dart';
 import 'package:v_player/pages/main_left_page.dart';
 import 'package:v_player/pages/search_bar.dart';
 import 'package:v_player/provider/source.dart';
+import 'package:v_player/router/application.dart';
+import 'package:v_player/router/routers.dart';
 import 'package:v_player/utils/http_utils.dart';
+import 'package:v_player/widgets/animated_floating_action_button.dart';
 import 'package:v_player/widgets/video_item.dart';
 
 class MainPage extends StatefulWidget {
@@ -27,6 +30,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
   List _videoList = [];
   SourceModel _currentSource;
   SourceProvider _sourceProvider;
+  GlobalKey<AnimatedFloatingActionButtonState> _buttonKey = GlobalKey<AnimatedFloatingActionButtonState>();
 
   @override
   void initState() {
@@ -39,9 +43,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
     _sourceProvider = context.read<SourceProvider>();
     _currentSource = _sourceProvider.currentSource;
     _sourceProvider.addListener(() {
-      print('-----------------------');
       setState(() {
         _videoList = [];
+        _currentSource = _sourceProvider.currentSource;
       });
       _getCategoryList();
       _controller.callRefresh();
@@ -110,6 +114,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
         bottom: _buildCategoryNav(),
       ),
       body: _buildVideoList(),
+      floatingActionButton: AnimatedFloatingActionButton(
+        key: _buttonKey,
+        onPress: () {
+          Application.router.navigateTo(context, Routers.sourceManagePage);
+        },
+      ),
       drawer: Drawer(
         child: MainLeftPage(),
       ),
@@ -162,23 +172,34 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
   }
 
   Widget _buildVideoList() {
-    return EasyRefresh.custom(
-        controller: _controller,
-        firstRefresh: true,
-        // 首次加载
-        firstRefreshWidget: Center(
-          child: CircularProgressIndicator()
-        ),
-        slivers: <Widget>[
-          _isLandscape
-            ? SliverList(
+    return NotificationListener<ScrollUpdateNotification>(
+      onNotification: (notification) {
+        if (notification.dragDetails != null && _buttonKey.currentState != null) {
+          if (notification.dragDetails.delta.dy < 0 && _buttonKey.currentState.isShow) {
+            _buttonKey.currentState.hide();
+          } else if (notification.dragDetails.delta.dy > 0 && !_buttonKey.currentState.isShow) {
+            _buttonKey.currentState.show();
+          }
+        }
+        return false;
+      },
+      child: EasyRefresh.custom(
+          controller: _controller,
+          firstRefresh: true,
+          // 首次加载
+          firstRefreshWidget: Center(
+              child: CircularProgressIndicator()
+          ),
+          slivers: <Widget>[
+            _isLandscape
+                ? SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                  return VideoItem(video: _videoList[index], type: 1,);
-                },
+                return VideoItem(video: _videoList[index], type: 1,);
+              },
                 childCount: _videoList.length,
               ),
             )
-            : SliverPadding(
+                : SliverPadding(
               padding: EdgeInsets.all(8),
               sliver: SliverGrid(
                 delegate: SliverChildBuilderDelegate((context, index) {
@@ -194,55 +215,56 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
                 ),
               ),
             )
-        ],
-        emptyWidget: _videoList.length == 0
-            ? Container(
-                height: double.infinity,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
-                      child: SizedBox(),
-                      flex: 2,
-                    ),
-                    SizedBox(
-                      width: 100.0,
-                      height: 100.0,
-                      child: Image.asset('assets/image/nodata.png'),
-                    ),
-                    Text(
-                      '没有找到视频',
-                      style: TextStyle(fontSize: 16.0, color: Colors.grey[400]),
-                    ),
-                    Expanded(
-                      child: SizedBox(),
-                      flex: 3,
-                    ),
-                  ],
+          ],
+          emptyWidget: _videoList.length == 0
+              ? Container(
+            height: double.infinity,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Expanded(
+                  child: SizedBox(),
+                  flex: 2,
                 ),
-              )
-            : null,
-        header: ClassicalHeader(
-            refreshText: '下拉刷新',
-            refreshReadyText: '释放刷新',
-            refreshingText: '正在刷新...',
-            refreshedText: '已获取最新数据',
-            infoText: '更新于%T'),
-        footer: ClassicalFooter(
-            loadText: '上拉加载',
-            loadReadyText: '释放加载',
-            loadingText: '正在加载',
-            loadedText: '已加载结束',
-            noMoreText: '没有更多数据了~',
-            infoText: '更新于%T'),
-        onRefresh: () async {
-          _pageNum = 1;
-          await _getVideoList();
-        },
-        onLoad: () async {
-          _pageNum++;
-          await _getVideoList();
-        });
+                SizedBox(
+                  width: 100.0,
+                  height: 100.0,
+                  child: Image.asset('assets/image/nodata.png'),
+                ),
+                Text(
+                  '没有找到视频',
+                  style: TextStyle(fontSize: 16.0, color: Colors.grey[400]),
+                ),
+                Expanded(
+                  child: SizedBox(),
+                  flex: 3,
+                ),
+              ],
+            ),
+          )
+              : null,
+          header: ClassicalHeader(
+              refreshText: '下拉刷新',
+              refreshReadyText: '释放刷新',
+              refreshingText: '正在刷新...',
+              refreshedText: '已获取最新数据',
+              infoText: '更新于%T'),
+          footer: ClassicalFooter(
+              loadText: '上拉加载',
+              loadReadyText: '释放加载',
+              loadingText: '正在加载',
+              loadedText: '已加载结束',
+              noMoreText: '没有更多数据了~',
+              infoText: '更新于%T'),
+          onRefresh: () async {
+            _pageNum = 1;
+            await _getVideoList();
+          },
+          onLoad: () async {
+            _pageNum++;
+            await _getVideoList();
+          })
+    );
   }
 }

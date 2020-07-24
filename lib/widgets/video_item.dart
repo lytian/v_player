@@ -3,14 +3,14 @@ import 'package:flutter/painting.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/router/application.dart';
 import 'package:v_player/router/routers.dart';
-import 'package:v_player/utils/fluro_convert_util.dart';
 
 /// 横向的
 class VideoItem extends StatelessWidget {
-  VideoModel video;
-  int type = 0; // 0-竖屏(网格布局)    1-横屏(列表布局)
 
-  VideoItem({ @required this.video, this.type });
+  VideoItem({ @required this.video, this.type = 0});
+
+  final VideoModel video;
+  final int type; // 0-竖屏(网格布局)    1-横屏(列表布局)
 
   @override
   Widget build(BuildContext context) {

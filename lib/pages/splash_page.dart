@@ -10,6 +10,7 @@ import 'package:v_player/provider/app_info.dart';
 import 'package:v_player/provider/source.dart';
 import 'package:v_player/router/application.dart';
 import 'package:v_player/router/routers.dart';
+import 'package:v_player/utils/db_helper.dart';
 import 'package:v_player/utils/sp_helper.dart';
 
 class SplashPage extends StatefulWidget {
@@ -18,6 +19,8 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+
+  DBHelper _db = DBHelper();
   Timer _timer;
   int _count = 3; // 倒计时秒数
 
@@ -36,15 +39,9 @@ class _SplashPageState extends State<SplashPage> {
     if (source == null) {
       String sourceJson = await DefaultAssetBundle.of(context).loadString("assets/data/source.json");
       List<dynamic> jsonList = json.decode(sourceJson);
-      for (var i = 0; i < jsonList.length; i++) {
-        if (jsonList[i]['isDefault'] != null && jsonList[i]['isDefault']) {
-          source = jsonList[i];
-          break;
-        }
-      }
-      if (source == null) {
-        source = jsonList[0];
-      }
+      List<SourceModel> list = jsonList.map((e) => SourceModel.fromJson(e)).toList();
+      await _db.insertBatchSource(list);
+      source = jsonList[0];
     }
     context.read<SourceProvider>().setCurrentSource(SourceModel.fromJson(source), context);
 
@@ -65,6 +62,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _db?.close();
     super.dispose();
   }
 
@@ -86,7 +84,7 @@ class _SplashPageState extends State<SplashPage> {
             height: double.infinity,
           ),
           Positioned(
-            bottom: 20,
+            bottom: 30,
             right: 20,
             child: GestureDetector(
               onTap: () {

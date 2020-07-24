@@ -34,7 +34,7 @@ class VideoModel {
     this.des,
     this.anthologies});
 
-  VideoModel.fromJSON(Map<String, dynamic> json) {
+  VideoModel.fromJson(Map<String, dynamic> json) {
     this.id = json['id'];
     this.name = json['name'];
     this.type = json['type'];

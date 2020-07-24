@@ -6,6 +6,7 @@ class Routers{
   static String root = '/';
   static String mainPage = '/main';
   static String detailPage = '/detail';
+  static String sourceManagePage = '/sourceManage';
   
   static void configureRouters(Router router){
     router.notFoundHandler = new Handler(
@@ -16,5 +17,6 @@ class Routers{
     );
     router.define(mainPage, handler: mainHandle);
     router.define(detailPage, handler: detailHandle);
+    router.define(sourceManagePage, handler: sourceManageHandle);
   }
 }

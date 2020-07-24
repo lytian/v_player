@@ -1,7 +1,7 @@
 class SourceModel {
   int id;
   String name;
-  String uri;
+  String url;
   String httpApi;
   String httpsApi;
   String type;
@@ -9,7 +9,7 @@ class SourceModel {
   SourceModel(
       {this.id,
       this.name,
-      this.uri,
+      this.url,
       this.httpApi,
       this.httpsApi,
       this.type,});
@@ -17,7 +17,7 @@ class SourceModel {
   SourceModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    uri = json['uri'];
+    url = json['url'];
     httpApi = json['httpApi'];
     httpsApi = json['httpsApi'];
     type = json['type'];
@@ -27,7 +27,7 @@ class SourceModel {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['name'] = this.name;
-    data['uri'] = this.uri;
+    data['url'] = this.url;
     data['httpApi'] = this.httpApi;
     data['httpsApi'] = this.httpsApi;
     data['type'] = this.type;

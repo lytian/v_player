@@ -1,19 +1,18 @@
 [
   {
-    "id": 1,
-    "name": "色色资源站",
-    "uri": "https://www.emiao026.com",
-    "httpApi": "http://sscj8.com/inc/api.php",
-    "httpsApi": "http://sscj8.com/inc/sapi.php",
-    "type": "综合性资源"
-  },
-  {
     "id": 9,
     "name": "ok资源网",
-    "uri": "http://www.jisudhw.com",
+    "url": "http://www.jisudhw.com",
     "httpApi": "http://cj.okzy.tv/inc/ldg_seackm3u8.php",
     "httpsApi": "http://cj.okzy.tv/inc/ldg_seackm3u8s.php",
-    "type": "影视",
-    "isDefault": true
+    "type": "影视"
+  },
+  {
+    "id": 10,
+    "name": "永久资源站",
+    "url": "http://www.yongjiuzy1.com/",
+    "httpApi": "http://cj.yongjiuzyw.com/inc/yjm3u8.php",
+    "httpsApi": "http://cj.yongjiuzyw.com/inc/s_yjm3u8.php",
+    "type": "综合性资源"
   }
 ]
