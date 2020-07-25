@@ -36,7 +36,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     if (video != null) {
       if (video.anthologies.isNotEmpty) {
         String url = video.anthologies.first.url;
-        String name = video.anthologies.first.name;
+        String name = video.name + '  ' + video.anthologies.first.name;
         _startPlay(url, name);
       }
     }
@@ -76,6 +76,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       autoPlay: true,
       title: name,
       showControlsOnInitialize: false,
+      allowedScreenSleep: false,
       onDownload: () {
         print(1111111111);
       }
@@ -260,7 +261,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                   onPressed: () async {
                     if (_url == e.url) return;
 
-                    _startPlay(e.url, e.name);
+                    _startPlay(e.url, video.name + '  ' + e.name);
                   },
                 );
               }).toList(),
