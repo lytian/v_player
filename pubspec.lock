@@ -35,7 +35,7 @@ packages:
       name: bot_toast
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.1"
   cached_network_image:
     dependency: "direct main"
     description:
@@ -55,7 +55,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "75e47f1bafc2a03ea09d408a5c31040d36ca0a46"
+      resolved-ref: "46ec93c6cb67a69461efbd2cbc680c402c703096"
       url: "https://github.com/lytian/chewie.git"
     source: git
     version: "0.9.10"
@@ -93,7 +93,7 @@ packages:
       name: csslib
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.16.1"
+    version: "0.16.2"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -140,7 +140,7 @@ packages:
       name: flutter_easyrefresh
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.2"
   flutter_test:
     dependency: "direct dev"
     description: flutter

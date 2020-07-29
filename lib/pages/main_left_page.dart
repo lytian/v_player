@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:v_player/router/application.dart';
+import 'package:v_player/router/routers.dart';
 
 class MainLeftPage extends StatefulWidget {
   @override
@@ -8,10 +10,10 @@ class MainLeftPage extends StatefulWidget {
 class _MainLeftPageState extends State<MainLeftPage> {
 
   List<_ListItemInfo> _items = <_ListItemInfo>[
-    new _ListItemInfo('download', '下载记录', Icons.file_download),
-    new _ListItemInfo('collection', '我的收藏', Icons.star),
-    new _ListItemInfo('setting', '设置', Icons.settings),
-    new _ListItemInfo('about', '关于', Icons.info),
+    new _ListItemInfo(title: '下载记录''', icon: Icons.file_download),
+    new _ListItemInfo(title: '我的收藏', icon: Icons.star),
+    new _ListItemInfo(title: '设置', icon: Icons.settings, route: Routers.settingPage),
+    new _ListItemInfo(title: '关于', icon: Icons.info),
   ];
 
   @override
@@ -56,22 +58,10 @@ class _MainLeftPageState extends State<MainLeftPage> {
                     leading: Icon(item.icon),
                     title: Text(item.title),
                     onTap: () {
-//                    switch (item.id) {
-//                      case 'download':
-//                        Application.router.pop(context);  // 先关闭Drawer
-//                        Application.router.navigateTo(context, Routers.downloadPage);
-//                        break;
-//                      case 'setting':
-//                        Application.router.pop(context);  // 先关闭Drawer
-//                        Application.router.navigateTo(context, Routers.settingPage);
-//                        break;
-//                      case 'about':
-//                        Application.router.pop(context);  // 先关闭Drawer
-//                        Application.router.navigateTo(context, Routers.aboutPage);
-//                        break;
-//                      default:
-//                        break;
-//                    }
+                      if (item.route != null) {
+                        Application.router.pop(context);  // 先关闭Drawer
+                        Application.router.navigateTo(context, item.route);
+                      }
                     }
                 );
               },
@@ -84,11 +74,9 @@ class _MainLeftPageState extends State<MainLeftPage> {
 }
 
 class _ListItemInfo {
-  final String id;
   final String title;
   final IconData icon;
-  final Widget page;
-  final bool withScaffold;
+  final String route;
 
-  _ListItemInfo(this.id, this.title, this.icon, [this.page, this.withScaffold = true]);
+  _ListItemInfo({this.title, this.icon, this.route});
 }
