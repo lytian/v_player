@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:chewie/chewie.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:v_player/models/video_model.dart';
