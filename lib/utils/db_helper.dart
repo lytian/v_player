@@ -152,6 +152,23 @@ class DBHelper {
         where: '$_columnId = ?', whereArgs: [model.id]);
   }
 
+  /// 根据URL修改下载进度
+  Future<int> updateDownloadByUrl(String url, { double progress, DownloadStatus status }) async {
+    if (_db == null || !_db.isOpen) {
+      await _instance.initDb();
+    }
+
+    Map<String, dynamic> maps = {};
+    if (progress != null) {
+      maps["progress"] = progress;
+    }
+    if (status != null) {
+      maps["status"] = status.index;
+    }
+
+    return await _db.update(_downloadTableName, maps, where: '$_columnUrl = ?', whereArgs: [url]);
+  }
+
   /// 根据ID获取资源
   Future<SourceModel> getSourceById(int id) async {
     if (_db == null || !_db.isOpen) {
@@ -236,7 +253,7 @@ class DBHelper {
     return [];
   }
 
-  Future<List<DownloadModel>> getVideoList({int pageNum = 0, int pageSize = 100, DownloadStatus status, String url, String savePath, String name}) async {
+  Future<List<DownloadModel>> getDownloadList({int pageNum = 0, int pageSize = 100, DownloadStatus status, String url, String savePath, String name}) async {
     if (_db == null || !_db.isOpen) {
       await _instance.initDb();
     }

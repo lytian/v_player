@@ -40,9 +40,9 @@ dependencies:
   path_provider: ^1.6.11
   permission_handler: ^5.0.1+1
   bot_toast: ^3.0.0
-  xml: ^3.6.1
   video_player: ^0.10.11+2
   flutter_widget_from_html_core: ^0.4.2
+  connectivity: ^0.4.9
   m3u8_downloader:
     git:
       url: https://github.com/lytian/m3u8_downloader.git
@@ -66,12 +66,8 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/data/source.json
-    - assets/image/splash-bg.jpg
-    - assets/image/avatar.png
-    - assets/image/nodata.png
-    - assets/image/placeholder-p.jpg
-    - assets/image/placeholder-l.jpg
+    - assets/image/
+    - assets/data/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

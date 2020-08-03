@@ -4,8 +4,10 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:v_player/models/video_model.dart';
+import 'package:v_player/provider/download_task.dart';
 import 'package:v_player/utils/http_utils.dart';
 import 'package:video_player/video_player.dart';
+import 'package:provider/provider.dart';
 
 class VideoDetailPage extends StatefulWidget {
   final String videoId;
@@ -18,15 +20,14 @@ class VideoDetailPage extends StatefulWidget {
 
 class _VideoDetailPageState extends State<VideoDetailPage> {
   Future<VideoModel> _futureFetch;
-
   VideoPlayerController _controller;
   ChewieController _chewieController;
   String _url;
+  VideoModel _videoModel;
 
   @override
   void initState() {
     super.initState();
-
     _futureFetch = _getVideoInfo();
   }
 
@@ -39,6 +40,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
         _startPlay(url, name);
       }
     }
+    _videoModel = video;
     return video;
   }
 
@@ -77,13 +79,11 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       showControlsOnInitialize: false,
       allowedScreenSleep: false,
       onDownload: () {
-        print(1111111111);
+        context.read<DownloadTaskProvider>().createDownload(video: _videoModel, url: url, name: name);
       }
     );
     setState(() {});
   }
-
-
 
   @override
   void dispose() {

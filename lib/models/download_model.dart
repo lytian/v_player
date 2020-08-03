@@ -1,5 +1,5 @@
 class DownloadModel {
-  String id;
+  int id;
   String api; // 视频源API地址
   String vid; // 视频ID
   String tid; // 分类ID
@@ -40,7 +40,7 @@ class DownloadModel {
     this.pic = json['pic'];
     this.url = json['url'];
     this.fileId = json['fileId'];
-    if (json['status' != null]) {
+    if (json['status'] != null) {
       this.status = DownloadStatus.values[json['status']];
     }
     this.progress = json['progress'];

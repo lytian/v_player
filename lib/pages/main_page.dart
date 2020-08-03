@@ -6,6 +6,7 @@ import 'package:v_player/models/source_model.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/pages/main_left_page.dart';
 import 'package:v_player/pages/search_bar.dart';
+import 'package:v_player/provider/download_task.dart';
 import 'package:v_player/provider/source.dart';
 import 'package:v_player/router/application.dart';
 import 'package:v_player/router/routers.dart';
@@ -43,6 +44,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
     _sourceProvider = context.read<SourceProvider>();
     _currentSource = _sourceProvider.currentSource;
     _sourceProvider.addListener(() {
+      if (!mounted) return;
+
       setState(() {
         _videoList = [];
         _currentSource = _sourceProvider.currentSource;
@@ -52,12 +55,17 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
     });
 
     _getCategoryList();
-    _getVideoList();
+//    _getVideoList();
+
+    // 初始化下载器
+    context.read<DownloadTaskProvider>().initialize(context);
+
   }
 
   /// 获取分类
   void _getCategoryList() async {
     List<CategoryModel> list = await HttpUtils.getCategoryList();
+    if (!mounted) return;
     setState(() {
       _categoryList = [CategoryModel(id: '', name: '全部')] + list;
       _navController?.dispose();
@@ -68,6 +76,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
   /// 获取视频列表
   Future<void> _getVideoList() async {
     List<VideoModel> videos = await HttpUtils.getVideoList(pageNum: _pageNum, type: _type);
+    if (!mounted) return;
     setState(() {
       if (this._pageNum == 1) {
         _videoList = videos;

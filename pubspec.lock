@@ -73,6 +73,34 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.14.12"
+  connectivity:
+    dependency: "direct main"
+    description:
+      name: connectivity
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.4.9"
+  connectivity_for_web:
+    dependency: transitive
+    description:
+      name: connectivity_for_web
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.3.1"
+  connectivity_macos:
+    dependency: transitive
+    description:
+      name: connectivity_macos
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.1.0+3"
+  connectivity_platform_interface:
+    dependency: transitive
+    description:
+      name: connectivity_platform_interface
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.6"
   convert:
     dependency: transitive
     description:
@@ -140,7 +168,7 @@ packages:
       name: flutter_easyrefresh
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.1.2"
+    version: "2.1.4"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -198,7 +226,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: e68198f2917d5a4f534e82c76f572bd8dc8d7473
+      resolved-ref: e679239de775766079528b8d0bda4993394b87a9
       url: "https://github.com/lytian/m3u8_downloader.git"
     source: git
     version: "0.0.7"
@@ -544,7 +572,7 @@ packages:
     source: hosted
     version: "0.1.0"
   xml:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: xml
       url: "https://pub.flutter-io.cn"

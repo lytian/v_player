@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
+import 'package:v_player/pages/download_page.dart';
 import 'package:v_player/pages/main_page.dart';
 import 'package:v_player/pages/setting_page.dart';
 import 'package:v_player/pages/source_manage_page.dart';
@@ -25,3 +26,8 @@ Handler settingHandle = Handler(
     handlerFunc: (BuildContext context, Map<String, List<String>> params) {
   return SettingPage();
 });
+
+Handler downloadHandle = Handler(
+    handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+      return DownloadPage();
+    });
