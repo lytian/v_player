@@ -108,41 +108,7 @@ class _SourceManagePageState extends State<SourceManagePage> {
                 ),
                 IconButton(
                   icon: Icon(Icons.delete_sweep),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text('提示'),
-                          content: Text('确认删除资源【${model.name}】吗？'),
-                          actions: [
-                            FlatButton(
-                              child: Text('取消'),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
-                            FlatButton(
-                              child: Text('确定'),
-                              onPressed: () async {
-                                int res = await _db.deleteSourceById(model.id);
-                                if (res > 0) {
-                                  BotToast.showText(text: '删除成功！');
-                                } else {
-                                  BotToast.showText(text: '删除成功！');
-                                }
-                                Navigator.pop(context);
-                                List list = await _db.getSourceList();
-                                setState(() {
-                                  _sourceList = list;
-                                });
-                              },
-                            )
-                          ],
-                        );
-                      }
-                    );
-                  },
+                  onPressed: () => _deleteSource(model, curSource != null && curSource.id == model.id),
                 ),
               ],
             ),
@@ -223,5 +189,51 @@ class _SourceManagePageState extends State<SourceManagePage> {
       print(e);
       BotToast.showText(text: '导出资源到剪贴板失败！');
     }
+  }
+
+  /// 删除资源
+  void _deleteSource(SourceModel model, bool isCurrent) async {
+    if (_sourceList.length <= 1) {
+      BotToast.showText(text: '这已经是最后一个资源了，不能删除！');
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('提示'),
+          content: Text('确认删除资源【${model.name}】吗？'),
+          actions: [
+            FlatButton(
+              child: Text('取消'),
+              color: Colors.grey,
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            FlatButton(
+              child: Text('确定'),
+              onPressed: () async {
+                int res = await _db.deleteSourceById(model.id);
+                if (res > 0) {
+                  BotToast.showText(text: '删除成功！');
+                } else {
+                  BotToast.showText(text: '删除失败！');
+                }
+                Navigator.pop(context);
+                List list = await _db.getSourceList();
+                if (isCurrent && list.length > 0) {
+                  context.read<SourceProvider>().setCurrentSource(list[0], context);
+                }
+                setState(() {
+                  _sourceList = list;
+                });
+              },
+            )
+          ],
+        );
+      }
+    );
   }
 }

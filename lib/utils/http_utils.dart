@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/utils/xml_util.dart';
-import 'package:xml/xml.dart';
 
 import 'package:v_player/models/category_model.dart';
 import 'package:v_player/models/source_model.dart';
@@ -38,7 +37,7 @@ class HttpUtils {
       if (pageNum != null) {
         params["pg"] = pageNum;
       }
-      if (type != null) {
+      if (type != null && type.isNotEmpty) {
         params["t"] = type;
       }
       if (keyword != null) {

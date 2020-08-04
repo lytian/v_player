@@ -30,7 +30,7 @@ class XmlUtil {
         lang: getNodeText(node, 'lang'),
         area: getNodeText(node, 'area'),
         year: getNodeText(node, 'year'),
-        state: getNodeText(node, 'state') == null ? 0 : int.parse(getNodeText(node, 'state')),
+        state: getNodeText(node, 'state'),
         note: getNodeCData(node, 'note'),
         actor: getNodeCData(node, 'actor'),
         director: getNodeCData(node, 'director'),
@@ -54,6 +54,7 @@ class XmlUtil {
         }
       });
     }
+    String stateStr = getNodeText(video, 'state');
     return VideoModel(
       id: getNodeText(video, 'id'),
       tid: getNodeText(video, 'tid'),
@@ -63,7 +64,7 @@ class XmlUtil {
       lang: getNodeText(video, 'lang'),
       area: getNodeText(video, 'area'),
       year: getNodeText(video, 'year'),
-      state: int.parse(getNodeText(video, 'state') ?? 0),
+      state: getNodeText(video, 'state'),
       note: getNodeCData(video, 'note'),
       actor: getNodeCData(video, 'actor'),
       director: getNodeCData(video, 'director'),

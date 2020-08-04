@@ -10,7 +10,7 @@ class VideoModel {
   String area; // 地区
   String year; // 年份
   String last;  // 上传时间
-  int state;
+  String state;
   String note; // 标签
   String actor; // 演员
   String director; // 导演
