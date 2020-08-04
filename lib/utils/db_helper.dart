@@ -89,6 +89,9 @@ class DBHelper {
     if (_db == null || !_db.isOpen) {
       await _instance.initDb();
     }
+    if (model == null) return 0;
+    // 去掉自带的ID，让数据库自增
+    model.id = null;
     return await _db.insert(_sourceTableName, model.toJson());
   }
 
@@ -99,6 +102,8 @@ class DBHelper {
     }
     final batch = _db.batch();
     list.forEach((model) {
+      // 去掉自带的ID，让数据库自增
+      model.id = null;
       batch.insert(_sourceTableName, model.toJson());
     });
     final result = await batch.commit();

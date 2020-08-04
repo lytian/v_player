@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:v_player/models/source_model.dart';
@@ -14,7 +17,11 @@ class SourceManagePage extends StatefulWidget {
 class _SourceManagePageState extends State<SourceManagePage> {
   DBHelper _db = DBHelper();
   List<SourceModel> _sourceList = [];
-  SourceModel _currentSource;
+  List<Map<String, dynamic>> _menuList = [
+    { "value": 0, "label": "添加资源" },
+    { "value": 1, "label": "从剪贴板导入" },
+    { "value": 2, "label": "导出到剪贴板" },
+  ];
 
   @override
   void initState() {
@@ -42,12 +49,33 @@ class _SourceManagePageState extends State<SourceManagePage> {
       appBar: AppBar(
         title: Text('资源管理'),
         actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              print('1111111111');
+          PopupMenuButton(
+            offset: Offset(0, 56),
+            onSelected: (v) {
+              switch (v) {
+                case 0:
+                  // 添加资源
+                  _showFormDialog(null);
+                  break;
+                case 1:
+                  // 导入资源
+                  _importSource();
+                  break;
+                case 2:
+                  // 导出资源
+                  _exportSource();
+                  break;
+              }
             },
-          )
+            itemBuilder: (context) {
+              return _menuList.map((e) {
+                return PopupMenuItem(
+                  value: e["value"],
+                  child: Text(e['label']),
+                );
+              }).toList();
+            },
+          ),
         ],
       ),
       backgroundColor: Colors.white,
@@ -132,5 +160,68 @@ class _SourceManagePageState extends State<SourceManagePage> {
         },
       ),
     );
+  }
+
+  /// 显示表单
+  /// model 为null时，添加，不为null时修改
+  void _showFormDialog(SourceModel model) {
+
+  }
+
+  /// 导入资源
+  void _importSource() async {
+    var content = await Clipboard.getData(Clipboard.kTextPlain);
+    if (content == null || content.text == null || content.text.isEmpty) {
+      BotToast.showText(text: '剪贴板内容为空！');
+      return;
+    }
+    try {
+      String jsonStr = content.text;
+      int count = 0;
+      if (jsonStr.indexOf('[') > -1 && jsonStr.indexOf(']') > -1) {
+        // 多个
+        List<dynamic> list = json.decode(jsonStr);
+        List<SourceModel> sourceList = list.map((e) => SourceModel.fromJson(e)).toList();
+        // 去重
+        _sourceList.forEach((source) {
+          SourceModel find = sourceList.firstWhere((e) => e.name == source.name, orElse: () => null);
+          if (find != null) {
+            sourceList.remove(find);
+          }
+        });
+        count = await _db.insertBatchSource(sourceList);
+      } else {
+        // 单个
+        SourceModel source = SourceModel.fromJson(json.decode(jsonStr));
+        if (_sourceList.firstWhere((e) => e.name == source.name, orElse: () => null) != null) {
+          BotToast.showText(text: '资源已存在');
+          return;
+        }
+        count = await _db.insertSource(source);
+      }
+      if (count <= 0) {
+        BotToast.showText(text: '导入失败！');
+        return;
+      }
+      List list = await _db.getSourceList();
+      setState(() {
+        _sourceList = list;
+      });
+
+    } catch(e) {
+      print(e);
+      BotToast.showText(text: '数据解析失败！');
+    }
+  }
+
+  /// 导出资源到剪贴板
+  void _exportSource() {
+    try {
+      Clipboard.setData(ClipboardData(text: json.encode(_sourceList)));
+      BotToast.showText(text: '导出成功！');
+    } catch(e) {
+      print(e);
+      BotToast.showText(text: '导出资源到剪贴板失败！');
+    }
   }
 }

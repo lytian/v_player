@@ -68,6 +68,12 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
         bottom: TabBar(
           controller: _tabController,
           indicatorSize: TabBarIndicatorSize.label,
+          labelStyle: TextStyle(
+            fontSize: 16
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: 14
+          ),
           tabs: <Widget>[
             Tab(text: '已完成',),
             Tab(text: '缓存中',),

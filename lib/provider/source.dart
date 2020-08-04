@@ -7,11 +7,10 @@ import 'package:v_player/provider/category.dart';
 import 'package:v_player/utils/sp_helper.dart';
 
 class SourceProvider with ChangeNotifier {
+
   SourceModel _currentSource;
-  List<SourceModel> _sourceList;
 
   SourceModel get currentSource => _currentSource;
-  List<SourceModel> get sourceList => _sourceList;
 
   void setCurrentSource(SourceModel model, BuildContext context) {
     _currentSource = model;
