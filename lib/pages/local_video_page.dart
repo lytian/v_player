@@ -33,10 +33,13 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
       allowFullScreen: false,
       onBack: () {
         // 退出全屏
+        _chewieController.exitFullScreen();
         // 关闭页面
-        Navigator.of(context).pop();
-        Future.delayed(Duration(milliseconds: 300), () {
+        Future.delayed(Duration(milliseconds: 400), () {
           Navigator.of(context).pop();
+          Future.delayed(Duration(milliseconds: 100), () {
+            Navigator.of(context).pop();
+          });
         });
       }
     );

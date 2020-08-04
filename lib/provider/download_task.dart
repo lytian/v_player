@@ -201,7 +201,7 @@ class DownloadTaskProvider with ChangeNotifier {
         // 2.1 先暂停自己的下载
         await pause(url);
         // 2.2 下一个下载
-        await _downloadNext();
+//        await _downloadNext();
         // 2.3 刷新
         notifyListeners();
         break;
