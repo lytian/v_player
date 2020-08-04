@@ -29,6 +29,12 @@ class _SourceManagePageState extends State<SourceManagePage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _db.close();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final curSource = context.select<SourceProvider, SourceModel>((value) => value.currentSource);
 

@@ -130,6 +130,14 @@ class DBHelper {
     return await _db.delete(_downloadTableName, where: '$_columnId = ?', whereArgs: [id]);
   }
 
+  /// 根据ID集删除下载
+  Future<int> deleteDownloadByIds(List<int> ids) async {
+    if (_db == null || !_db.isOpen) {
+      await _instance.initDb();
+    }
+    return await _db.delete(_downloadTableName, where: '$_columnId in (${ids.join(',')})', whereArgs: []);
+  }
+
   /// 根据ID修改资源
   Future<int> updateSourceById(SourceModel model) async {
     if (_db == null || !_db.isOpen) {
@@ -232,6 +240,7 @@ class DBHelper {
       whereStr.add('$_columnName like %?%');
       whereArgs.add(name);
     }
+    whereArgs.add('status != ${DownloadStatus.NONE.index}');
 
     List<Map> maps;
     if (whereStr.isEmpty) {

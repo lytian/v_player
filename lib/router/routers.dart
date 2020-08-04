@@ -9,6 +9,7 @@ class Routers{
   static String sourceManagePage = '/sourceManage';
   static String settingPage = '/setting';
   static String downloadPage = '/download';
+  static String localVideoPage = '/localVideo';
   
   static void configureRouters(Router router){
     router.notFoundHandler = new Handler(
@@ -22,5 +23,6 @@ class Routers{
     router.define(sourceManagePage, handler: sourceManageHandle);
     router.define(settingPage, handler: settingHandle);
     router.define(downloadPage, handler: downloadHandle);
+    router.define(localVideoPage, handler: localVideoHandle);
   }
 }

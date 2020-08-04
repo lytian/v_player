@@ -74,6 +74,9 @@ class DownloadTaskProvider with ChangeNotifier {
           _currentTask.speed = data['speed'];
           _currentTask.formatSpeed = data['formatSpeed'];
           _currentTask.progress = data["progress"];
+          _currentTask.totalSize = data["totalSize"];
+          _currentTask.totalFormatSize = data["totalFormatSize"];
+          _currentTask.currentFormatSize = data["currentFormatSize"];
           _db.updateDownloadByUrl(_currentTask.url, progress: _currentTask.progress);
           break;
         case 2:
@@ -182,20 +185,85 @@ class DownloadTaskProvider with ChangeNotifier {
   }
 
   ///
+  /// 切换下载
+  ///
+  void toggleDownload(String url) async {
+    // 1. 查询是否拥有这个url的下载记录
+    DownloadModel self = _downloadList.firstWhere((e) => e.url == url, orElse: () => null);
+    if (self == null) {
+      BotToast.showText(text: '下载任务不存在！', align: Alignment.center);
+      return;
+    }
+    // 2. 切换自己的状态
+    switch (self.status) {
+      case DownloadStatus.RUNNING:
+        // 正在下载状态
+        // 2.1 先暂停自己的下载
+        await pause(url);
+        // 2.2 下一个下载
+        await _downloadNext();
+        // 2.3 刷新
+        notifyListeners();
+        break;
+      case DownloadStatus.WAITING:
+      case DownloadStatus.FAIL:
+        // 等待下载、下载失败状态
+        // 2.1 暂停正在下载
+        DownloadModel runningDownload = _downloadList.firstWhere((e) => e.status == DownloadStatus.RUNNING, orElse: () => null);
+        if (runningDownload != null) {
+          await pause(runningDownload.url);
+        }
+        // 2.2 开启本次下载，并刷新
+        _startDownload(self.url, self.name);
+        break;
+      default:
+        break;
+    }
+  }
+
+  ///
+  /// 删除下载列表
+  ///
+  Future<void> deleteDownloads(List<DownloadModel> models) async {
+    if (models == null || models.isEmpty) return;
+    // 1. 如果有正在 下载，先暂停
+    DownloadModel runningDownload = models.firstWhere((e) => e.status == DownloadStatus.RUNNING, orElse: () => null);
+    if (runningDownload != null) {
+      await pause(runningDownload.url);
+    }
+    // 2. 删除本地文件
+    models.forEach((e) {
+      M3u8Downloader.cancel(e.url, isDelete: true);
+    });
+    // 3. 删除下载记录
+    int count = await _db.deleteDownloadByIds(models.map((e) => e.id).toList());
+    if (count <= 0) {
+      BotToast.showText(text: '删除失败！');
+      return;
+    }
+    // 4. 更新下载列表
+    _downloadList = await _db.getDownloadList();
+    // 5. 开启新的下载
+    if (runningDownload != null) {
+      _downloadNext();
+    }
+    notifyListeners();
+  }
+
+  ///
   /// 下载下一个视频
   ///
   Future<void> _downloadNext() async {
     // 先寻找正在下载的视频
     DownloadModel runningDownload = _downloadList.firstWhere((e) => e.status == DownloadStatus.RUNNING, orElse: () => null);
     if (runningDownload != null) {
-      _startDownload(runningDownload.url, runningDownload.name);
+      await _startDownload(runningDownload.url, runningDownload.name);
       return;
     }
     // 寻找等待下载的视频
     DownloadModel waitDownload = _downloadList.firstWhere((e) => e.status == DownloadStatus.WAITING, orElse: () => null);
     if (waitDownload != null) {
-      await pause(waitDownload.url);
-      _startDownload(waitDownload.url, waitDownload.name);
+      await _startDownload(waitDownload.url, waitDownload.name);
       return;
     }
   }
@@ -203,10 +271,11 @@ class DownloadTaskProvider with ChangeNotifier {
   ///
   /// 开启下载
   ///
-  void _startDownload(String url, String name) async {
+  Future<void> _startDownload(String url, String name) async {
     bool hasGranted = await checkStoragePermission();
     if (!hasGranted) return;
     _currentTask = DownloadTask(name: name, url: url);
+    await _db.updateDownloadByUrl(url, status: DownloadStatus.RUNNING);
     M3u8Downloader.download(
         url: url,
         name: name,
@@ -214,6 +283,8 @@ class DownloadTaskProvider with ChangeNotifier {
         successCallback: successCallback,
         errorCallback: errorCallback
     );
+    _downloadList = await _db.getDownloadList();
+    notifyListeners();
   }
 
   ///
@@ -246,6 +317,7 @@ class DownloadTaskProvider with ChangeNotifier {
   void dispose() {
     super.dispose();
     _netSubscription.cancel();
+    _db.close();
   }
 }
 
@@ -254,14 +326,19 @@ class DownloadTask {
   String url;
   double progress;
   int speed;
+  int totalSize;
   String formatSpeed;
-  String totalSize;
+  String totalFormatSize;
+  String currentFormatSize;
 
   DownloadTask({
     @required this.name,
     @required this.url,
-    this.progress,
-    this.speed,
-    this.formatSpeed,
-    this.totalSize});
+    this.progress = 0,
+    this.speed = 0,
+    this.formatSpeed = '',
+    this.totalSize = 0,
+    this.currentFormatSize = '',
+    this.totalFormatSize = ''
+  });
 }

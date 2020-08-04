@@ -55,7 +55,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "46ec93c6cb67a69461efbd2cbc680c402c703096"
+      resolved-ref: bc5ea28e1de9b5ad1fa17a55c6da040a70435405
       url: "https://github.com/lytian/chewie.git"
     source: git
     version: "0.9.10"
@@ -168,7 +168,7 @@ packages:
       name: flutter_easyrefresh
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.1.4"
+    version: "2.1.5"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -226,7 +226,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: e679239de775766079528b8d0bda4993394b87a9
+      resolved-ref: "84a37b90a57cb5130a05ffc31fa20359437ec5fb"
       url: "https://github.com/lytian/m3u8_downloader.git"
     source: git
     version: "0.0.7"

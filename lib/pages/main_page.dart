@@ -12,6 +12,7 @@ import 'package:v_player/router/application.dart';
 import 'package:v_player/router/routers.dart';
 import 'package:v_player/utils/http_utils.dart';
 import 'package:v_player/widgets/animated_floating_action_button.dart';
+import 'package:v_player/widgets/no_data.dart';
 import 'package:v_player/widgets/video_item.dart';
 
 class MainPage extends StatefulWidget {
@@ -226,32 +227,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
             )
           ],
           emptyWidget: _videoList.length == 0
-              ? Container(
-            height: double.infinity,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  child: SizedBox(),
-                  flex: 2,
-                ),
-                SizedBox(
-                  width: 100.0,
-                  height: 100.0,
-                  child: Image.asset('assets/image/nodata.png'),
-                ),
-                Text(
-                  '没有找到视频',
-                  style: TextStyle(fontSize: 16.0, color: Colors.grey[400]),
-                ),
-                Expanded(
-                  child: SizedBox(),
-                  flex: 3,
-                ),
-              ],
-            ),
-          )
+              ? NoData(tip: '没有找到视频',)
               : null,
           header: ClassicalHeader(
               refreshText: '下拉刷新',
