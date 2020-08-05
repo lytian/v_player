@@ -51,6 +51,8 @@ class XmlUtil {
       str.split('#').forEach((s) {
         if (s.indexOf('\$') > -1) {
           anthologies.add(Anthology(name: s.split('\$')[0], url: s.split('\$')[1]));
+        } else {
+          anthologies.add(Anthology(name: null, url: s));
         }
       });
     }

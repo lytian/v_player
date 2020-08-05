@@ -24,6 +24,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   ChewieController _chewieController;
   String _url;
   VideoModel _videoModel;
+  bool _isSingleVideo = false; // 是否单视频，没有选集
 
   @override
   void initState() {
@@ -36,7 +37,13 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     if (video != null) {
       if (video.anthologies.isNotEmpty) {
         String url = video.anthologies.first.url;
-        String name = video.name + '  ' + video.anthologies.first.name;
+        String name = video.anthologies.first.name == null ? video.name : (video.name + '  ' + video.anthologies.first.name);
+        // 单视频，只有一个anthology，并且name为null
+        if (video.anthologies.length == 1 && video.anthologies.first.name == null) {
+          setState(() {
+            _isSingleVideo = true;
+          });
+        }
         _startPlay(url, name);
       }
     }
@@ -87,7 +94,6 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
 
   @override
   void dispose() {
-//    db.close();
     _controller?.dispose();
     _chewieController?.dispose();
 
@@ -172,44 +178,48 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
 
   Widget _buildScrollContent(VideoModel video) {
     List arr = [];
-    if (video.year != null) {
+    if (video.year != null && video.year.isNotEmpty) {
       arr.add(video.year);
     }
-    if (video.area != null) {
+    if (video.area != null && video.area.isNotEmpty) {
       arr.add(video.area);
     }
-    if (video.lang != null) {
+    if (video.lang != null && video.lang.isNotEmpty) {
       arr.add(video.lang);
     }
-    if (video.type != null) {
+    if (video.type != null && video.type.isNotEmpty) {
       arr.add(video.type);
     }
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Text(video.name, style: TextStyle(
-                color: Colors.black,
-                fontSize: 18
-            ),),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text(arr.join('/'), style: TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-              height: 1
-            ),),
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 8, bottom: 4),
-            child: Divider(
-              color: Colors.grey.withOpacity(0.5),
-            ),
-          ),
-          Padding(
+
+    List<Widget> children = [];
+    // 添加视频标题和说明
+    children.addAll([
+      Padding(
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+        child: Text(video.name, style: TextStyle(
+            color: Colors.black,
+            fontSize: 18
+        ),),
+      ),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Text(arr.join('/'), style: TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+            height: 1
+        ),),
+      ),
+      Padding(
+        padding: EdgeInsets.only(top: 8, bottom: 4),
+        child: Divider(
+          color: Colors.grey.withOpacity(0.5),
+        ),
+      ),
+    ]);
+    // 添加选集
+    if (!_isSingleVideo) {
+      children.addAll([
+        Padding(
             padding: EdgeInsets.only(left: 16,),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -218,9 +228,9 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                 Expanded(
                   flex: 1,
                   child: Text('选集', style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    height: 1
+                      color: Colors.black,
+                      fontSize: 18,
+                      height: 1
                   )),
                 ),
                 Container(
@@ -241,86 +251,91 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                 ),
               ],
             )
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 0,
-              children: video.anthologies.map((e) {
-                return RaisedButton(
-                  elevation: 0,
-                  highlightElevation: 4,
-                  color: _url == e.url ? Theme.of(context).primaryColor : null,
-                  child: Text(e.name, style: TextStyle(
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 0,
+            children: video.anthologies.map((e) {
+              return RaisedButton(
+                elevation: 0,
+                highlightElevation: 4,
+                color: _url == e.url ? Theme.of(context).primaryColor : null,
+                child: Text(e.name, style: TextStyle(
                     color: _url == e.url ? Colors.white : null,
                     fontSize: 14,
                     fontWeight: FontWeight.normal
-                  ),),
-                  onPressed: () async {
-                    if (_url == e.url) return;
+                ),),
+                onPressed: () async {
+                  if (_url == e.url) return;
 
-                    _startPlay(e.url, video.name + '  ' + e.name);
-                  },
-                );
-              }).toList(),
-            ),
+                  _startPlay(e.url, video.name + '  ' + e.name);
+                },
+              );
+            }).toList(),
           ),
-          Divider(
-            color: Colors.grey.withOpacity(0.5),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: Text('简介', style: TextStyle(
-                color: Colors.black,
-                fontSize: 18,
-                height: 1
-            )),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: _buildLabelText('地区', video.area),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: _buildLabelText('年份', video.year),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: _buildLabelText('分类', video.type),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: _buildLabelText('导演', video.director),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: _buildLabelText('演员', video.actor),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: _buildLabelText('发布', video.last),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: HtmlWidget(
-              video.des ?? '',
-              textStyle: TextStyle(
+        ),
+        Divider(
+          color: Colors.grey.withOpacity(0.5),
+        ),
+      ]);
+    }
+    // 添加简介
+    children.addAll([
+      Padding(
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        child: Text('简介', style: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            height: 1
+        )),
+      ),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildLabelText('地区', video.area),
+      ),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildLabelText('年份', video.year),
+      ),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildLabelText('分类', video.type),
+      ),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildLabelText('导演', video.director),
+      ),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildLabelText('演员', video.actor),
+      ),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildLabelText('发布', video.last),
+      ),
+      Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: HtmlWidget(
+            video.des ?? '',
+            textStyle: TextStyle(
                 height: 1.8,
                 fontSize: 14,
                 color: Colors.black
-              ),
-            )
-//            Text(video.des ?? '', style: TextStyle(
-//              height: 1.8,
-//              fontSize: 14,
-//              color: Colors.black
-//            ),),
-          ),
-          SizedBox(
-            height: 20,
+            ),
           )
-        ],
+      ),
+    ]);
+    // 添加底部占位
+    children.add(SizedBox(
+      height: 20,
+    ));
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
       ),
     );
   }
