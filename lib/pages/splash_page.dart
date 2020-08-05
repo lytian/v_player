@@ -41,9 +41,11 @@ class _SplashPageState extends State<SplashPage> {
       List<dynamic> jsonList = json.decode(sourceJson);
       List<SourceModel> list = jsonList.map((e) => SourceModel.fromJson(e)).toList();
       await _db.insertBatchSource(list);
-      source = jsonList[0];
+      list = await _db.getSourceList();
+      context.read<SourceProvider>().setCurrentSource(list[0], context);
+    } else {
+      context.read<SourceProvider>().setCurrentSource(SourceModel.fromJson(source), context);
     }
-    context.read<SourceProvider>().setCurrentSource(SourceModel.fromJson(source), context);
 
     // 倒计时
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
