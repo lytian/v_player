@@ -1,6 +1,5 @@
 [
   {
-    "id": 9,
     "name": "ok资源网",
     "url": "http://www.jisudhw.com",
     "httpApi": "http://cj.okzy.tv/inc/ldg_seackm3u8.php",
@@ -8,7 +7,6 @@
     "type": "影视"
   },
   {
-    "id": 10,
     "name": "永久资源站",
     "url": "http://www.yongjiuzy1.com/",
     "httpApi": "http://cj.yongjiuzyw.com/inc/yjm3u8.php",
