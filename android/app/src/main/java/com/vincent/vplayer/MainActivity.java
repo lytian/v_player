@@ -1,4 +1,4 @@
-package com.vincent.v_player;
+package com.vincent.vplayer;
 
 import io.flutter.embedding.android.FlutterActivity;
 
