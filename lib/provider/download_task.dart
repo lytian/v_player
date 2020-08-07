@@ -55,6 +55,7 @@ class DownloadTaskProvider with ChangeNotifier {
     M3u8Downloader.initialize(
         saveDir: await findSavePath(),
         showNotification: true,
+        threadCount: 3,
         debugMode: false,
         onSelect: () {
           Application.router.navigateTo(context, Routers.downloadPage);
@@ -73,7 +74,7 @@ class DownloadTaskProvider with ChangeNotifier {
         case 1:
           _currentTask.speed = data['speed'];
           _currentTask.formatSpeed = data['formatSpeed'];
-          _currentTask.progress = data["progress"];
+          _currentTask.progress = data["progress"] / 1.0;
           _currentTask.totalSize = data["totalSize"];
           _currentTask.totalFormatSize = data["totalFormatSize"];
           _currentTask.currentFormatSize = data["currentFormatSize"];
