@@ -43,6 +43,7 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
       }
       _chewieController = ChewieController(
         videoPlayerController: _controller,
+        aspectRatio: MediaQuery.of(context).size.width / MediaQuery.of(context).size.height,
         title: widget.name,
         autoPlay: true,
         showTopBar: false,
