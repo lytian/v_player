@@ -35,6 +35,11 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
 
     bool isAllChecked = false;
@@ -290,7 +295,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
 
   /// 播放视频
   void _playVideo(String url, String name) {
-    Application.router.navigateTo(context, Routers.localVideoPage + '?url=${FluroConvertUtils.fluroCnParamsEncode(url)}&name=${FluroConvertUtils.fluroCnParamsEncode(name)}', transition: TransitionType.fadeIn);
+    Application.router.navigateTo(context, Routers.localVideoPage + '?url=${FluroConvertUtils.fluroCnParamsEncode(url)}&name=${FluroConvertUtils.fluroCnParamsEncode(name)}', transition: TransitionType.nativeModal);
   }
 
   /// 切换单个选择

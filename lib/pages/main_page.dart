@@ -60,7 +60,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
 
     // 初始化下载器
     context.read<DownloadTaskProvider>().initialize(context);
-
   }
 
   /// 获取分类

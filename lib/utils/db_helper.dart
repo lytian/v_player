@@ -166,17 +166,20 @@ class DBHelper {
   }
 
   /// 根据URL修改下载进度
-  Future<int> updateDownloadByUrl(String url, { double progress, DownloadStatus status }) async {
+  Future<int> updateDownloadByUrl(String url, { double progress, DownloadStatus status, String savePath }) async {
     if (_db == null || !_db.isOpen) {
       await _instance.initDb();
     }
 
     Map<String, dynamic> maps = {};
     if (progress != null) {
-      maps["progress"] = progress;
+      maps[_columnProgress] = progress;
     }
     if (status != null) {
-      maps["status"] = status.index;
+      maps[_columnStatus] = status.index;
+    }
+    if (savePath != null) {
+      maps[_columnSavePath] = savePath;
     }
 
     return await _db.update(_downloadTableName, maps, where: '$_columnUrl = ?', whereArgs: [url]);

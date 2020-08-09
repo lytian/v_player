@@ -9,9 +9,11 @@ import 'package:flutter/widgets.dart';
 import 'package:m3u8_downloader/m3u8_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/download_model.dart';
 import 'package:v_player/models/video_model.dart';
+import 'package:v_player/provider/source.dart';
 import 'package:v_player/router/application.dart';
 import 'package:v_player/router/routers.dart';
 import 'package:v_player/utils/db_helper.dart';
@@ -19,7 +21,6 @@ import 'package:connectivity/connectivity.dart';
 import 'package:v_player/utils/sp_helper.dart';
 
 class DownloadTaskProvider with ChangeNotifier {
-
   DBHelper _db = DBHelper();
   ReceivePort _port = ReceivePort();
   StreamSubscription _netSubscription;
@@ -54,6 +55,7 @@ class DownloadTaskProvider with ChangeNotifier {
     WidgetsFlutterBinding.ensureInitialized();
     M3u8Downloader.initialize(
         saveDir: await findSavePath(),
+        isConvert: SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: true),
         showNotification: true,
         threadCount: 3,
         debugMode: false,
@@ -81,9 +83,19 @@ class DownloadTaskProvider with ChangeNotifier {
           _db.updateDownloadByUrl(_currentTask.url, progress: _currentTask.progress);
           break;
         case 2:
-          BotToast.showText(text:"【${_currentTask.name}】下载成功！！！");
+          BotToast.showText(text:"【${_currentTask.name}】下载成功!!!");
           _currentTask.progress = 1;
-          _db.updateDownloadByUrl(_currentTask.url, status: DownloadStatus.SUCCESS);
+          dynamic pathRes = await M3u8Downloader.getSavePath(_currentTask.url);
+          File mp4File;
+          if (pathRes != null) {
+            mp4File = File(pathRes["mp4"]);
+          }
+          if (mp4File != null && mp4File.existsSync()) {
+            // 已经转成mp4
+            _db.updateDownloadByUrl(_currentTask.url, status: DownloadStatus.SUCCESS, savePath: pathRes["mp4"]);
+          } else {
+            _db.updateDownloadByUrl(_currentTask.url, status: DownloadStatus.SUCCESS, );
+          }
           _downloadList = await _db.getDownloadList();
           _currentTask = null;
           // 下载下一个
@@ -113,7 +125,10 @@ class DownloadTaskProvider with ChangeNotifier {
         // 没有网络的处理
         print('切换到移动网络了......');
       } else if (res == ConnectivityResult.wifi) {
-        // 没有网络的处理
+        // wifi自动下载
+        if (currentTask == null && SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true)) {
+          _downloadNext();
+        }
         print('切换到WiFi了......');
       }
     });
@@ -132,7 +147,7 @@ class DownloadTaskProvider with ChangeNotifier {
   ///
   /// 创建新的下载
   ///
-  void createDownload({ VideoModel video, String url, String name }) async {
+  void createDownload({ VideoModel video, String url, String name, BuildContext context }) async {
     // 1. 暂停正在下载
     DownloadModel runningDownload = _downloadList.firstWhere((e) => e.status == DownloadStatus.RUNNING, orElse: () => null);
     if (runningDownload != null) {
@@ -160,7 +175,7 @@ class DownloadTaskProvider with ChangeNotifier {
       tid: video.tid,
       name: name,
       url: url,
-      api: '',
+      api: context.read<SourceProvider>().currentSource?.httpApi,
       type: video.type,
       pic: video.pic,
       fileId: fileId,
@@ -296,7 +311,7 @@ class DownloadTaskProvider with ChangeNotifier {
     final directory = Platform.isAndroid
         ? await getExternalStorageDirectory()
         : await getApplicationDocumentsDirectory();
-    String saveDir = directory.path + '/vPlayDownload';
+    String saveDir = directory.path + '/video';
     Directory root = Directory(saveDir);
     if (!root.existsSync()) {
       await root.create();

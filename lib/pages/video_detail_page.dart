@@ -1,11 +1,11 @@
 import 'dart:ui';
 
-import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/provider/download_task.dart';
 import 'package:v_player/utils/http_utils.dart';
+import 'package:v_player/widgets/chewie/chewie_player.dart';
 import 'package:video_player/video_player.dart';
 import 'package:provider/provider.dart';
 
@@ -75,7 +75,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     });
   }
 
-  void _initController(String url, String name) {
+  void _initController(String url, String name) async {
     // 设置资源
     _controller = VideoPlayerController.network(url);
     _chewieController = ChewieController(
@@ -86,7 +86,12 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       showControlsOnInitialize: false,
       allowedScreenSleep: false,
       onDownload: () {
-        context.read<DownloadTaskProvider>().createDownload(video: _videoModel, url: url, name: name);
+        context.read<DownloadTaskProvider>().createDownload(
+          context: context,
+          video: _videoModel,
+          url: url,
+          name: name
+        );
       }
     );
     setState(() {});

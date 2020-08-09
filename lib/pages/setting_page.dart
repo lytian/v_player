@@ -13,6 +13,7 @@ class _SettingPageState extends State<SettingPage> {
   
   String _colorKey;
   bool _wifiAutoDownload = true;
+  bool _toMP4 = true;
 
   @override
   void initState() {
@@ -20,6 +21,7 @@ class _SettingPageState extends State<SettingPage> {
 
     _colorKey = SpHelper.getString(Constant.key_theme_color, defValue: 'blue');
     _wifiAutoDownload = SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true);
+    _toMP4 = SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: true);
   }
 
   @override
@@ -73,7 +75,20 @@ class _SettingPageState extends State<SettingPage> {
                 SpHelper.putBool(Constant.key_wifi_auto_download, v);
               }
             ),
-          )
+          ),
+          ListTile(
+            leading: Icon(Icons.crop),
+            title: Text('M3U8转MP4'),
+            trailing: Switch(
+                value: _toMP4,
+                onChanged: (v) {
+                  setState(() {
+                    _toMP4 = v;
+                  });
+                  SpHelper.putBool(Constant.key_m3u8_to_mp4, v);
+                }
+            ),
+          ),
         ],
       ),
     );

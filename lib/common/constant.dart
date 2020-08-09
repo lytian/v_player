@@ -7,6 +7,7 @@ class Constant {
   static const String key_splash_model = 'key_splash_models';
   static const String key_current_source = 'key_current_source';
   static const String key_wifi_auto_download = 'key_wifi_auto_download';
+  static const String key_m3u8_to_mp4 = 'key_m3u8_to_mp4';
   static const String key_db_name = 'player.db';
 }
 
