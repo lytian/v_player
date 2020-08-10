@@ -32,12 +32,27 @@ Flutter 视频播放APP
 视频源的导入导出是通过剪贴板完成的，格式为json字符串。
 
 视频源导入步骤：
-1.导出已有的视频源到剪贴板
-2.复制到任何地方
-3.根据这个json格式，完善你自己的视频源
-4.导入视频源，切换播放即可
+
+1. 导出已有的视频源到剪贴板
+2. 复制到任何地方
+3. 根据这个json格式，完善你自己的视频源
+4. 导入视频源，切换播放即可
 
 视频源查找直接百度【资源站】
+
+## github图片不显示
+修改hosts`C:\Windows\System32\drivers\etc\hosts`
+
+在文件末尾添加：
+```
+# GitHub Start 
+192.30.253.112    Build software better, together 
+192.30.253.119    gist.github.com
+151.101.184.133    assets-cdn.github.com
+151.101.184.133    raw.githubusercontent.com
+# GitHub End
+```
+保存后刷新页面即可。
 
 ## 捐献
 
