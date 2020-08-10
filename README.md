@@ -1,16 +1,33 @@
 # v_player
+Flutter 视频播放APP
 
 基于苹果CMS8.0的资源站收集视频APP
 
-## Getting Started
+## 功能列表
 
-This project is a starting point for a Flutter application.
+- [x] 视频获取、布局，下拉刷新、上拉加载
+- [x] 切换视频源
+- [x] 视频分类
+- [x] 视频详情页，视频播放功能
+- [x] 视频源导入导出
+- [ ] 视频源编辑功能
+- [x] 视频下载，下载通知
+- [x] m3u8转MP4
+- [x] APP主题设置
+- [x] wifi自动下载
+- [x] 下载列表管理
+- [ ] 删除下载时，删除视频文件
+- [ ] 手动清除多余的视频文件
+- [ ] 选择文件播放
 
-A few resources to get you started if this is your first Flutter project:
+## 关于视频源的导入导出
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+视频源的导入导出是通过剪贴板完成的，格式为json字符串。
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+视频源导入步骤：
+1.导出已有的视频源到剪贴板
+2.复制到任何地方
+3.根据这个json格式，完善你自己的视频源
+4.导入视频源，切换播放即可
+
+视频源查找直接百度【资源站】
