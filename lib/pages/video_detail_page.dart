@@ -35,6 +35,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
 
   Future<VideoModel> _getVideoInfo() async {
     VideoModel video  = await HttpUtils.getVideoById(widget.videoId);
+    _videoModel = video;
     if (video != null) {
       if (video.anthologies.isNotEmpty) {
         String url = video.anthologies.first.url;
@@ -48,7 +49,6 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
         _startPlay(url, name);
       }
     }
-    _videoModel = video;
     return video;
   }
 
