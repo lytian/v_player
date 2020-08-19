@@ -73,7 +73,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
     });
     List<CategoryModel> list = await HttpUtils.getCategoryList();
     setState(() {
-      _categoryList = [CategoryModel(id: '', name: '最近更新')] + list;
+      _categoryList = [CategoryModel(id: '', name: '最新')] + list;
       _navController = TabController(length: _categoryList.length, vsync: this);
     });
   }

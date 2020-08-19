@@ -49,7 +49,8 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
         autoPlay: true,
         defaultShowTitle: true,
         allowFullScreen: false,
-        showDownload: false
+        showDownload: false,
+        allowedScreenSleep: false
       );
       setState(() {
         _initialized = true;

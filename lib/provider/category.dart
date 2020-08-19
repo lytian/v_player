@@ -18,7 +18,7 @@ class CategoryProvider with ChangeNotifier {
 
   void getCategoryList() async {
     List<CategoryModel> list = await HttpUtils.getCategoryList();
-    _categoryList = [CategoryModel(id: '', name: '最近更新')] + list;
+    _categoryList = [CategoryModel(id: '', name: '最新')] + list;
     notifyListeners();
   }
 }
