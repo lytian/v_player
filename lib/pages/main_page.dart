@@ -28,7 +28,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
   bool _isLandscape = false; // 是否横屏
 
   EasyRefreshController _controller;
-  int _pageNum = 1;
+  int _pageNum = 0;
   List _videoList = [];
   SourceModel _currentSource;
   SourceProvider _sourceProvider;
@@ -44,14 +44,14 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
     // 资源变化监听
     _sourceProvider = context.read<SourceProvider>();
     _currentSource = _sourceProvider.currentSource;
-    _sourceProvider.addListener(() {
+    _sourceProvider.addListener(() async {
       if (!mounted) return;
 
       setState(() {
         _videoList = [];
         _currentSource = _sourceProvider.currentSource;
       });
-      _getCategoryList();
+      await _getCategoryList();
       _controller.callRefresh();
     });
 
@@ -63,22 +63,31 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
   }
 
   /// 获取分类
-  void _getCategoryList() async {
-    List<CategoryModel> list = await HttpUtils.getCategoryList();
+  Future<void> _getCategoryList() async {
     if (!mounted) return;
+    // 初始化一些数据
+    _navController?.dispose();
     setState(() {
-      _categoryList = [CategoryModel(id: '', name: '全部')] + list;
-      _navController?.dispose();
+      _type = '';
+      _categoryList = [];
+    });
+    List<CategoryModel> list = await HttpUtils.getCategoryList();
+    setState(() {
+      _categoryList = [CategoryModel(id: '', name: '最近更新')] + list;
       _navController = TabController(length: _categoryList.length, vsync: this);
     });
   }
 
   /// 获取视频列表
   Future<void> _getVideoList() async {
-    List<VideoModel> videos = await HttpUtils.getVideoList(pageNum: _pageNum, type: _type);
+    int hour; // 最近几个小时更新
+    if (_type == null || _type.isEmpty) {
+      hour = 24;
+    }
+    List<VideoModel> videos = await HttpUtils.getVideoList(pageNum: _pageNum, type: _type, hour: hour);
     if (!mounted) return;
     setState(() {
-      if (this._pageNum == 1) {
+      if (this._pageNum <= 1) {
         _videoList = videos;
       } else {
         _videoList += videos;

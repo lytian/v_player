@@ -68,7 +68,7 @@ class _MaterialControlsState extends State<MaterialControls> {
           absorbing: _hideStuff,
           child: Column(
             children: <Widget>[
-              chewieController.showTopBar ? _buildTopBar(context) : Container(),
+              _buildTopBar(context),
               _latestValue != null &&
                   !_latestValue.isPlaying &&
                   _latestValue.duration == null ||
@@ -116,13 +116,17 @@ class _MaterialControlsState extends State<MaterialControls> {
 
   /// 顶部导航条
   AnimatedOpacity _buildTopBar(BuildContext context,) {
+    String title = '';
+    if (chewieController.isFullScreen || chewieController.defaultShowTitle) {
+      title = chewieController.title ?? '';
+    }
     return AnimatedOpacity(
       opacity: _hideStuff ? 0.0 : 1.0,
       duration: Duration(milliseconds: 300),
       child: Container(
-        height: barHeight - 6 + (chewieController.isFullScreen ? MediaQuery.of(context).padding.top : 0),
+        height: barHeight - 8 + (chewieController.isFullScreen || chewieController.defaultShowTitle ? MediaQuery.of(context).padding.top : 0),
         width: double.infinity,
-        padding: EdgeInsets.only(left: marginSize, right: marginSize, top: chewieController.isFullScreen ? MediaQuery.of(context).padding.top : 0),
+        padding: EdgeInsets.only(left: marginSize, right: marginSize, top: chewieController.isFullScreen || chewieController.defaultShowTitle ? MediaQuery.of(context).padding.top : 0),
         color: Colors.black.withOpacity(0.24),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -134,7 +138,7 @@ class _MaterialControlsState extends State<MaterialControls> {
             ),
             Expanded(
               flex: 1,
-              child: Text(chewieController.title != null && chewieController.isFullScreen ? chewieController.title : '',
+              child: Text(title,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 )

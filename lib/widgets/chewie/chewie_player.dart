@@ -40,12 +40,21 @@ class ChewieState extends State<Chewie> {
   @override
   void initState() {
     super.initState();
+
     widget.controller.addListener(listener);
+
+
+    if (!widget.controller.allowedScreenSleep) {
+      Screen.keepOn(true);
+    }
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(listener);
+
+    Screen.keepOn(false);
+
     super.dispose();
   }
 
@@ -160,19 +169,9 @@ class ChewieState extends State<Chewie> {
       }
     }
 
-    if (!widget.controller.allowedScreenSleep) {
-//      Wakelock.enable();
-      Screen.keepOn(true);
-    }
-
     await Navigator.of(context, rootNavigator: true).push(route);
     _isFullScreen = false;
     widget.controller.exitFullScreen();
-
-    // The wakelock plugins checks whether it needs to perform an action internally,
-    // so we do not need to check Wakelock.isEnabled.
-//    Wakelock.disable();
-    Screen.keepOn(false);
 
     SystemChrome.setEnabledSystemUIOverlays(
         widget.controller.systemOverlaysAfterFullScreen);
@@ -218,7 +217,7 @@ class ChewieController extends ChangeNotifier {
       DeviceOrientation.landscapeRight,
     ],
     this.routePageBuilder,
-    this.showTopBar = true,
+    this.defaultShowTitle = false,
     this.title,
     this.showDownload = true,
     this.onBack,
@@ -297,7 +296,7 @@ class ChewieController extends ChangeNotifier {
   final ChewieRoutePageBuilder routePageBuilder;
 
   /// 是否显示头部
-  final bool showTopBar;
+  final bool defaultShowTitle;
 
   /// 视频标题
   final String title;

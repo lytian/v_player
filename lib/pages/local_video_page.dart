@@ -45,8 +45,9 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
         videoPlayerController: _controller,
         aspectRatio: MediaQuery.of(context).size.width / MediaQuery.of(context).size.height,
         title: widget.name,
+        looping: false,
         autoPlay: true,
-        showTopBar: false,
+        defaultShowTitle: true,
         allowFullScreen: false,
       );
       setState(() {
@@ -73,40 +74,11 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        children: <Widget> [
-          _initialized ? Chewie(
-            controller: _chewieController,
-          ) : Center(
-            child: CircularProgressIndicator(),
-          ),
-          Align(
-            alignment: Alignment.topLeft,
-            child: Container(
-              height: 40 + MediaQuery.of(context).padding.top,
-              width: double.infinity,
-              padding: EdgeInsets.only(left: 5, right: 5, top: MediaQuery.of(context).padding.top),
-              color: Colors.black.withOpacity(0.24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  BackButton(
-                    color: Colors.white,
-                  ),
-                  Expanded(
-                      flex: 1,
-                      child: Text(widget.name ?? '',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      )
-                  ),
-                ]
-              ),
-            ),
-          )
-        ],
-      )
+      body: _initialized ? Chewie(
+          controller: _chewieController,
+        ) : Center(
+          child: CircularProgressIndicator(),
+        )
     );
   }
 }

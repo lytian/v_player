@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:v_player/models/video_model.dart';
@@ -85,13 +86,14 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       title: name,
       showControlsOnInitialize: false,
       allowedScreenSleep: false,
-      onDownload: () {
-        context.read<DownloadTaskProvider>().createDownload(
+      onDownload: () async {
+        await context.read<DownloadTaskProvider>().createDownload(
           context: context,
           video: _videoModel,
           url: url,
           name: name
         );
+        BotToast.showText(text: '开始下载【$name】');
       }
     );
     setState(() {});

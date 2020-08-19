@@ -38,7 +38,7 @@ class DownloadTaskProvider with ChangeNotifier {
   }
   static successCallback(dynamic args) {
     final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
-    send.send({"status": 2, "url": args["url"]});
+    send.send({"status": 2, ...args});
     BotToast.showText(text: '下载成功', align: Alignment.center);
   }
   static errorCallback(dynamic args) {
@@ -69,6 +69,7 @@ class DownloadTaskProvider with ChangeNotifier {
     // 2. 绑定监听
     IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) async {
+      print(data);
       if (_currentTask == null) return;
 
       int status = data["status"];
@@ -85,17 +86,7 @@ class DownloadTaskProvider with ChangeNotifier {
         case 2:
           BotToast.showText(text:"【${_currentTask.name}】下载成功!!!");
           _currentTask.progress = 1;
-          dynamic pathRes = await M3u8Downloader.getSavePath(_currentTask.url);
-          File mp4File;
-          if (pathRes != null) {
-            mp4File = File(pathRes["mp4"]);
-          }
-          if (mp4File != null && mp4File.existsSync()) {
-            // 已经转成mp4
-            _db.updateDownloadByUrl(_currentTask.url, status: DownloadStatus.SUCCESS, savePath: pathRes["mp4"]);
-          } else {
-            _db.updateDownloadByUrl(_currentTask.url, status: DownloadStatus.SUCCESS, );
-          }
+          _db.updateDownloadByUrl(_currentTask.url, status: DownloadStatus.SUCCESS, savePath: data['filePath']);
           _downloadList = await _db.getDownloadList();
           _currentTask = null;
           // 下载下一个
@@ -147,7 +138,7 @@ class DownloadTaskProvider with ChangeNotifier {
   ///
   /// 创建新的下载
   ///
-  void createDownload({ VideoModel video, String url, String name, BuildContext context }) async {
+  Future<void> createDownload({ VideoModel video, String url, String name, BuildContext context }) async {
     // 1. 暂停正在下载
     DownloadModel runningDownload = _downloadList.firstWhere((e) => e.status == DownloadStatus.RUNNING, orElse: () => null);
     if (runningDownload != null) {

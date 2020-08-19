@@ -17,7 +17,7 @@ class SearchBarDelegate extends SearchDelegate<String> {
   Future<List<VideoModel>> _getSearchResult(str) async {
     if (str == null || str == '') return [];
 
-    return await HttpUtils.getVideoList(keyword: str);
+    return await HttpUtils.searchVideo(str);
   }
 
   Widget _buildText(String str) {
