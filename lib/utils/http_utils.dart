@@ -50,7 +50,6 @@ class HttpUtils {
         params["h"] = hour;
       }
       Response response = await Dio().get(currentSource.httpsApi, queryParameters: params);
-      print(response.request.uri);
       String xmlStr = response.data.toString();
       videos = XmlUtil.parseVideoList(xmlStr);
     } catch (e, s) {

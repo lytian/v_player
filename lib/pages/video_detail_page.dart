@@ -64,6 +64,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     final oldController = _controller;
     // 在下一帧处理完成后
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      oldController.removeListener(_videoListener);
       // 注销旧的controller;
       await oldController.dispose();
       _chewieController?.dispose();
@@ -79,6 +80,8 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   void _initController(String url, String name) async {
     // 设置资源
     _controller = VideoPlayerController.network(url);
+    _controller.addListener(_videoListener);
+
     _chewieController = ChewieController(
       videoPlayerController: _controller,
       aspectRatio: 16 / 9,
@@ -101,10 +104,25 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
 
   @override
   void dispose() {
+    _controller?.removeListener(_videoListener);
     _controller?.dispose();
     _chewieController?.dispose();
 
     super.dispose();
+  }
+
+  void _videoListener() {
+    // 多个视频时
+    if (_videoModel != null && _videoModel.anthologies.isNotEmpty && _videoModel.anthologies.length > 1) {
+      // 播放到最后，切换下一个视频
+      if (_controller != null && _controller.value.isPlaying && _controller.value.position.compareTo(_controller.value.duration) >= 0) {
+        int index = _videoModel.anthologies.indexWhere((e) => e.url == _url);
+        if (index > -1 && index != (_videoModel.anthologies.length - 1)) {
+          Anthology next = _videoModel.anthologies[index + 1];
+          _startPlay(next.url, _videoModel.name + '  ' + next.name);
+        }
+      }
+    }
   }
 
   @override
