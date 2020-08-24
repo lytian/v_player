@@ -13,7 +13,8 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="v_player"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name="com.vincent.vplayer.MainActivity"
             android:launchMode="singleTop"

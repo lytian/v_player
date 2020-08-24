@@ -106,7 +106,7 @@ class _CollectionPageState extends State<CollectionPage> {
           )
         ],
         emptyWidget: _recordList.length == 0
-            ? NoData(tip: '没有找到视频',)
+            ? NoData(tip: '没有收藏记录',)
             : null,
         header: ClassicalHeader(
             refreshText: '下拉刷新',

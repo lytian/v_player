@@ -346,7 +346,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
               height: 30,
               margin: EdgeInsets.only(right: 6),
               child: MaterialButton(
-                padding: EdgeInsets.all(0),
+                padding: EdgeInsets.zero,
                 child: Icon(_recordModel?.collected == 1 ? Icons.star : Icons.star_border,
                   color: _recordModel?.collected == 1 ? Theme.of(context).primaryColor : Colors.grey,
                   size: 24,
@@ -395,11 +395,11 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
             runSpacing: 8,
             children: video.anthologies.map((e) {
               return SizedBox(
-                height: 32,
+                height: 36,
                 child: RaisedButton(
                   elevation: 0,
                   highlightElevation: 4,
-                  padding: EdgeInsets.zero,
+                  padding: EdgeInsets.symmetric(horizontal: 8),
                   color: _url == e.url ? Theme.of(context).primaryColor : null,
                   child: Text(e.name, style: TextStyle(
                       color: _url == e.url ? Colors.white : null,
@@ -460,9 +460,9 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
           child: HtmlWidget(
             video.des ?? '',
             textStyle: TextStyle(
-                height: 1.8,
-                fontSize: 14,
-                color: Colors.black
+              height: 1.8,
+              fontSize: 14,
+              color: Colors.black
             ),
           )
       ),
