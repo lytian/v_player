@@ -182,7 +182,8 @@ class DBHelper {
     if (type != null) {
       whereStr.add('$_columnType = ?');
       whereArgs.add(type);
-    } else if (name != null) {
+    }
+    if (name != null) {
       whereStr.add('$_columnName like %?%');
       whereArgs.add(name);
     }
@@ -197,7 +198,7 @@ class DBHelper {
     } else {
       maps = await _db.query(_sourceTableName,
         columns: _allSourceColumn,
-        where: whereStr.join(", "),
+        where: whereStr.join(" AND "),
         whereArgs: whereArgs,
         orderBy: '$_columnId ASC',
       );
@@ -291,7 +292,7 @@ class DBHelper {
     return null;
   }
   /// 根据条件获取下载列表
-  Future<List<DownloadModel>> getDownloadList({int pageNum = 0, int pageSize = 100, DownloadStatus status, String url, String savePath, String name}) async {
+  Future<List<DownloadModel>> getDownloadList({int pageNum = 0, int pageSize = 20, DownloadStatus status, String url, String savePath, String name}) async {
     if (_db == null || !_db.isOpen) {
       await _instance.initDb();
     }
@@ -301,13 +302,16 @@ class DBHelper {
     if (url != null) {
       whereStr.add('$_columnUrl = ?');
       whereArgs.add(url);
-    } else if (savePath != null) {
+    }
+    if (savePath != null) {
       whereStr.add('$_columnSavePath = ?');
       whereArgs.add(savePath);
-    } else if (status != null) {
+    }
+    if (status != null) {
       whereStr.add('$_columnStatus = ?');
       whereArgs.add(status.index);
-    } else if (name != null) {
+    }
+    if (name != null) {
       whereStr.add('$_columnName like %?%');
       whereArgs.add(name);
     }
@@ -322,7 +326,7 @@ class DBHelper {
     } else {
       maps = await _db.query(_downloadTableName,
         columns: _allDownloadColumn,
-        where: whereStr.join(", "),
+        where: whereStr.join(" AND "),
         whereArgs: whereArgs,
         orderBy: '$_columnId DESC',
         limit: pageSize,
@@ -408,15 +412,35 @@ class DBHelper {
     return null;
   }
   /// 获取记录列表
-  Future<List<RecordModel>> getRecordList() async {
+  Future<List<RecordModel>> getRecordList({int pageNum = 0, int pageSize = 20, int collected }) async {
     if (_db == null || !_db.isOpen) {
       await _instance.initDb();
     }
 
-    List<Map> maps = await _db.query(_recordTableName,
-      columns: _allRecordColumn,
-      orderBy: '$_columnUpdateAt DESC',
-    );
+    List<String> whereStr = [];
+    List<dynamic> whereArgs = [];
+
+    if (collected != null) {
+      whereStr.add('$_columnCollected = ?');
+      whereArgs.add(collected);
+    }
+
+    List<Map> maps;
+    if (whereStr.isEmpty) {
+      maps = await _db.query(_recordTableName,
+          columns: _allRecordColumn,
+          orderBy: '$_columnUpdateAt DESC',
+          limit: pageSize,
+          offset: pageNum * pageSize);
+    } else {
+      maps = await _db.query(_recordTableName,
+          columns: _allRecordColumn,
+          where: whereStr.join(" AND "),
+          whereArgs: whereArgs,
+          orderBy: '$_columnUpdateAt DESC',
+          limit: pageSize,
+          offset: pageNum * pageSize);
+    }
     if (maps.length > 0) {
       return maps.map((json) => RecordModel.fromJson(json)).toList();
     }

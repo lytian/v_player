@@ -20,7 +20,7 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   // 滚动控制器
   TabController _navController;
   List<CategoryModel> _categoryList = [];
@@ -33,6 +33,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Auto
   SourceModel _currentSource;
   SourceProvider _sourceProvider;
   GlobalKey<AnimatedFloatingActionButtonState> _buttonKey = GlobalKey<AnimatedFloatingActionButtonState>();
+  bool _firstLoading = false;
 
   @override
   void initState() {
@@ -44,19 +45,18 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Auto
     // 资源变化监听
     _sourceProvider = context.read<SourceProvider>();
     _currentSource = _sourceProvider.currentSource;
-    _sourceProvider.addListener(() async {
+    _sourceProvider.addListener(() {
       if (!mounted) return;
 
       setState(() {
         _videoList = [];
         _currentSource = _sourceProvider.currentSource;
       });
-      await _getCategoryList();
-      _controller.callRefresh();
+
+      _initData();
     });
 
-    _getCategoryList();
-//    _getVideoList();
+    _initData();
 
     // 初始化下载器
     context.read<DownloadTaskProvider>().initialize(context);
@@ -95,9 +95,24 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Auto
     });
   }
 
+  void _initData() async {
+    setState(() {
+      _firstLoading = true;
+      _pageNum = 1;
+    });
+    try {
+      await _getCategoryList();
+      await _getVideoList();
+    } catch(e) {
+      print(e);
+    }
+    setState(() {
+      _firstLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Scaffold(
       appBar: AppBar(
         leading: Builder(builder: (BuildContext ctx) {
@@ -132,7 +147,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Auto
         ],
         bottom: _buildCategoryNav(),
       ),
-      body: _buildVideoList(),
+      body: !_firstLoading ? _buildVideoList() : Center(
+        child: CircularProgressIndicator()
+      ),
       floatingActionButton: AnimatedFloatingActionButton(
         key: _buttonKey,
         onPress: () {
@@ -204,11 +221,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Auto
       },
       child: EasyRefresh.custom(
           controller: _controller,
-          firstRefresh: true,
-          // 首次加载
-          firstRefreshWidget: Center(
-              child: CircularProgressIndicator()
-          ),
           slivers: <Widget>[
             _isLandscape
                 ? SliverList(
@@ -261,7 +273,4 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin, Auto
           })
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }
