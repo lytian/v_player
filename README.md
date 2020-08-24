@@ -26,9 +26,11 @@ Flutter 视频播放APP
 - [x] 删除下载时，删除视频文件
 - [ ] 手动清空缓存
 - [ ] 选择文件播放
-- [ ] 本地收藏记录
-- [ ] 本地播放记录
+- [x] 本地收藏记录
+- [x] 本地播放记录
 - [ ] 全屏时，屏幕自动旋转
+- [ ] 倍速选择播放
+- [ ] 应用内更新
 
 ## 关于视频源的导入导出
 
@@ -42,20 +44,6 @@ Flutter 视频播放APP
 4. 导入视频源，切换播放即可
 
 视频源查找直接百度【资源站】
-
-## github图片不显示
-修改hosts`C:\Windows\System32\drivers\etc\hosts`
-
-在文件末尾添加：
-```
-# GitHub Start 
-192.30.253.112    Build software better, together 
-192.30.253.119    gist.github.com
-151.101.184.133    assets-cdn.github.com
-151.101.184.133    raw.githubusercontent.com
-# GitHub End
-```
-保存后刷新页面即可。
 
 ## 捐献
 
