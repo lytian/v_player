@@ -17,10 +17,10 @@ import 'package:video_player/video_player.dart';
 import 'package:provider/provider.dart';
 
 class VideoDetailPage extends StatefulWidget {
-  final String httpApi;
+  final String api;
   final String videoId;
 
-  VideoDetailPage({this.httpApi, @required this.videoId});
+  VideoDetailPage({this.api, @required this.videoId});
 
   @override
   _VideoDetailPageState createState() => _VideoDetailPageState();
@@ -47,7 +47,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   }
 
   Future<VideoModel> _getVideoInfo() async {
-    String baseUrl = widget.httpApi;
+    String baseUrl = widget.api;
     if (baseUrl == null) {
       Map<String, dynamic> sourceJson = SpHelper.getObject(Constant.key_current_source);
       _currentSource = SourceModel.fromJson(sourceJson);
@@ -59,7 +59,6 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       if (video.anthologies.isNotEmpty) {
         // 先查看是否有播放记录，默认从上次开始播放
         RecordModel recordModel = await _db.getRecordByVid(baseUrl, widget.videoId);
-        print(recordModel?.toJson());
         setState(() {
           _recordModel = recordModel;
 
@@ -165,7 +164,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     super.dispose();
   }
 
-  void _videoListener() {
+  void _videoListener() async {
     if (_videoModel == null || _controller == null || !_controller.value.isPlaying) return;
     // 视频播放同一秒内不执行操作
     if (_controller.value.position.inSeconds == _cachePlayedSecond) return;
@@ -182,18 +181,18 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     // 播放记录
     if (_recordModel == null) {
       _recordModel = RecordModel(
-          api: _currentSource.httpApi,
-          vid: widget.videoId,
-          tid: _videoModel.tid,
-          type: _videoModel.type,
-          name: _videoModel.name,
-          pic: _videoModel.pic,
-          collected: 0,
-          anthologyName: anthologyName,
-          progress: 0,
-          playedTime: 0
+        api: _currentSource.httpApi,
+        vid: widget.videoId,
+        tid: _videoModel.tid,
+        type: _videoModel.type,
+        name: _videoModel.name,
+        pic: _videoModel.pic,
+        collected: 0,
+        anthologyName: anthologyName,
+        progress: 0,
+        playedTime: 0
       );
-      _db.insertRecord(_recordModel);
+      _recordModel.id = await _db.insertRecord(_recordModel);
     } else {
       _db.updateRecord(_recordModel.id,
           anthologyName: anthologyName,

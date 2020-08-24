@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
+import 'package:v_player/pages/collection_page.dart';
 import 'package:v_player/pages/download_page.dart';
 import 'package:v_player/pages/local_video_page.dart';
 import 'package:v_player/pages/main_page.dart';
+import 'package:v_player/pages/play_record_page.dart';
 import 'package:v_player/pages/setting_page.dart';
 import 'package:v_player/pages/source_manage_page.dart';
 import 'package:v_player/pages/video_detail_page.dart';
@@ -16,11 +18,11 @@ Handler mainHandle = Handler(
 Handler detailHandle = Handler(
     handlerFunc: (BuildContext context, Map<String, List<String>> params) {
   String videoId = params['id']?.first;
-  String httpApi = params['httpApi']?.first;
-  if (httpApi != null) {
-    httpApi = FluroConvertUtils.fluroCnParamsDecode(httpApi);
+  String api = params['api']?.first;
+  if (api != null) {
+    api = FluroConvertUtils.fluroCnParamsDecode(api);
   }
-  return VideoDetailPage(httpApi: httpApi, videoId: videoId);
+  return VideoDetailPage(api: api, videoId: videoId);
 });
 
 Handler sourceManageHandle = Handler(
@@ -43,4 +45,14 @@ Handler localVideoHandle = Handler(
       String url = params['url']?.first;
       String name = params['name']?.first;
       return LocalVideoPage(url: FluroConvertUtils.fluroCnParamsDecode(url), name: FluroConvertUtils.fluroCnParamsDecode(name),);
+    });
+
+Handler collectionHandle = Handler(
+    handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+      return CollectionPage();
+    });
+
+Handler playRecordHandle = Handler(
+    handlerFunc: (BuildContext context, Map<String, List<String>> params) {
+      return PlayRecordPage();
     });

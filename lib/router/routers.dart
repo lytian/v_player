@@ -10,6 +10,8 @@ class Routers{
   static String settingPage = '/setting';
   static String downloadPage = '/download';
   static String localVideoPage = '/localVideo';
+  static String collectionPage = '/collection';
+  static String playRecordPage = '/playRecord';
   
   static void configureRouters(Router router){
     router.notFoundHandler = new Handler(
@@ -24,5 +26,7 @@ class Routers{
     router.define(settingPage, handler: settingHandle);
     router.define(downloadPage, handler: downloadHandle);
     router.define(localVideoPage, handler: localVideoHandle);
+    router.define(collectionPage, handler: collectionHandle);
+    router.define(playRecordPage, handler: playRecordHandle);
   }
 }

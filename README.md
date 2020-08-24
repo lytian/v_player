@@ -7,7 +7,7 @@ Flutter 视频播放APP
 
 |首页|视频播放|资源管理|设置|
 |:---:|:---:|:---:|:---:|
-|![](./screenshot/首页.jpg)|![](./screenshot/视频详情页.jpg)|![](./screenshot/资源管理.jpg)|![](./screenshot/设置.jpg)|
+|![](https://img-blog.csdnimg.cn/20200810114822209.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3RseTU5OTE2Nw==,size_16,color_FFFFFF,t_70)|![](https://img-blog.csdnimg.cn/20200810114820221.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3RseTU5OTE2Nw==,size_16,color_FFFFFF,t_70)|![](https://img-blog.csdnimg.cn/20200810115530316.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3RseTU5OTE2Nw==,size_16,color_FFFFFF,t_70)|![](https://img-blog.csdnimg.cn/20200810114819402.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3RseTU5OTE2Nw==,size_16,color_FFFFFF,t_70)|
 
 ## 功能列表
 

@@ -412,7 +412,7 @@ class DBHelper {
     return null;
   }
   /// 获取记录列表
-  Future<List<RecordModel>> getRecordList({int pageNum = 0, int pageSize = 20, int collected }) async {
+  Future<List<RecordModel>> getRecordList({int pageNum = 0, int pageSize = 20, int collected, bool played = false }) async {
     if (_db == null || !_db.isOpen) {
       await _instance.initDb();
     }
@@ -423,6 +423,9 @@ class DBHelper {
     if (collected != null) {
       whereStr.add('$_columnCollected = ?');
       whereArgs.add(collected);
+    }
+    if (played) {
+      whereStr.add('$_columnProgress > 0');
     }
 
     List<Map> maps;

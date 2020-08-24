@@ -176,7 +176,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(3),
             child: FadeInImage.assetNetwork(
-              placeholder: 'assets/image/placeholder-p.jpg',
+              placeholder: 'assets/image/placeholder-l.jpg',
               image: model.pic,
               fit: BoxFit.cover,
               width: 100,

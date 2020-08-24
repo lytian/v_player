@@ -28,7 +28,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   bool _isLandscape = false; // 是否横屏
 
   EasyRefreshController _controller;
-  int _pageNum = 0;
+  int _pageNum = 1;
   List _videoList = [];
   SourceModel _currentSource;
   SourceProvider _sourceProvider;
@@ -79,13 +79,13 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   /// 获取视频列表
-  Future<void> _getVideoList() async {
+  Future<int> _getVideoList() async {
     int hour; // 最近几个小时更新
     if (_type == null || _type.isEmpty) {
       hour = 72;
     }
     List<VideoModel> videos = await HttpUtils.getVideoList(pageNum: _pageNum, type: _type, hour: hour);
-    if (!mounted) return;
+    if (!mounted) return 0;
     setState(() {
       if (this._pageNum <= 1) {
         _videoList = videos;
@@ -93,6 +93,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         _videoList += videos;
       }
     });
+    return videos.length;
   }
 
   void _initData() async {
@@ -176,6 +177,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
               tabs: _categoryList.map((e) => Tab(text: e.name,)).toList(),
               onTap: (index) {
                 this._type = _categoryList[index].id;
+                this._pageNum = 0;
                 this._controller.callRefresh();
               },
             ) : Container()
@@ -269,7 +271,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           },
           onLoad: () async {
             _pageNum++;
-            await _getVideoList();
+            int len = await _getVideoList();
+            if (len < 20) {
+              _controller.finishLoad(noMore: true);
+            }
           })
     );
   }
