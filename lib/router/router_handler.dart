@@ -16,7 +16,11 @@ Handler mainHandle = Handler(
 Handler detailHandle = Handler(
     handlerFunc: (BuildContext context, Map<String, List<String>> params) {
   String videoId = params['id']?.first;
-  return VideoDetailPage(videoId);
+  String httpApi = params['httpApi']?.first;
+  if (httpApi != null) {
+    httpApi = FluroConvertUtils.fluroCnParamsDecode(httpApi);
+  }
+  return VideoDetailPage(httpApi: httpApi, videoId: videoId);
 });
 
 Handler sourceManageHandle = Handler(

@@ -40,7 +40,7 @@ dependencies:
   path_provider: ^1.6.11
   permission_handler: ^5.0.1+1
   bot_toast: ^3.0.3
-  video_player: ^0.10.11+2
+  video_player: ^0.10.12
   flutter_widget_from_html_core: ^0.4.2
   connectivity: ^0.4.9
   screen: ^0.0.5

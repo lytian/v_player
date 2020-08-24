@@ -46,6 +46,8 @@ class _SplashPageState extends State<SplashPage> {
     } else {
       context.read<SourceProvider>().setCurrentSource(SourceModel.fromJson(source), context);
     }
+    // 删除30天以前的播放记录
+    _db.deleteAgoRecord(DateTime.now().subtract(Duration(days: 30)).millisecondsSinceEpoch);
 
     // 倒计时
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {

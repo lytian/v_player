@@ -20,7 +20,7 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
+class _MainPageState extends State<MainPage> with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   // 滚动控制器
   TabController _navController;
   List<CategoryModel> _categoryList = [];
@@ -82,7 +82,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
   Future<void> _getVideoList() async {
     int hour; // 最近几个小时更新
     if (_type == null || _type.isEmpty) {
-      hour = 24;
+      hour = 72;
     }
     List<VideoModel> videos = await HttpUtils.getVideoList(pageNum: _pageNum, type: _type, hour: hour);
     if (!mounted) return;
@@ -97,6 +97,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         leading: Builder(builder: (BuildContext ctx) {
@@ -260,4 +261,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin{
           })
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

@@ -115,7 +115,7 @@ class VideoItem extends StatelessWidget {
                           top: 0,
                           right: 0,
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                                 color: Colors.black.withAlpha(125),
                                 borderRadius: BorderRadius.only(
@@ -124,7 +124,7 @@ class VideoItem extends StatelessWidget {
                             ),
                             child: Text(video.note, overflow: TextOverflow.ellipsis, style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 12,
                             ),),
                           )
                       )

@@ -196,6 +196,7 @@ class ChewieController extends ChangeNotifier {
     this.aspectRatio,
     this.autoInitialize = false,
     this.autoPlay = false,
+    this.autoPlayPosition,
     this.startAt,
     this.looping = false,
     this.fullScreenByDefault = false,
@@ -237,6 +238,9 @@ class ChewieController extends ChangeNotifier {
 
   /// Play the video as soon as it's displayed
   final bool autoPlay;
+
+  /// 自动播放的起始位置
+  final Duration autoPlayPosition;
 
   /// Start video at a certain position
   final Duration startAt;
@@ -332,6 +336,9 @@ class ChewieController extends ChangeNotifier {
     if ((autoInitialize || autoPlay) &&
         !videoPlayerController.value.initialized) {
       await videoPlayerController.initialize();
+      if (autoPlayPosition != null) {
+        await videoPlayerController.seekTo(autoPlayPosition);
+      }
       notifyListeners();
     }
 

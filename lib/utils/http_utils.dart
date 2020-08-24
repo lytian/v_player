@@ -59,15 +59,13 @@ class HttpUtils {
     return videos;
   }
 
-  static Future<VideoModel> getVideoById(String id) async {
+  static Future<VideoModel> getVideoById(String baseUrl,  String id) async {
     VideoModel video;
     try {
-      Map<String, dynamic> sourceJson = SpHelper.getObject(Constant.key_current_source);
-      SourceModel currentSource = SourceModel.fromJson(sourceJson);
       Map<String, dynamic> params = {"ac": "videolist"};
       params["ids"] = id;
 
-      Response response = await Dio().get(currentSource.httpsApi, queryParameters: params);
+      Response response = await Dio().get(baseUrl, queryParameters: params);
       String xmlStr = response.data.toString();
       video = XmlUtil.parseVideo(xmlStr);
     } catch (e, s) {

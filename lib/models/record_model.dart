@@ -1,4 +1,4 @@
-class DownloadModel {
+class RecordModel {
   int id;
   String api; // 视频源API地址
   String vid; // 视频ID
@@ -6,14 +6,15 @@ class DownloadModel {
   String type; // 分类名称
   String name; // 标题名
   String pic; // 缩略图
-  String url; // 下载地址
 
-  String fileId; // 文件保存ID
-  DownloadStatus status; // 下载状态
-  double progress; // 下载进度  0~1
-  String savePath; // 保存路径
+  int collected; // 收藏状态  0-未收藏   1-已收藏
+  String anthologyName; // 播放选集名
+  double progress; // 播放进度  0~1
+  int playedTime; // 已播放时长，单位：毫秒
+  int createAt; // 记录时间   时间戳
+  int updateAt; // 更新时间   时间戳
 
-  DownloadModel({
+  RecordModel({
     this.id,
     this.api,
     this.vid,
@@ -21,14 +22,15 @@ class DownloadModel {
     this.type,
     this.name,
     this.pic,
-    this.url,
-    this.fileId,
-    this.status,
+    this.collected,
+    this.anthologyName,
     this.progress,
-    this.savePath
+    this.playedTime,
+    this.createAt,
+    this.updateAt
   });
 
-  DownloadModel.fromJson(Map<String, dynamic> json) {
+  RecordModel.fromJson(Map<String, dynamic> json) {
     this.id = json['id'];
     this.api = json['api'];
     this.vid = json['vid'];
@@ -36,13 +38,12 @@ class DownloadModel {
     this.type = json['type'];
     this.name = json['name'];
     this.pic = json['pic'];
-    this.url = json['url'];
-    this.fileId = json['fileId'];
-    if (json['status'] != null) {
-      this.status = DownloadStatus.values[json['status']];
-    }
+    this.collected = json['collected'];
+    this.anthologyName = json['anthologyName'];
     this.progress = json['progress'];
-    this.savePath = json['savePath'];
+    this.playedTime = json['playedTime'];
+    this.createAt = json['createAt'];
+    this.updateAt = json['updateAt'];
   }
 
   Map<String, dynamic> toJson() {
@@ -54,27 +55,12 @@ class DownloadModel {
     data['type'] = this.type;
     data['name'] = this.name;
     data['pic'] = this.pic;
-    data['url'] = this.url;
-    data['fileId'] = this.fileId;
-    if (this.status != null){
-      data['status'] = this.status.index;
-    }
+    data['collected'] = this.collected;
+    data['anthologyName'] = this.anthologyName;
     data['progress'] = this.progress;
-    data['savePath'] = this.savePath;
+    data['playedTime'] = this.playedTime;
+    data['createAt'] = this.createAt;
+    data['updateAt'] = this.updateAt;
     return data;
   }
-}
-
-/// 下载状态
-enum DownloadStatus {
-  // 不需要下载
-  NONE,
-  // 等待下载
-  WAITING,
-  // 正在下载
-  RUNNING,
-  // 下载成功
-  SUCCESS,
-  // 下载失败
-  FAIL
 }

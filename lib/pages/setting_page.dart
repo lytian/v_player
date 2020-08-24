@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
@@ -75,6 +76,13 @@ class _SettingPageState extends State<SettingPage> {
                 SpHelper.putBool(Constant.key_wifi_auto_download, v);
               }
             ),
+            onTap: () {
+              bool v = !_wifiAutoDownload;
+              setState(() {
+                _wifiAutoDownload = v;
+              });
+              SpHelper.putBool(Constant.key_wifi_auto_download, v);
+            },
           ),
           ListTile(
             leading: Icon(Icons.crop),
@@ -88,6 +96,21 @@ class _SettingPageState extends State<SettingPage> {
                   SpHelper.putBool(Constant.key_m3u8_to_mp4, v);
                 }
             ),
+            onTap: () {
+              bool v = !_toMP4;
+              setState(() {
+                _toMP4 = v;
+              });
+              SpHelper.putBool(Constant.key_m3u8_to_mp4, v);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.clear_all),
+            title: Text('清空缓存'),
+            trailing: Icon(Icons.chevron_right),
+            onTap: () {
+              BotToast.showText(text: '待开发');
+            },
           ),
         ],
       ),

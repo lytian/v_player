@@ -172,7 +172,6 @@ class DownloadTaskProvider with ChangeNotifier {
       fileId: fileId,
       status: DownloadStatus.RUNNING,
       progress: 0,
-      collected: 0,
       savePath: m3u8Path
     ));
 
