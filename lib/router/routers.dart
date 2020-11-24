@@ -13,7 +13,7 @@ class Routers{
   static String collectionPage = '/collection';
   static String playRecordPage = '/playRecord';
   
-  static void configureRouters(Router router){
+  static void configureRouters(FluroRouter router){
     router.notFoundHandler = new Handler(
       handlerFunc: (BuildContext context, Map<String,List<String>> params){
         print('错误路由');

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'dart:math' as math;
-
 class AnimatedFloatingActionButton extends StatefulWidget {
   AnimatedFloatingActionButton({Key key, this.onPress}) : super(key: key);
 

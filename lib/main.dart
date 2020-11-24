@@ -17,7 +17,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   MyApp() {
-    final router = Router();
+    final router = FluroRouter();
     Routers.configureRouters(router);
     Application.router = router;
   }

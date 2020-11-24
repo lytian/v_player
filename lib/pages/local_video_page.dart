@@ -33,12 +33,7 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
           DeviceOrientation.portraitUp,
           DeviceOrientation.portraitDown,
         ]);
-        AutoOrientation.portraitAutoMode();
       } else {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeRight,
-          DeviceOrientation.landscapeLeft,
-        ]);
         AutoOrientation.landscapeAutoMode();
       }
       _chewieController = ChewieController(
@@ -69,7 +64,6 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    AutoOrientation.portraitAutoMode();
   }
 
   @override

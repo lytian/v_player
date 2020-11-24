@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_orientation/auto_orientation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -162,10 +163,11 @@ class ChewieState extends State<Chewie> {
           DeviceOrientation.portraitDown,
         ]);
       } else {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight,
-        ]);
+        // SystemChrome.setPreferredOrientations([
+        //   DeviceOrientation.landscapeLeft,
+        //   DeviceOrientation.landscapeRight,
+        // ]);
+        AutoOrientation.landscapeAutoMode();
       }
     }
 
