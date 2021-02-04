@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:v_player/common/constant.dart';
@@ -12,7 +13,7 @@ import 'package:v_player/provider/download_task.dart';
 import 'package:v_player/utils/db_helper.dart';
 import 'package:v_player/utils/http_utils.dart';
 import 'package:v_player/utils/sp_helper.dart';
-import 'package:v_player/widgets/chewie/chewie_player.dart';
+import 'package:v_player/widgets/video_controls.dart';
 import 'package:video_player/video_player.dart';
 import 'package:provider/provider.dart';
 
@@ -46,7 +47,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     _futureFetch = _getVideoInfo();
   }
 
-  Future<VideoModel> _getVideoInfo() async {
+  Future<VideoModel>  _getVideoInfo() async {
     String baseUrl = widget.api;
     if (baseUrl == null) {
       Map<String, dynamic> sourceJson = SpHelper.getObject(Constant.key_current_source);
@@ -127,30 +128,31 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     _controller = VideoPlayerController.network(url, videoPlayerOptions: VideoPlayerOptions(
       mixWithOthers: true
     ));
-    _controller.addListener(_videoListener);
+    try {
+      // 为了自适应视频比例
+      await _controller.initialize();
+    } catch(err) {
+      print(err);
+    }
 
     Duration position;
     if (playPosition != null) {
       position = Duration(milliseconds: playPosition);
     }
+
     _chewieController = ChewieController(
       videoPlayerController: _controller,
-      aspectRatio: 16 / 9,
       autoPlay: true,
-      autoPlayPosition: position,
-      title: name,
-      showControlsOnInitialize: false,
+      startAt: position,
       allowedScreenSleep: false,
-      onDownload: () async {
-        await context.read<DownloadTaskProvider>().createDownload(
-          context: context,
-          video: _videoModel,
-          url: url,
-          name: name
-        );
-        BotToast.showText(text: '开始下载【$name】');
-      }
+      playbackSpeeds: [0.5, 1, 1.25, 1.5, 2],
+      customControls: VideoControls(
+        title: name,
+        actions: _buildDownload(url, name),
+      )
     );
+
+    _controller.addListener(_videoListener);
     setState(() {});
   }
 
@@ -219,14 +221,26 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          Container(
-            padding: EdgeInsets.only(top: MediaQueryData.fromWindow(window).padding.top),
-            color: Colors.black,
-            child: _controller == null
-                ? _buildLoading()
-                : Chewie(
-                  controller: _chewieController,
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Container(
+                padding: EdgeInsets.only(top: MediaQueryData.fromWindow(window).padding.top),
+                color: Colors.black,
+                child: _chewieController != null && _controller != null
+                  ? Chewie(
+                    controller: _chewieController,
+                  ) : Stack(
+                  children: <Widget>[
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: BackButton(color: Colors.white,),
+                    ),
+                    Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  ],
                 )
+            ),
           ),
           Expanded(
             flex: 1,
@@ -260,23 +274,6 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
           )
         ]
       )
-    );
-  }
-
-  Widget _buildLoading() {
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Stack(
-        children: <Widget>[
-          Align(
-            alignment: Alignment.topLeft,
-            child: BackButton(color: Colors.white,),
-          ),
-          Center(
-            child: CircularProgressIndicator(),
-          )
-        ],
-      ),
     );
   }
 
@@ -500,6 +497,33 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
           )),
         ]
       )
+    );
+  }
+
+  GestureDetector _buildDownload(String url, String name) {
+    return GestureDetector(
+      onTap: () async {
+        await context.read<DownloadTaskProvider>().createDownload(
+            context: context,
+            video: _videoModel,
+            url: url,
+            name: name
+        );
+        BotToast.showText(text: '开始下载【$name】');
+      },
+      child: Container(
+        height: 48,
+        color: Colors.transparent,
+        margin: EdgeInsets.only(left: 8.0, right: 4.0),
+        padding: EdgeInsets.only(
+          left: 12.0,
+          right: 12.0,
+        ),
+        child: Icon(
+          Icons.file_download,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 }

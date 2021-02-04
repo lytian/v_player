@@ -1,3 +1,4 @@
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
@@ -5,12 +6,16 @@ import 'package:video_player/video_player.dart';
 class MaterialVideoProgressBar extends StatefulWidget {
   MaterialVideoProgressBar(
     this.controller, {
+    ChewieProgressColors colors,
     this.onDragEnd,
     this.onDragStart,
     this.onDragUpdate,
-  });
+    Key key,
+  })  : colors = colors ?? ChewieProgressColors(),
+        super(key: key);
 
   final VideoPlayerController controller;
+  final ChewieProgressColors colors;
   final Function() onDragStart;
   final Function() onDragEnd;
   final Function() onDragUpdate;
@@ -24,6 +29,7 @@ class MaterialVideoProgressBar extends StatefulWidget {
 class _VideoProgressBarState extends State<MaterialVideoProgressBar> {
   _VideoProgressBarState() {
     listener = () {
+      if (!mounted) return;
       setState(() {});
     };
   }
@@ -56,18 +62,6 @@ class _VideoProgressBarState extends State<MaterialVideoProgressBar> {
     }
 
     return GestureDetector(
-      child: Center(
-        child: Container(
-          height: MediaQuery.of(context).size.height / 2,
-          width: MediaQuery.of(context).size.width,
-          color: Colors.transparent,
-          child: CustomPaint(
-            painter: _ProgressBarPainter(
-              controller.value,
-            ),
-          ),
-        ),
-      ),
       onHorizontalDragStart: (DragStartDetails details) {
         if (!controller.value.initialized) {
           return;
@@ -106,14 +100,28 @@ class _VideoProgressBarState extends State<MaterialVideoProgressBar> {
         }
         seekToRelativePosition(details.globalPosition);
       },
+      child: Center(
+        child: Container(
+          height: MediaQuery.of(context).size.height / 2,
+          width: MediaQuery.of(context).size.width,
+          color: Colors.transparent,
+          child: CustomPaint(
+            painter: _ProgressBarPainter(
+              controller.value,
+              widget.colors,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
 
 class _ProgressBarPainter extends CustomPainter {
-  _ProgressBarPainter(this.value);
+  _ProgressBarPainter(this.value, this.colors);
 
   VideoPlayerValue value;
+  ChewieProgressColors colors;
 
   @override
   bool shouldRepaint(CustomPainter painter) {
@@ -122,7 +130,7 @@ class _ProgressBarPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final height = 2.0;
+    const height = 2.0;
 
     canvas.drawRRect(
       RRect.fromRectAndRadius(
@@ -130,9 +138,9 @@ class _ProgressBarPainter extends CustomPainter {
           Offset(0.0, size.height / 2),
           Offset(size.width, size.height / 2 + height),
         ),
-        Radius.circular(4.0),
+        const Radius.circular(4.0),
       ),
-      Paint()..color = Color.fromRGBO(200, 200, 200, 0.5),
+      colors.backgroundPaint,
     );
     if (!value.initialized) {
       return;
@@ -141,7 +149,7 @@ class _ProgressBarPainter extends CustomPainter {
         value.position.inMilliseconds / value.duration.inMilliseconds;
     final double playedPart =
         playedPartPercent > 1 ? size.width : playedPartPercent * size.width;
-    for (DurationRange range in value.buffered) {
+    for (final DurationRange range in value.buffered) {
       final double start = range.startFraction(value.duration) * size.width;
       final double end = range.endFraction(value.duration) * size.width;
       canvas.drawRRect(
@@ -150,9 +158,9 @@ class _ProgressBarPainter extends CustomPainter {
             Offset(start, size.height / 2),
             Offset(end, size.height / 2 + height),
           ),
-          Radius.circular(4.0),
+          const Radius.circular(4.0),
         ),
-        Paint()..color = Color.fromRGBO(30, 30, 200, 0.2),
+        colors.bufferedPaint,
       );
     }
     canvas.drawRRect(
@@ -161,14 +169,14 @@ class _ProgressBarPainter extends CustomPainter {
           Offset(0.0, size.height / 2),
           Offset(playedPart, size.height / 2 + height),
         ),
-        Radius.circular(4.0),
+        const Radius.circular(4.0),
       ),
-      Paint()..color = Color.fromRGBO(255, 0, 0, 0.7),
+      colors.playedPaint,
     );
     canvas.drawCircle(
       Offset(playedPart, size.height / 2 + height / 2),
       height * 3,
-      Paint()..color = Color.fromRGBO(200, 200, 200, 1.0),
+      colors.handlePaint,
     );
   }
 }

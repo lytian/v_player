@@ -1,7 +1,8 @@
 import 'package:auto_orientation/auto_orientation.dart';
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:v_player/widgets/chewie/chewie_player.dart';
+import 'package:v_player/widgets/video_controls.dart';
 import 'package:video_player/video_player.dart';
 
 class LocalVideoPage extends StatefulWidget {
@@ -18,110 +19,62 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
 
   VideoPlayerController _controller;
   ChewieController _chewieController;
-
-  bool _initialized = false;
+  double aspectRatio = 1;
 
   @override
   void initState() {
     super.initState();
 
+    _initAsync();
+  }
+
+  void _initAsync() async {
     _controller = VideoPlayerController.network(widget.url);
-    _controller.initialize().then((value) {
+    try {
+      await _controller.initialize();
       // 根据长宽比，判断横屏还是竖屏
-      if (_controller.value.aspectRatio < 1) {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
+      if (_controller.value.aspectRatio <= 1) {
+        AutoOrientation.portraitAutoMode();
       } else {
         AutoOrientation.landscapeAutoMode();
       }
-      _chewieController = ChewieController(
+    } catch(err) {
+      print(err);
+    }
+    _chewieController = ChewieController(
         videoPlayerController: _controller,
-        aspectRatio: MediaQuery.of(context).size.width / MediaQuery.of(context).size.height,
-        title: widget.name,
-        looping: false,
         autoPlay: true,
-        defaultShowTitle: true,
+        allowedScreenSleep: false,
         allowFullScreen: false,
-        showDownload: false,
-        allowedScreenSleep: false
-      );
-      setState(() {
-        _initialized = true;
-      });
-    });
+        fullScreenByDefault: false,
+        playbackSpeeds: [0.5, 1, 1.25, 1.5, 2],
+        customControls: VideoControls(
+          title: widget.name,
+          defaultShowTitle: true,
+        )
+    );
+    setState(() {});
   }
 
   @override
   void dispose() {
-    super.dispose();
-
     _controller.dispose();
     _chewieController?.dispose();
 
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: _initialized ? Chewie(
-          controller: _chewieController,
-        ) : Center(
-          child: CircularProgressIndicator(),
-        )
-    );
-  }
-}
-
-class VideoScaffold extends StatefulWidget {
-  const VideoScaffold({Key key, this.child, this.aspectRatio}) : super(key: key);
-
-  final Widget child;
-  final double aspectRatio;
-
-  @override
-  State<StatefulWidget> createState() => _VideoScaffoldState();
-}
-
-class _VideoScaffoldState extends State<VideoScaffold> {
-  @override
-  void initState() {
-    // 根据长宽比，判断横屏还是竖屏
-    if (widget.aspectRatio < 1) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-      AutoOrientation.portraitAutoMode();
-    } else {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ]);
-      AutoOrientation.landscapeAutoMode();
-    }
-    super.initState();
-  }
-
-  @override
-  dispose() {
-    // 销毁时，返回全屏
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    // 销毁时，返回竖屏
     AutoOrientation.portraitAutoMode();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return widget.child;
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: _chewieController != null ? Chewie(
+          controller: _chewieController,
+        ) : Center(
+          child: CircularProgressIndicator(),
+        )
+    );
   }
 }
