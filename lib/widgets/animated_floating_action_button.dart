@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AnimatedFloatingActionButton extends StatefulWidget {
-  AnimatedFloatingActionButton({Key key, this.onPress}) : super(key: key);
+  AnimatedFloatingActionButton({Key? key, required this.onPress}) : super(key: key);
 
   final Function onPress;
 
@@ -11,10 +11,10 @@ class AnimatedFloatingActionButton extends StatefulWidget {
 
 class AnimatedFloatingActionButtonState extends State<AnimatedFloatingActionButton> with SingleTickerProviderStateMixin {
 
-  AnimationController _controller;
-  Animation<Offset> _translateAnimation;
-  Animation<double> _rotateAnimation;
-  Animation<double> _scaleAnimation;
+  late AnimationController _controller;
+  late Animation<Offset> _translateAnimation;
+  late Animation<double> _rotateAnimation;
+  late Animation<double> _scaleAnimation;
 
   bool isShow = true;
 

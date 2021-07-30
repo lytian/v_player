@@ -12,7 +12,7 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage> {
   
-  String _colorKey;
+  String? _colorKey;
   bool _wifiAutoDownload = true;
   bool _toMP4 = true;
 
@@ -21,8 +21,8 @@ class _SettingPageState extends State<SettingPage> {
     super.initState();
 
     _colorKey = SpHelper.getString(Constant.key_theme_color, defValue: 'blue');
-    _wifiAutoDownload = SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true);
-    _toMP4 = SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: true);
+    _wifiAutoDownload = SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true)!;
+    _toMP4 = SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: true)!;
   }
 
   @override
@@ -44,7 +44,7 @@ class _SettingPageState extends State<SettingPage> {
                     spacing: 8,
                     runSpacing: 8,
                     children: themeColorMap.keys.map((key) {
-                      Color value = themeColorMap[key];
+                      Color? value = themeColorMap[key];
                       return InkWell(
                         onTap: () {
                           setState(() {

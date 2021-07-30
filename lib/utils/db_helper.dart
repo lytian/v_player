@@ -6,9 +6,9 @@ import 'package:v_player/models/record_model.dart';
 import 'package:v_player/models/source_model.dart';
 
 class DBHelper {
-  static DBHelper _instance;
-  factory DBHelper() =>_getInstance();
-  Database _db;
+  static DBHelper? _instance;
+  factory DBHelper() => _getInstance();
+  Database? _db;
 
   /* 公用列 */
   final String _columnId = 'id';
@@ -19,7 +19,6 @@ class DBHelper {
   /* 视频资源表 */
   final String _sourceTableName = 'table_source';
   final String _columnHttpApi = 'httpApi';
-  final String _columnHttpsApi = 'httpsApi';
   final String _columnCreateAt = 'createAt';
   final String _columnUpdateAt = 'updateAt';
 
@@ -40,23 +39,23 @@ class DBHelper {
   final String _columnAnthologyName = 'anthologyName';
   final String _columnPlayedTime = 'playedTime';
 
-  List<String> _allSourceColumn;
-  List<String> _allDownloadColumn;
-  List<String> _allRecordColumn;
+  List<String> _allSourceColumn = [];
+  List<String> _allDownloadColumn = [];
+  List<String> _allRecordColumn = [];
   
   DBHelper._();
 
   static DBHelper _getInstance() {
     if (_instance == null) {
       _instance = DBHelper._();
-      _instance.initDb();
+      _instance!.initDb();
     }
-    return _instance;
+    return _instance!;
   }
 
   initDb() async {
     _allDownloadColumn = [_columnId, _columnApi, _columnVid, _columnTid, _columnType, _columnName, _columnPic, _columnUrl, _columnFileId, _columnStatus, _columnProgress, _columnSavePath];
-    _allSourceColumn = [_columnId, _columnName, _columnUrl, _columnType, _columnHttpApi, _columnHttpsApi];
+    _allSourceColumn = [_columnId, _columnName, _columnUrl, _columnType, _columnHttpApi];
     _allRecordColumn = [_columnId, _columnApi, _columnVid, _columnTid, _columnType, _columnName, _columnPic, _columnCollected, _columnProgress, _columnAnthologyName, _columnPlayedTime, _columnCreateAt, _columnUpdateAt];
 
     String databasesPath  = await getDatabasesPath();
@@ -69,8 +68,7 @@ class DBHelper {
           $_columnType VARCHAR (64),
           $_columnName TEXT not null,
           $_columnUrl TEXT not null,
-          $_columnHttpApi TEXT not null,
-          $_columnHttpsApi TEXT
+          $_columnHttpApi TEXT not null
         )
       ''');
       // 创建下载表
@@ -117,20 +115,19 @@ class DBHelper {
    */
   /// 插入资源
   Future<int> insertSource(SourceModel model) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    if (model == null) return 0;
     // 去掉自带的ID，让数据库自增
     model.id = null;
-    return await _db.insert(_sourceTableName, model.toJson());
+    return await _db!.insert(_sourceTableName, model.toJson());
   }
   /// 批量 插入资源
   Future<int> insertBatchSource(List<SourceModel> list) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    final batch = _db.batch();
+    final batch = _db!.batch();
     list.forEach((model) {
       // 去掉自带的ID，让数据库自增
       model.id = null;
@@ -141,40 +138,40 @@ class DBHelper {
   }
   /// 根据ID删除资源
   Future<int> deleteSourceById(int id) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    return await _db.delete(_sourceTableName, where: '$_columnId = ?', whereArgs: [id]);
+    return await _db!.delete(_sourceTableName, where: '$_columnId = ?', whereArgs: [id]);
   }
   /// 根据ID修改资源
   Future<int> updateSourceById(SourceModel model) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    if (model == null || model.id == null) return 0;
+    if (model.id == null) return 0;
 
-    return await _db.update(_sourceTableName, model.toJson(),
+    return await _db!.update(_sourceTableName, model.toJson(),
         where: '$_columnId = ?', whereArgs: [model.id]);
   }
   /// 根据ID获取资源
-  Future<SourceModel> getSourceById(int id) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+  Future<SourceModel?> getSourceById(int id) async {
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    List<Map> maps = await _db.query(_sourceTableName,
+    List<Map<String, Object?>> maps = await _db!.query(_sourceTableName,
         columns: _allSourceColumn,
         where: '$_columnId = ?',
         whereArgs: [id]);
 
-    if (maps.length > 0) {
+    if (maps.isNotEmpty) {
       return SourceModel.fromJson(maps.first);
     }
     return null;
   }
   /// 根据条件获取资源列表
-  Future<List<SourceModel>> getSourceList({ String type, String name }) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+  Future<List<SourceModel>> getSourceList({ String? type, String? name }) async {
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
     List<String> whereStr = [];
     List<dynamic> whereArgs = [];
@@ -189,14 +186,14 @@ class DBHelper {
     }
     whereArgs.add('status != ${DownloadStatus.NONE.index}');
 
-    List<Map> maps;
+    List<Map<String, Object?>> maps;
     if (whereStr.isEmpty) {
-      maps = await _db.query(_sourceTableName,
+      maps = await _db!.query(_sourceTableName,
         columns: _allSourceColumn,
         orderBy: '$_columnId ASC',
       );
     } else {
-      maps = await _db.query(_sourceTableName,
+      maps = await _db!.query(_sourceTableName,
         columns: _allSourceColumn,
         where: whereStr.join(" AND "),
         whereArgs: whereArgs,
@@ -214,39 +211,38 @@ class DBHelper {
    */
   /// 插入下载
   Future<int> insertDownload(DownloadModel model) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    return await _db.insert(_downloadTableName, model.toJson());
+    return await _db!.insert(_downloadTableName, model.toJson());
   }
   /// 根据ID删除下载
   Future<int> deleteDownloadById(int id) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    return await _db.delete(_downloadTableName, where: '$_columnId = ?', whereArgs: [id]);
+    return await _db!.delete(_downloadTableName, where: '$_columnId = ?', whereArgs: [id]);
   }
   /// 根据ID集删除下载
   Future<int> deleteDownloadByIds(List<int> ids) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    return await _db.delete(_downloadTableName, where: '$_columnId in (${ids.join(',')})', whereArgs: []);
+    return await _db!.delete(_downloadTableName, where: '$_columnId in (${ids.join(',')})', whereArgs: []);
   }
   /// 根据ID修改下载
   Future<int> updateDownloadById(DownloadModel model) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    if (model == null || model.id == null) return 0;
 
-    return await _db.update(_downloadTableName, model.toJson(),
+    return await _db!.update(_downloadTableName, model.toJson(),
         where: '$_columnId = ?', whereArgs: [model.id]);
   }
   /// 根据URL修改下载进度
-  Future<int> updateDownloadByUrl(String url, { double progress, DownloadStatus status, String savePath }) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+  Future<int> updateDownloadByUrl(String url, { double? progress, DownloadStatus? status, String? savePath }) async {
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
     Map<String, dynamic> maps = {};
     if (progress != null) {
@@ -259,14 +255,14 @@ class DBHelper {
       maps[_columnSavePath] = savePath;
     }
 
-    return await _db.update(_downloadTableName, maps, where: '$_columnUrl = ?', whereArgs: [url]);
+    return await _db!.update(_downloadTableName, maps, where: '$_columnUrl = ?', whereArgs: [url]);
   }
   /// 根据ID获取下载
-  Future<DownloadModel> getDownloadById(int id) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+  Future<DownloadModel?> getDownloadById(int id) async {
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    List<Map> maps = await _db.query(_downloadTableName,
+    List<Map<String, Object?>> maps = await _db!.query(_downloadTableName,
         columns: _allDownloadColumn,
         where: '$_columnId = ?',
         whereArgs: [id]);
@@ -277,11 +273,11 @@ class DBHelper {
     return null;
   }
   /// 根据视频URl获取下载
-  Future<DownloadModel> getDownloadByUrl(String url) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+  Future<DownloadModel?> getDownloadByUrl(String url) async {
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    List<Map> maps = await _db.query(_downloadTableName,
+    List<Map<String, Object?>> maps = await _db!.query(_downloadTableName,
         columns: _allDownloadColumn,
         where: '$_columnUrl = ?',
         whereArgs: [url]);
@@ -292,9 +288,16 @@ class DBHelper {
     return null;
   }
   /// 根据条件获取下载列表
-  Future<List<DownloadModel>> getDownloadList({int pageNum = 0, int pageSize = 20, DownloadStatus status, String url, String savePath, String name}) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+  Future<List<DownloadModel>> getDownloadList({
+    int pageNum = 0,
+    int pageSize = 20,
+    DownloadStatus? status,
+    String? url,
+    String? savePath,
+    String? name
+  }) async {
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
     List<String> whereStr = [];
     List<dynamic> whereArgs = [];
@@ -316,15 +319,15 @@ class DBHelper {
       whereArgs.add(name);
     }
 
-    List<Map> maps;
+    List<Map<String, Object?>> maps;
     if (whereStr.isEmpty) {
-      maps = await _db.query(_downloadTableName,
+      maps = await _db!.query(_downloadTableName,
         columns: _allDownloadColumn,
         orderBy: '$_columnId DESC',
         limit: pageSize,
         offset: pageNum * pageSize);
     } else {
-      maps = await _db.query(_downloadTableName,
+      maps = await _db!.query(_downloadTableName,
         columns: _allDownloadColumn,
         where: whereStr.join(" AND "),
         whereArgs: whereArgs,
@@ -343,34 +346,38 @@ class DBHelper {
    */
   /// 插入记录
   Future<int> insertRecord(RecordModel model) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    if (model == null) return 0;
     // 去掉自带的ID，让数据库自增
     model.id = null;
     model.createAt = DateTime.now().millisecondsSinceEpoch;
     model.updateAt = DateTime.now().millisecondsSinceEpoch;
-    return await _db.insert(_recordTableName, model.toJson());
+    return await _db!.insert(_recordTableName, model.toJson());
   }
   /// 根据ID删除记录
   Future<int> deleteRecordById(int id) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    return await _db.delete(_recordTableName, where: '$_columnId = ?', whereArgs: [id]);
+    return await _db!.delete(_recordTableName, where: '$_columnId = ?', whereArgs: [id]);
   }
   /// 根据指定时间以前的没有被收藏的记录
   Future<int> deleteAgoRecord(int agoTime) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    return await _db.delete(_recordTableName, where: '$_columnCollected = 0 AND $_columnUpdateAt < ?', whereArgs: [agoTime]);
+    return await _db!.delete(_recordTableName, where: '$_columnCollected = 0 AND $_columnUpdateAt < ?', whereArgs: [agoTime]);
   }
   /// 根据ID修改记录
-  Future<int> updateRecord(int id, {int collected, String anthologyName, double progress, int playedTime}) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+  Future<int> updateRecord(int id, {
+    int? collected,
+    String? anthologyName,
+    double? progress,
+    int? playedTime
+  }) async {
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
 
     Map<String, dynamic> maps = {
@@ -390,18 +397,15 @@ class DBHelper {
       maps[_columnPlayedTime] = playedTime;
     }
 
-    return await _db.update(_recordTableName, maps,
+    return await _db!.update(_recordTableName, maps,
         where: '$_columnId = ?', whereArgs: [id]);
   }
   /// 根据api和视频ID获取记录
-  Future<RecordModel> getRecordByVid(String httpApi, String vid) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+  Future<RecordModel?> getRecordByVid(String httpApi, String vid) async {
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
-    if (httpApi == null || vid == null) {
-      return null;
-    }
-    List<Map> maps = await _db.query(_recordTableName,
+    List<Map<String, Object?>> maps = await _db!.query(_recordTableName,
         columns: _allRecordColumn,
         where: '$_columnApi = ? AND $_columnVid = ?',
         whereArgs: [httpApi, vid]);
@@ -412,9 +416,9 @@ class DBHelper {
     return null;
   }
   /// 获取记录列表
-  Future<List<RecordModel>> getRecordList({int pageNum = 0, int pageSize = 20, int collected, bool played = false }) async {
-    if (_db == null || !_db.isOpen) {
-      await _instance.initDb();
+  Future<List<RecordModel>> getRecordList({int pageNum = 0, int pageSize = 20, int? collected, bool played = false }) async {
+    if (_db == null || !_db!.isOpen) {
+      await _instance!.initDb();
     }
 
     List<String> whereStr = [];
@@ -428,15 +432,15 @@ class DBHelper {
       whereStr.add('$_columnProgress > 0');
     }
 
-    List<Map> maps;
+    List<Map<String, Object?>> maps;
     if (whereStr.isEmpty) {
-      maps = await _db.query(_recordTableName,
+      maps = await _db!.query(_recordTableName,
           columns: _allRecordColumn,
           orderBy: '$_columnUpdateAt DESC',
           limit: pageSize,
           offset: pageNum * pageSize);
     } else {
-      maps = await _db.query(_recordTableName,
+      maps = await _db!.query(_recordTableName,
           columns: _allRecordColumn,
           where: whereStr.join(" AND "),
           whereArgs: whereArgs,
@@ -452,8 +456,8 @@ class DBHelper {
 
   /// 关闭数据库
   Future close() async {
-    if (_db != null && _db.isOpen) {
-      await _db.close();
+    if (_db != null && _db!.isOpen) {
+      await _db!.close();
     }
   }
 }

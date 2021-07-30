@@ -5,7 +5,6 @@ import 'package:v_player/models/record_model.dart';
 import 'package:v_player/router/application.dart';
 import 'package:v_player/router/routers.dart';
 import 'package:v_player/utils/db_helper.dart';
-import 'package:v_player/utils/fluro_convert_util.dart';
 import 'package:v_player/widgets/no_data.dart';
 
 class PlayRecordPage extends StatefulWidget {
@@ -21,7 +20,7 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
   List<RecordModel> _recordList = [];
 
   Future<int> _getRecordList() async {
-    List list = await _db.getRecordList(pageNum: _pageNum, pageSize: 20, played: true);
+    List<RecordModel> list = await _db.getRecordList(pageNum: _pageNum, pageSize: 20, played: true);
     if (!mounted) return 0;
     setState(() {
       if (_pageNum <= 0) {
@@ -57,12 +56,14 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
                 RecordModel model = _recordList[index];
                 String recordStr = '';
                 if (model.anthologyName != null) {
-                  recordStr += model.anthologyName;
+                  recordStr += model.anthologyName!;
                 }
-                if (model.progress > 0.99) {
-                  recordStr += '  ' + '播放完毕';
-                } else {
-                  recordStr += '    ' + (model.progress * 100).toStringAsFixed(2) + '%';
+                if (model.progress != null) {
+                  if (model.progress! > 0.99) {
+                    recordStr += '  ' + '播放完毕';
+                  } else {
+                    recordStr += '    ' + (model.progress! * 100).toStringAsFixed(2) + '%';
+                  }
                 }
                 return ListTile(
                   contentPadding: EdgeInsets.symmetric(horizontal: 12),
@@ -70,13 +71,13 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
                     borderRadius: BorderRadius.circular(3),
                     child: FadeInImage.assetNetwork(
                       placeholder: 'assets/image/placeholder-l.jpg',
-                      image: model.pic,
+                      image: model.pic ?? '',
                       fit: BoxFit.cover,
                       width: 100,
                       height: 75,
                     ),
                   ),
-                  title: Text(model.name, style: TextStyle(color: Colors.black, fontSize: 14), overflow: TextOverflow.ellipsis, maxLines: 2,),
+                  title: Text(model.name ?? '', style: TextStyle(color: Colors.black, fontSize: 14), overflow: TextOverflow.ellipsis, maxLines: 2,),
                   subtitle: Text(recordStr, style: TextStyle(fontSize: 12)),
                   isThreeLine: false,
                   trailing: SizedBox(
@@ -88,7 +89,7 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
                       onPressed: () => _deleteRecord(model),
                     ),
                   ),
-                  onTap: ()  => _playVideo(model.api, model.vid),
+                  onTap: ()  => _playVideo(model.api!, model.vid!),
                 );
               },
                 childCount: _recordList.length,
@@ -127,11 +128,12 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
   }
 
   void _playVideo(String api, String vid) {
-    Application.router.navigateTo(context, Routers.detailPage + '?api=${FluroConvertUtils.fluroCnParamsEncode(api)}&id=$vid');
+    Application.router!.navigateTo(context, Routers.detailPage + '?id=$vid');
   }
 
   void _deleteRecord(RecordModel model) async {
-    int i = await _db.deleteRecordById(model.id);
+    if (model.id == null) return;
+    int i = await _db.deleteRecordById(model.id!);
     if (i > 0) {
       _recordList.remove(model);
       setState(() {});

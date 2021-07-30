@@ -1,16 +1,8 @@
 [
   {
-    "name": "ok资源网",
-    "url": "http://www.jisudhw.com",
-    "httpApi": "http://cj.okzy.tv/inc/ldg_seackm3u8.php",
-    "httpsApi": "http://cj.okzy.tv/inc/ldg_seackm3u8s.php",
-    "type": "影视"
-  },
-  {
-    "name": "永久资源站",
-    "url": "http://www.yongjiuzy1.com/",
-    "httpApi": "http://cj.yongjiuzyw.com/inc/yjm3u8.php",
-    "httpsApi": "http://cj.yongjiuzyw.com/inc/s_yjm3u8.php",
-    "type": "综合性资源"
+    "name": "百度云资源",
+    "url": "http://hct.dbyunzy.com/",
+    "httpApi": "https://cj.apibdzy.com/inc/api.php",
+    "type": "影视资源"
   }
 ]

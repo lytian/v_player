@@ -1,21 +1,21 @@
 /// 视频实体类
 class VideoModel {
-  String id;
-  String tid; // 分类ID
-  String type; // 分类名称
-  String name; // 标题名
-  String pic; // 缩略图
+  String? id;
+  String? tid; // 分类ID
+  String? type; // 分类名称
+  String? name; // 标题名
+  String? pic; // 缩略图
 
-  String lang; // 语言
-  String area; // 地区
-  String year; // 年份
-  String last;  // 上传时间
-  String state;
-  String note; // 标签
-  String actor; // 演员
-  String director; // 导演
-  String des; // 描述
-  List<Anthology> anthologies; // 选集列表
+  String? lang; // 语言
+  String? area; // 地区
+  String? year; // 年份
+  String? last;  // 上传时间
+  String? state;
+  String? note; // 标签
+  String? actor; // 演员
+  String? director; // 导演
+  String? des; // 描述
+  List<Anthology>? anthologies; // 选集列表
 
   VideoModel({
     this.id,
@@ -50,9 +50,9 @@ class VideoModel {
     this.director = json['director'];
     this.des = json['des'];
     if (json['anthologies'] != null) {
-      this.anthologies = List<Anthology>();
+      this.anthologies = [];
       json['anthologies'].forEach((e) {
-        this.anthologies.add(Anthology.fromJSON(e));
+        this.anthologies!.add(Anthology.fromJSON(e));
       });
     }
   }
@@ -74,7 +74,7 @@ class VideoModel {
     data['director'] = this.director;
     data['des'] = this.des;
     if (this.anthologies != null) {
-      data['anthologies'] = this.anthologies.map((v) => v.toJson()).toList();
+      data['anthologies'] = this.anthologies!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -82,10 +82,10 @@ class VideoModel {
 
 /// 选集
 class Anthology {
-  String name;
-  String url;
+  String? name;
+  String? url;
 
-  Anthology({this.name, this.url});
+  Anthology({required this.name, required this.url});
 
   Anthology.fromJSON(Map<String, dynamic> json) {
     name = json['name'];

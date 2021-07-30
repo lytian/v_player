@@ -22,16 +22,16 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   // 滚动控制器
-  TabController _navController;
+  late TabController _navController;
   List<CategoryModel> _categoryList = [];
-  String _type = '';
+  String? _type = '';
   bool _isLandscape = false; // 是否横屏
 
-  EasyRefreshController _controller;
+  late EasyRefreshController _controller;
   int _pageNum = 1;
   List _videoList = [];
-  SourceModel _currentSource;
-  SourceProvider _sourceProvider;
+  SourceModel? _currentSource;
+  late SourceProvider _sourceProvider;
   GlobalKey<AnimatedFloatingActionButtonState> _buttonKey = GlobalKey<AnimatedFloatingActionButtonState>();
   bool _firstLoading = false;
 
@@ -66,7 +66,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   Future<void> _getCategoryList() async {
     if (!mounted) return;
     // 初始化一些数据
-    _navController?.dispose();
+    _navController.dispose();
     setState(() {
       _type = '';
       _categoryList = [];
@@ -80,8 +80,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   /// 获取视频列表
   Future<int> _getVideoList() async {
-    int hour; // 最近几个小时更新
-    if (_type == null || _type.isEmpty) {
+    int? hour; // 最近几个小时更新
+    if (_type == null || _type!.isEmpty) {
       hour = 72;
     }
     List<VideoModel> videos = await HttpUtils.getVideoList(pageNum: _pageNum, type: _type, hour: hour);
@@ -135,14 +135,14 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         }),
         centerTitle: true,
         title: Text(_currentSource != null
-            ? _currentSource.name
+            ? (_currentSource!.name ?? '')
             : '没找到视频源'),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
               if (_currentSource == null) return;
-              showSearch(context: context, delegate: SearchBarDelegate(hintText: '搜索【${_currentSource.name}】的资源'));
+              showSearch(context: context, delegate: SearchBarDelegate(hintText: '搜索【${_currentSource!.name}】的资源'));
             },
           )
         ],
@@ -154,7 +154,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       floatingActionButton: AnimatedFloatingActionButton(
         key: _buttonKey,
         onPress: () {
-          Application.router.navigateTo(context, Routers.sourceManagePage);
+          Application.router!.navigateTo(context, Routers.sourceManagePage);
         },
       ),
       drawer: Drawer(
@@ -163,7 +163,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCategoryNav() {
+  PreferredSize _buildCategoryNav() {
     return PreferredSize(
       preferredSize: Size.fromHeight(40),
       child: Row(
@@ -213,10 +213,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     return NotificationListener<ScrollUpdateNotification>(
       onNotification: (notification) {
         if (notification.dragDetails != null && _buttonKey.currentState != null) {
-          if (notification.dragDetails.delta.dy < 0 && _buttonKey.currentState.isShow) {
-            _buttonKey.currentState.hide();
-          } else if (notification.dragDetails.delta.dy > 0 && !_buttonKey.currentState.isShow) {
-            _buttonKey.currentState.show();
+          if (notification.dragDetails!.delta.dy < 0 && _buttonKey.currentState!.isShow) {
+            _buttonKey.currentState!.hide();
+          } else if (notification.dragDetails!.delta.dy > 0 && !_buttonKey.currentState!.isShow) {
+            _buttonKey.currentState!.show();
           }
         }
         return false;

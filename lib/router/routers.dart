@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:fluro/fluro.dart';
 import './router_handler.dart';
 
@@ -9,13 +8,12 @@ class Routers{
   static String sourceManagePage = '/sourceManage';
   static String settingPage = '/setting';
   static String downloadPage = '/download';
-  static String localVideoPage = '/localVideo';
   static String collectionPage = '/collection';
   static String playRecordPage = '/playRecord';
   
   static void configureRouters(FluroRouter router){
     router.notFoundHandler = new Handler(
-      handlerFunc: (BuildContext context, Map<String,List<String>> params){
+      handlerFunc: (context, Map<String,List<String>> params){
         print('错误路由');
         return null;
       }
@@ -25,7 +23,6 @@ class Routers{
     router.define(sourceManagePage, handler: sourceManageHandle);
     router.define(settingPage, handler: settingHandle);
     router.define(downloadPage, handler: downloadHandle);
-    router.define(localVideoPage, handler: localVideoHandle);
     router.define(collectionPage, handler: collectionHandle);
     router.define(playRecordPage, handler: playRecordHandle);
   }

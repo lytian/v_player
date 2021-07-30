@@ -5,10 +5,10 @@ import 'package:v_player/widgets/video_item.dart';
 
 class SearchBarDelegate extends SearchDelegate<String> {
   List<String> _suggestList = [];
-  Future<List<VideoModel>> _future;
+  Future<List<VideoModel>>? _future;
 
   SearchBarDelegate({
-    String hintText,
+    String? hintText,
   }) : super(
       searchFieldLabel: hintText
   );
@@ -55,7 +55,7 @@ class SearchBarDelegate extends SearchDelegate<String> {
             progress: transitionAnimation
         ),
         //关闭上下文，当前页面
-        onPressed: () => close(context, null));
+        onPressed: () => close(context, ''));
   }
 
   //重写搜索结果
@@ -71,7 +71,7 @@ class SearchBarDelegate extends SearchDelegate<String> {
             }
             if (snapshot.hasData && snapshot.data != null) {
               try {
-                List<VideoModel> videoList = snapshot.data;
+                List<VideoModel> videoList = snapshot.data as List<VideoModel>;
                 if (videoList.length == 0) {
                   return Center(
                     child: Column(

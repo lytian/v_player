@@ -13,30 +13,35 @@ import 'package:v_player/utils/sp_helper.dart';
 class HttpUtils {
   static Future<List<CategoryModel>> getCategoryList() async {
     try {
-      Map<String, dynamic> sourceJson = SpHelper.getObject(Constant.key_current_source);
+      Map<String, dynamic> sourceJson = SpHelper.getObject(Constant.key_current_source) as Map<String, dynamic>;
       SourceModel currentSource = SourceModel.fromJson(sourceJson);
       Map<String, dynamic> params = {"ac": "list"};
 
-      Response response = await Dio().get(currentSource.httpsApi, queryParameters: params);
+      Response response = await Dio().get(currentSource.httpApi!, queryParameters: params);
       String xmlStr = response.data.toString();
       return XmlUtil.parseCategoryList(xmlStr);
     } catch (e, s) {
       print(s);
-      BotToast.showText(text: e.error ?? e.toString());
+      BotToast.showText(text: e.toString());
     }
     return [];
   }
 
-  static Future<List<VideoModel>> getVideoList({int pageNum = 1, String type, String keyword, String ids, int hour}) async {
-    List<VideoModel> videos = [];
+  static Future<List<VideoModel>> getVideoList({
+    int pageNum = 1,
+    String? type,
+    String? keyword,
+    String? ids,
+    int? hour,
+  }) async {
     try {
-      Map<String, dynamic> sourceJson = SpHelper.getObject(Constant.key_current_source);
+      Map<String, dynamic> sourceJson = SpHelper.getObject(Constant.key_current_source) as Map<String, dynamic>;
       SourceModel currentSource = SourceModel.fromJson(sourceJson);
-      Map<String, dynamic> params = {"ac": "videolist"};
+      Map<String, dynamic> params = {
+        "ac": "videolist",
+        "pg": pageNum,
+      };
 
-      if (pageNum != null) {
-        params["pg"] = pageNum;
-      }
       if (type != null && type.isNotEmpty) {
         params["t"] = type;
       }
@@ -49,57 +54,55 @@ class HttpUtils {
       if (hour != null) {
         params["h"] = hour;
       }
-      Response response = await Dio().get(currentSource.httpsApi, queryParameters: params);
+      Response response = await Dio().get(currentSource.httpApi!, queryParameters: params);
       String xmlStr = response.data.toString();
-      videos = XmlUtil.parseVideoList(xmlStr);
+      return XmlUtil.parseVideoList(xmlStr);
     } catch (e, s) {
       print(s);
-      BotToast.showText(text: e.error ?? e.toString());
+      BotToast.showText(text: e.toString());
     }
-    return videos;
+    return [];
   }
 
-  static Future<VideoModel> getVideoById(String baseUrl,  String id) async {
-    VideoModel video;
+  static Future<VideoModel?> getVideoById(String baseUrl,  String id) async {
     try {
       Map<String, dynamic> params = {"ac": "videolist"};
       params["ids"] = id;
 
       Response response = await Dio().get(baseUrl, queryParameters: params);
       String xmlStr = response.data.toString();
-      video = XmlUtil.parseVideo(xmlStr);
+      return XmlUtil.parseVideo(xmlStr);
     } catch (e, s) {
       print(s);
-      BotToast.showText(text: e.error ?? e.toString());
+      BotToast.showText(text: e.toString());
     }
-    return video;
+    return null;
   }
 
   static Future<List<VideoModel>> searchVideo(String keyword) async {
-    List<VideoModel> videos = [];
     try {
-      Map<String, dynamic> sourceJson = SpHelper.getObject(Constant.key_current_source);
+      Map<String, dynamic> sourceJson = SpHelper.getObject(Constant.key_current_source) as Map<String, dynamic>;
       SourceModel currentSource = SourceModel.fromJson(sourceJson);
 
       // 先查找list
       Map<String, dynamic> params = {"ac": "list"};
       params["wd"] = keyword;
-      Response response = await Dio().get(currentSource.httpsApi, queryParameters: params);
+      Response response = await Dio().get(currentSource.httpApi!, queryParameters: params);
       String xmlStr = response.data.toString();
-      videos = XmlUtil.parseVideoList(xmlStr);
+      var videos = XmlUtil.parseVideoList(xmlStr);
       if (videos.isNotEmpty) {
         // 再查找videolist, videolist数据比较全，比如图片
         params["ac"] = "videolist";
         params["ids"] = videos.map((e) => e.id).join(",");
-        response = await Dio().get(currentSource.httpsApi, queryParameters: params);
+        response = await Dio().get(currentSource.httpApi!, queryParameters: params);
         xmlStr = response.data.toString();
-        videos = XmlUtil.parseVideoList(xmlStr);
+        return XmlUtil.parseVideoList(xmlStr);
       }
     } catch (e, s) {
       print(s);
-      BotToast.showText(text: e.error ?? e.toString());
+      BotToast.showText(text: e.toString());
     }
 
-    return videos;
+    return [];
   }
 }

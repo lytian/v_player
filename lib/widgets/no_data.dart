@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class NoData extends StatelessWidget {
-  NoData({this.tip, this.onTap});
+  NoData({required this.tip, this.onTap});
 
   final String tip;
-  final Function onTap;
+  final void Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +27,7 @@ class NoData extends StatelessWidget {
                   height: 100.0,
                   child: Image.asset('assets/image/nodata.png'),
                 ),
-                Text(
-                  tip == null ? '' : tip,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14.0, color: Colors.grey[400],),
-                ),
+                Text(tip, textAlign: TextAlign.center, style: TextStyle(fontSize: 14.0, color: Colors.grey[400],),),
               ],
             ),
           ),

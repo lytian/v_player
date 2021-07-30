@@ -1,18 +1,18 @@
 class RecordModel {
-  int id;
-  String api; // 视频源API地址
-  String vid; // 视频ID
-  String tid; // 分类ID
-  String type; // 分类名称
-  String name; // 标题名
-  String pic; // 缩略图
+  int? id;
+  String? api; // 视频源API地址
+  String? vid; // 视频ID
+  String? tid; // 分类ID
+  String? type; // 分类名称
+  String? name; // 标题名
+  String? pic; // 缩略图
 
-  int collected; // 收藏状态  0-未收藏   1-已收藏
-  String anthologyName; // 播放选集名
-  double progress; // 播放进度  0~1
-  int playedTime; // 已播放时长，单位：毫秒
-  int createAt; // 记录时间   时间戳
-  int updateAt; // 更新时间   时间戳
+  int? collected; // 收藏状态  0-未收藏   1-已收藏
+  String? anthologyName; // 播放选集名
+  double? progress; // 播放进度  0~1
+  int? playedTime; // 已播放时长，单位：毫秒
+  int? createAt; // 记录时间   时间戳
+  int? updateAt; // 更新时间   时间戳
 
   RecordModel({
     this.id,

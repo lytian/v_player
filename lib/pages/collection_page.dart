@@ -21,7 +21,7 @@ class _CollectionPageState extends State<CollectionPage> {
   List<RecordModel> _recordList = [];
 
   Future<int> _getRecordList() async {
-    List list = await _db.getRecordList(pageNum: _pageNum, pageSize: 20, collected: 1);
+    List<RecordModel> list = await _db.getRecordList(pageNum: _pageNum, pageSize: 20, collected: 1);
     if (!mounted) return 0;
     setState(() {
       if (_pageNum <= 0) {
@@ -56,14 +56,14 @@ class _CollectionPageState extends State<CollectionPage> {
             delegate: SliverChildBuilderDelegate((context, index) {
               RecordModel model = _recordList[index];
               String recordStr = '';
-              if (model.progress > 0) {
+              if (model.progress != null && model.progress! > 0) {
                 if (model.anthologyName != null) {
-                  recordStr += model.anthologyName;
+                  recordStr += model.anthologyName!;
                 }
-                if (model.progress > 0.99) {
+                if (model.progress! > 0.99) {
                   recordStr += ' ' + '播放完毕';
                 } else {
-                  recordStr = '播放至：' + recordStr + ' ' + (model.progress * 100).toStringAsFixed(2);
+                  recordStr = '播放至：' + recordStr + ' ' + (model.progress! * 100).toStringAsFixed(2);
                 }
               }
               return ListTile(
@@ -72,13 +72,13 @@ class _CollectionPageState extends State<CollectionPage> {
                   borderRadius: BorderRadius.circular(3),
                   child: FadeInImage.assetNetwork(
                     placeholder: 'assets/image/placeholder-l.jpg',
-                    image: model.pic,
+                    image: model.pic ?? '',
                     fit: BoxFit.cover,
                     width: 100,
                     height: 75,
                   ),
                 ),
-                title: Text(model.name, style: TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
+                title: Text(model.name ?? '暂无标题', style: TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
                 subtitle: recordStr.isEmpty ? RichText(
                   text: TextSpan(
                       style: TextStyle(fontSize: 13, color: Color(0xff666666)),
@@ -98,7 +98,7 @@ class _CollectionPageState extends State<CollectionPage> {
                     onPressed: () => _cancelRecord(model)
                   ),
                 ),
-                onTap: ()  => _playVideo(model.api, model.vid),
+                onTap: ()  => _playVideo(model.api!, model.vid!),
               );
             },
               childCount: _recordList.length,
@@ -137,7 +137,7 @@ class _CollectionPageState extends State<CollectionPage> {
   }
 
   void _playVideo(String api, String vid) {
-    Application.router.navigateTo(context, Routers.detailPage + '?api=${FluroConvertUtils.fluroCnParamsEncode(api)}&id=$vid');
+    Application.router!.navigateTo(context, Routers.detailPage + '?id=$vid');
   }
 
   void _cancelRecord(RecordModel model) {
@@ -148,17 +148,16 @@ class _CollectionPageState extends State<CollectionPage> {
             title: Text('温馨提示'),
             content: Text('确认取消收藏吗？'),
             actions: <Widget>[
-              FlatButton(
-                child: Text('取消'),
-                textColor: Colors.grey,
+              TextButton(
+                child: Text('取消', style: TextStyle(color: Colors.grey),),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
               ),
-              FlatButton(
+              TextButton(
                 child: Text('确定'),
                 onPressed: () async {
-                  int i = await _db.updateRecord(model.id, collected: 0);
+                  int i = await _db.updateRecord(model.id!, collected: 0);
                   if (i > 0) {
                     _recordList.remove(model);
                     setState(() {});

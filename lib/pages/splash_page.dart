@@ -21,7 +21,7 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
 
   DBHelper _db = DBHelper();
-  Timer _timer;
+  Timer? _timer;
   int _count = 3; // 倒计时秒数
 
   @override
@@ -35,7 +35,7 @@ class _SplashPageState extends State<SplashPage> {
     // 设置初始化主题颜色
     context.read<AppInfoProvider>().setTheme(colorKey);
     // 加载默认资源
-    Map<String, dynamic> source = SpHelper.getObject(Constant.key_current_source);
+    Map<String, dynamic>? source = SpHelper.getObject(Constant.key_current_source) as Map<String, dynamic>?;
     if (source == null) {
       String sourceJson = await DefaultAssetBundle.of(context).loadString("assets/data/source.json");
       List<dynamic> jsonList = json.decode(sourceJson);
@@ -53,7 +53,7 @@ class _SplashPageState extends State<SplashPage> {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         if (_count <= 1) {
-          _timer.cancel();
+          _timer?.cancel();
           _timer = null;
           _goMain();
         } else {
@@ -66,13 +66,13 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void dispose() {
     _timer?.cancel();
-    _db?.close();
+    _db.close();
     super.dispose();
   }
 
   // 跳转主页
   void _goMain() {
-    Application.router.navigateTo(context, Routers.mainPage, clearStack: true, transition: TransitionType.fadeIn);
+    Application.router!.navigateTo(context, Routers.mainPage, clearStack: true, transition: TransitionType.fadeIn);
   }
 
   @override

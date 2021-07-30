@@ -8,9 +8,9 @@ import 'package:v_player/utils/sp_helper.dart';
 
 class SourceProvider with ChangeNotifier {
 
-  SourceModel _currentSource;
+  SourceModel? _currentSource;
 
-  SourceModel get currentSource => _currentSource;
+  SourceModel? get currentSource => _currentSource;
 
   void setCurrentSource(SourceModel model, BuildContext context) {
     _currentSource = model;

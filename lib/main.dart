@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:fluro/fluro.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color _themeColor;
+    Color? _themeColor;
 
     return MultiProvider(
       providers: [
@@ -42,13 +43,17 @@ class MyApp extends StatelessWidget {
 
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            onGenerateRoute: Application.router.generator,
-            theme: ThemeData.light().copyWith(
-                primaryColor: _themeColor,
-                accentColor: _themeColor,
-                indicatorColor: Colors.white
+            onGenerateRoute: Application.router!.generator,
+            theme: ThemeData(
+              primaryColor: _themeColor,
+              accentColor: _themeColor,
+              indicatorColor: Colors.white,
+              appBarTheme: AppBarTheme(brightness: Brightness.dark)
             ),
             builder: BotToastInit(),
+            navigatorObservers: [
+              BotToastNavigatorObserver(),
+            ],
             home: SplashPage(),
           );
         },

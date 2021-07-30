@@ -1,12 +1,10 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:fluro/fluro.dart';
+import 'package:fijkplayer/fijkplayer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/models/download_model.dart';
 import 'package:v_player/provider/download_task.dart';
-import 'package:v_player/router/application.dart';
-import 'package:v_player/router/routers.dart';
-import 'package:v_player/utils/fluro_convert_util.dart';
+import 'package:v_player/widgets/fijk_panel/fijk_panel.dart';
 import 'package:v_player/widgets/no_data.dart';
 
 class DownloadPage extends StatefulWidget {
@@ -15,9 +13,11 @@ class DownloadPage extends StatefulWidget {
 }
 
 class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderStateMixin {
-  TabController _tabController;
+  late TabController _tabController;
+  final FijkPlayer _fijkPlayer = FijkPlayer();
   bool _isEdit = false;
   int _tabIndex = 0;
+  bool _opened = false;
 
   List<bool> _checkSuccessList = [];
   List<bool> _checkDownloadList = [];
@@ -32,10 +32,15 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
         _tabIndex = _tabController.index;
       });
     });
+
+    _fijkPlayer.addListener(_fullscreenListener);
   }
 
   @override
   void dispose() {
+    _fijkPlayer.removeListener(_fullscreenListener);
+    _fijkPlayer.release();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -89,38 +94,38 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
       body: Column(
         children: <Widget>[
           Expanded(
-            flex: 1,
-            child: Consumer<DownloadTaskProvider>(
-              builder: (context, provider, _) {
-                List<DownloadModel> _successList = provider.downloadList.where((e) => e.status == DownloadStatus.SUCCESS).toList();
-                List<DownloadModel> _downloadList = provider.downloadList.where((e) => e.status != DownloadStatus.SUCCESS).toList();
-                if (_successList.length != _checkSuccessList.length) {
-                  _checkSuccessList = List.filled(_successList.length, false);
-                }
-                if (_downloadList.length != _checkDownloadList.length) {
-                  _checkDownloadList = List.filled(_downloadList.length, false);
-                }
-                return TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildSuccessList(_successList),
-                      _buildDownloadList(_downloadList, provider.currentTask),
-                    ]
-                );
-              },
-            )
+              flex: 1,
+              child: Consumer<DownloadTaskProvider>(
+                builder: (context, provider, _) {
+                  List<DownloadModel> _successList = provider.downloadList.where((e) => e.status == DownloadStatus.SUCCESS).toList();
+                  List<DownloadModel> _downloadList = provider.downloadList.where((e) => e.status != DownloadStatus.SUCCESS).toList();
+                  if (_successList.length != _checkSuccessList.length) {
+                    _checkSuccessList = List.filled(_successList.length, false);
+                  }
+                  if (_downloadList.length != _checkDownloadList.length) {
+                    _checkDownloadList = List.filled(_downloadList.length, false);
+                  }
+                  return TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildSuccessList(_successList),
+                        _buildDownloadList(_downloadList, provider.currentTask),
+                      ]
+                  );
+                },
+              )
           ),
           _isEdit ? Container(
             height: 44,
             decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0xffdedede),
-                  blurRadius: 4, //阴影范围
-                  spreadRadius: 1, //阴影浓度
-                )
-              ]
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xffdedede),
+                    blurRadius: 4, //阴影范围
+                    spreadRadius: 1, //阴影浓度
+                  )
+                ]
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -129,14 +134,15 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                   margin: EdgeInsets.only(left: 16),
                   width: 68,
                   height: 32,
-                  child: RaisedButton(
-                    color: Theme.of(context).primaryColor,
-                    textColor: Colors.white,
-                    elevation: 2,
-                    child: Text('删除'),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(32)
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor),
+                        elevation: MaterialStateProperty.all(2),
+                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32)
+                        ))
                     ),
+                    child: Text('删除'),
                     onPressed: _deleteDownload,
                   ),
                 ),
@@ -144,12 +150,14 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                   margin: EdgeInsets.only(right: 16),
                   width: 68,
                   height: 32,
-                  child: RaisedButton(
-                    child: Text(isAllChecked ? '反选' : '全选'),
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(32)
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                        elevation: MaterialStateProperty.all(2),
+                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32)
+                        ))
                     ),
+                    child: Text(isAllChecked ? '反选' : '全选'),
                     onPressed: _toggleAllChecked,
                   ),
                 ),
@@ -162,7 +170,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   }
 
   Widget _buildSuccessList(List<DownloadModel> list) {
-    if (list == null || list.isEmpty) {
+    if (list.isEmpty) {
       return NoData(
         tip: '没有已完成下载的视频\n快去添加吧~',
       );
@@ -177,20 +185,20 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
             borderRadius: BorderRadius.circular(3),
             child: FadeInImage.assetNetwork(
               placeholder: 'assets/image/placeholder-l.jpg',
-              image: model.pic,
+              image: model.pic ?? '',
               fit: BoxFit.cover,
               width: 100,
               height: 75,
             ),
           ),
-          title: Text(model.name, style: TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
-          subtitle: Text(model.type, style: TextStyle(fontSize: 13),),
+          title: Text(model.name ?? '暂无标题', style: TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
+          subtitle: Text(model.type ?? '无', style: TextStyle(fontSize: 13),),
           trailing: _isEdit
             ? Checkbox(
               value: _checkSuccessList[index],
               onChanged: (v) {
                 setState(() {
-                  _checkSuccessList[index] = v;
+                  _checkSuccessList[index] = v ?? false;
                 });
               },
             )
@@ -198,9 +206,9 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
               icon: Icon(Icons.play_circle_outline),
               iconSize: 32,
               color: Color(0xff3d3d3d),
-              onPressed: ()  => _playVideo(model.savePath, model.name),
+              onPressed: ()  => _playVideo(model.savePath!, model.name!),
             ),
-          onTap: () => _isEdit ? _toggleChecked(index) : _playVideo(model.savePath, model.name),
+          onTap: () => _isEdit ? _toggleChecked(index) : _playVideo(model.savePath!, model.name!),
         );
       },
       separatorBuilder: (_, index) {
@@ -210,8 +218,8 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildDownloadList(List<DownloadModel> list, DownloadTask currentTask) {
-    if (list == null || list.isEmpty) {
+  Widget _buildDownloadList(List<DownloadModel> list, DownloadTask? currentTask) {
+    if (list.isEmpty) {
       return NoData(
         tip: '没有缓存中的视频\n快去添加吧~',
       );
@@ -243,13 +251,13 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
               borderRadius: BorderRadius.circular(3),
               child: FadeInImage.assetNetwork(
                 placeholder: 'assets/image/placeholder-p.jpg',
-                image: model.pic,
+                image: model.pic ?? '',
                 fit: BoxFit.cover,
                 width: 100,
                 height: 75,
               ),
             ),
-            title: Text(model.name, style: TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
+            title: Text(model.name ?? '暂无标题', style: TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
             subtitle: currentTask != null && model.url == currentTask.url
                 ? RichText(
                   text: TextSpan(
@@ -268,7 +276,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
               value: _checkDownloadList[index],
               onChanged: (v) {
                 setState(() {
-                  _checkDownloadList[index] = v;
+                  _checkDownloadList[index] = v ?? false;
                 });
               },
             )
@@ -283,7 +291,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                 Icon(model.status == DownloadStatus.RUNNING ? Icons.pause : Icons.file_download, size: 20, color: Colors.grey,),
               ],
             ),
-            onTap: () => _isEdit ? _toggleChecked(index) : _toggleDownload(model.url),
+            onTap: () => _isEdit ? _toggleChecked(index) : _toggleDownload(model.url!),
           );
         },
         separatorBuilder: (_, index) {
@@ -293,9 +301,50 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
     );
   }
 
+  void _fullscreenListener() {
+    if (_opened && !_fijkPlayer.value.fullScreen) {
+      // 退出全屏，关闭弹窗
+      Navigator.pop(context);
+    }
+  }
+
   /// 播放视频
-  void _playVideo(String url, String name) {
-    Application.router.navigateTo(context, Routers.localVideoPage + '?url=${FluroConvertUtils.fluroCnParamsEncode(url)}&name=${FluroConvertUtils.fluroCnParamsEncode(name)}', transition: TransitionType.nativeModal);
+  void _playVideo(String url, String name) async {
+    await _fijkPlayer.setDataSource(url, autoPlay: true);
+    _fijkPlayer.enterFullScreen();
+    _opened = true;
+    showDialog(
+      context: context,
+      builder: (BuildContext buildContext) {
+        return Material(
+          child: FijkView(
+            color: Colors.black,
+            player: _fijkPlayer,
+            panelBuilder: (
+                FijkPlayer player,
+                FijkData data,
+                BuildContext context,
+                Size viewSize,
+                Rect texturePos,
+                ) {
+              /// 使用自定义的布局
+              return FijkPanel(
+                player: player,
+                pageContext: context,
+                viewSize: viewSize,
+                texturePos: texturePos,
+                playerTitle: name,
+                allowFullScreen: false,
+              );
+            },
+          ),
+        );
+      }
+    ).then((res) async {
+      _opened = false;
+      await _fijkPlayer.stop();
+      await _fijkPlayer.reset();
+    });
   }
 
   /// 切换单个选择
@@ -378,14 +427,13 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
             ),
           ),
           actions: <Widget>[
-            FlatButton(
-              child: Text('取消'),
-              textColor: Colors.grey,
+            TextButton(
+              child: Text('取消', style: TextStyle(color: Colors.grey),),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
-            FlatButton(
+            TextButton(
               child: Text('确定'),
               onPressed: () async {
                 await context.read<DownloadTaskProvider>().deleteDownloads(_models);

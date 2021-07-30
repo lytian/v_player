@@ -28,7 +28,7 @@ class _SourceManagePageState extends State<SourceManagePage> {
     super.initState();
 
     Future.delayed(Duration(milliseconds: 200), () async {
-      List list = await _db.getSourceList();
+      List<SourceModel> list = await _db.getSourceList();
       setState(() {
         _sourceList = list;
       });
@@ -43,7 +43,7 @@ class _SourceManagePageState extends State<SourceManagePage> {
 
   @override
   Widget build(BuildContext context) {
-    final curSource = context.select<SourceProvider, SourceModel>((value) => value.currentSource);
+    final curSource = context.select<SourceProvider, SourceModel?>((value) => value.currentSource);
 
     return Scaffold(
       appBar: AppBar(
@@ -84,19 +84,23 @@ class _SourceManagePageState extends State<SourceManagePage> {
         itemBuilder: (context, index) {
           SourceModel model = _sourceList[index];
           return ListTile(
-            title: Text(model.name, style: TextStyle(
+            title: Text(model.name ?? '', style: TextStyle(
               color: curSource != null && curSource.id == model.id ? Colors.red : Colors.black,
               fontSize: 18
             ),),
-            subtitle: Text(model.type),
+            subtitle: Text(model.type ?? ''),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
                   icon: Icon(Icons.camera),
                   onPressed: () async {
-                    if (await canLaunch(model.url)) {
-                      await launch(model.url);
+                    if (model.url == null) {
+                      BotToast.showText(text: '空地址');
+                      return;
+                    }
+                    if (await canLaunch(model.url!)) {
+                      await launch(model.url!);
                     } else {
                       BotToast.showText(text: '不能打开${model.url}');
                     }
@@ -130,19 +134,19 @@ class _SourceManagePageState extends State<SourceManagePage> {
 
   /// 显示表单
   /// model 为null时，添加，不为null时修改
-  void _showFormDialog(SourceModel model) {
+  void _showFormDialog(SourceModel? model) {
 
   }
 
   /// 导入资源
   void _importSource() async {
     var content = await Clipboard.getData(Clipboard.kTextPlain);
-    if (content == null || content.text == null || content.text.isEmpty) {
+    if (content == null || content.text == null || content.text!.isEmpty) {
       BotToast.showText(text: '剪贴板内容为空！');
       return;
     }
     try {
-      String jsonStr = content.text;
+      String jsonStr = content.text!;
       int count = 0;
       if (jsonStr.indexOf('[') > -1 && jsonStr.indexOf(']') > -1) {
         // 多个
@@ -150,16 +154,15 @@ class _SourceManagePageState extends State<SourceManagePage> {
         List<SourceModel> sourceList = list.map((e) => SourceModel.fromJson(e)).toList();
         // 去重
         _sourceList.forEach((source) {
-          SourceModel find = sourceList.firstWhere((e) => e.name == source.name, orElse: () => null);
-          if (find != null) {
-            sourceList.remove(find);
-          }
+          int index = sourceList.indexWhere((e) => e.name == source.name);
+          if (index > -1)
+            sourceList.removeAt(index);
         });
         count = await _db.insertBatchSource(sourceList);
       } else {
         // 单个
         SourceModel source = SourceModel.fromJson(json.decode(jsonStr));
-        if (_sourceList.firstWhere((e) => e.name == source.name, orElse: () => null) != null) {
+        if (_sourceList.indexWhere((e) => e.name == source.name) > -1) {
           BotToast.showText(text: '资源已存在');
           return;
         }
@@ -169,7 +172,7 @@ class _SourceManagePageState extends State<SourceManagePage> {
         BotToast.showText(text: '导入失败！');
         return;
       }
-      List list = await _db.getSourceList();
+      List<SourceModel> list = await _db.getSourceList();
       setState(() {
         _sourceList = list;
       });
@@ -205,24 +208,25 @@ class _SourceManagePageState extends State<SourceManagePage> {
           title: Text('提示'),
           content: Text('确认删除资源【${model.name}】吗？'),
           actions: [
-            FlatButton(
-              child: Text('取消'),
-              color: Colors.grey,
+            TextButton(
+              child: Text('取消', style: TextStyle(
+                color: Colors.grey
+              ),),
               onPressed: () {
                 Navigator.pop(context);
               },
             ),
-            FlatButton(
+            TextButton(
               child: Text('确定'),
               onPressed: () async {
-                int res = await _db.deleteSourceById(model.id);
+                int res = await _db.deleteSourceById(model.id!);
                 if (res > 0) {
                   BotToast.showText(text: '删除成功！');
                 } else {
                   BotToast.showText(text: '删除失败！');
                 }
                 Navigator.pop(context);
-                List list = await _db.getSourceList();
+                List<SourceModel> list = await _db.getSourceList();
                 if (isCurrent && list.length > 0) {
                   context.read<SourceProvider>().setCurrentSource(list[0], context);
                 }

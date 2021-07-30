@@ -23,28 +23,34 @@ import 'package:v_player/utils/sp_helper.dart';
 class DownloadTaskProvider with ChangeNotifier {
   DBHelper _db = DBHelper();
   ReceivePort _port = ReceivePort();
-  StreamSubscription _netSubscription;
+  StreamSubscription? _netSubscription;
 
   List<DownloadModel> _downloadList = [];
-  DownloadTask _currentTask;
+  DownloadTask? _currentTask;
 
   List<DownloadModel> get downloadList => _downloadList;
-  DownloadTask get currentTask => _currentTask;
+  DownloadTask? get currentTask => _currentTask;
 
   static progressCallback(dynamic args) {
-    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
-    args["status"] = 1;
-    send.send(args);
+    final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
+    if (send != null) {
+      args["status"] = 1;
+      send.send(args);
+    }
   }
   static successCallback(dynamic args) {
-    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
-    send.send({"status": 2, ...args});
-    BotToast.showText(text: '下载成功', align: Alignment.center);
+    final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
+    if (send != null) {
+      send.send({"status": 2, ...args});
+      BotToast.showText(text: '下载成功', align: Alignment.center);
+    }
   }
   static errorCallback(dynamic args) {
-    final SendPort send = IsolateNameServer.lookupPortByName('downloader_send_port');
-    send.send({"status": 3, "url": args["url"]});
-    BotToast.showText(text: '下载失败', align: Alignment.center);
+    final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
+    if (send != null) {
+      send.send({"status": 3, "url": args["url"]});
+      BotToast.showText(text: '下载失败', align: Alignment.center);
+    }
   }
 
   ///
@@ -55,12 +61,12 @@ class DownloadTaskProvider with ChangeNotifier {
     WidgetsFlutterBinding.ensureInitialized();
     M3u8Downloader.initialize(
         saveDir: await findSavePath(),
-        isConvert: SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: true),
+        isConvert: SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: true) ?? true,
         showNotification: true,
         threadCount: 3,
         debugMode: false,
-        onSelect: () {
-          Application.router.navigateTo(context, Routers.downloadPage);
+        onSelect: () async {
+          Application.router!.navigateTo(context, Routers.downloadPage);
           return null;
         }
     );
@@ -75,26 +81,26 @@ class DownloadTaskProvider with ChangeNotifier {
       int status = data["status"];
       switch (status) {
         case 1:
-          _currentTask.speed = data['speed'];
-          _currentTask.formatSpeed = data['formatSpeed'];
-          _currentTask.progress = data["progress"] / 1.0;
-          _currentTask.totalSize = data["totalSize"];
-          _currentTask.totalFormatSize = data["totalFormatSize"];
-          _currentTask.currentFormatSize = data["currentFormatSize"];
-          _db.updateDownloadByUrl(_currentTask.url, progress: _currentTask.progress);
+          _currentTask!.speed = data['speed'];
+          _currentTask!.formatSpeed = data['formatSpeed'];
+          _currentTask!.progress = data["progress"] / 1.0;
+          _currentTask!.totalSize = data["totalSize"];
+          _currentTask!.totalFormatSize = data["totalFormatSize"];
+          _currentTask!.currentFormatSize = data["currentFormatSize"];
+          _db.updateDownloadByUrl(_currentTask!.url, progress: _currentTask!.progress);
           break;
         case 2:
-          BotToast.showText(text:"【${_currentTask.name}】下载成功!!!");
-          _currentTask.progress = 1;
-          _db.updateDownloadByUrl(_currentTask.url, status: DownloadStatus.SUCCESS, savePath: data['filePath']);
+          BotToast.showText(text:"【${_currentTask!.name}】下载成功!!!");
+          _currentTask!.progress = 1;
+          _db.updateDownloadByUrl(_currentTask!.url, status: DownloadStatus.SUCCESS, savePath: data['filePath']);
           _downloadList = await _db.getDownloadList();
           _currentTask = null;
           // 下载下一个
           _downloadNext();
           break;
         case 3:
-          BotToast.showText(text:"【${_currentTask.name}】下载失败！！！");
-          _db.updateDownloadByUrl(_currentTask.url, status: DownloadStatus.FAIL);
+          BotToast.showText(text:"【${_currentTask!.name}】下载失败！！！");
+          _db.updateDownloadByUrl(_currentTask!.url, status: DownloadStatus.FAIL);
           _downloadList = await _db.getDownloadList();
           _currentTask = null;
           // 下载下一个
@@ -117,7 +123,7 @@ class DownloadTaskProvider with ChangeNotifier {
         print('切换到移动网络了......');
       } else if (res == ConnectivityResult.wifi) {
         // wifi自动下载
-        if (currentTask == null && SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true)) {
+        if (currentTask == null && SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true) == true) {
           _downloadNext();
         }
         print('切换到WiFi了......');
@@ -125,7 +131,7 @@ class DownloadTaskProvider with ChangeNotifier {
     });
 
     // 5. 自动下载
-    if (SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true)) {
+    if (SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true) == true) {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.wifi) {
         _downloadNext();
@@ -138,18 +144,23 @@ class DownloadTaskProvider with ChangeNotifier {
   ///
   /// 创建新的下载
   ///
-  Future<void> createDownload({ VideoModel video, String url, String name, BuildContext context }) async {
+  Future<void> createDownload({
+    required VideoModel video,
+    required String url,
+    required String name,
+    required BuildContext context
+  }) async {
     // 1. 暂停正在下载
-    DownloadModel runningDownload = _downloadList.firstWhere((e) => e.status == DownloadStatus.RUNNING, orElse: () => null);
-    if (runningDownload != null) {
-      await pause(runningDownload.url);
+    int index = _downloadList.indexWhere((e) => e.status == DownloadStatus.RUNNING);
+    if (index > -1) {
+      await pause(_downloadList[index].url!);
     }
 
     // 2. 查询是否拥有这个url的下载记录
-    DownloadModel model = await _db.getDownloadByUrl(url);
+    DownloadModel? model = await _db.getDownloadByUrl(url);
     if (model != null) {
       // 3.2 下载当前
-      await _db.updateDownloadByUrl(model.url, status: DownloadStatus.RUNNING);
+      await _db.updateDownloadByUrl(model.url!, status: DownloadStatus.RUNNING);
       _downloadList = await _db.getDownloadList();
       _downloadNext();
       return;
@@ -158,7 +169,7 @@ class DownloadTaskProvider with ChangeNotifier {
     // 3.1 创建新的下载 TODO 与收藏的冲突处理。 api字段暂未处理
     String m3u8Path = await M3u8Downloader.getM3U8Path(url);
     String fileId = '';
-    if (m3u8Path != null && m3u8Path.indexOf(path.separator) > -1) {
+    if (m3u8Path.indexOf(path.separator) > -1) {
       fileId = m3u8Path.split(path.separator)[m3u8Path.split(path.separator).length - 2];
     }
     await _db.insertDownload(DownloadModel(
@@ -195,11 +206,13 @@ class DownloadTaskProvider with ChangeNotifier {
   ///
   void toggleDownload(String url) async {
     // 1. 查询是否拥有这个url的下载记录
-    DownloadModel self = _downloadList.firstWhere((e) => e.url == url, orElse: () => null);
-    if (self == null) {
+    DownloadModel? self;
+    int index = _downloadList.indexWhere((e) => e.url == url);
+    if (index == -1) {
       BotToast.showText(text: '下载任务不存在！', align: Alignment.center);
       return;
     }
+    self = _downloadList[index];
     // 2. 切换自己的状态
     switch (self.status) {
       case DownloadStatus.RUNNING:
@@ -216,12 +229,12 @@ class DownloadTaskProvider with ChangeNotifier {
       case DownloadStatus.FAIL:
         // 等待下载、下载失败状态
         // 2.1 暂停正在下载
-        DownloadModel runningDownload = _downloadList.firstWhere((e) => e.status == DownloadStatus.RUNNING, orElse: () => null);
-        if (runningDownload != null) {
-          await pause(runningDownload.url);
+        int runningIndex = _downloadList.indexWhere((e) => e.status == DownloadStatus.RUNNING);
+        if (runningIndex > -1) {
+          await pause(_downloadList[runningIndex].url!);
         }
         // 2.2 开启本次下载，并刷新
-        _startDownload(self.url, self.name);
+        _startDownload(self.url!, self.name!);
         break;
       default:
         break;
@@ -232,18 +245,18 @@ class DownloadTaskProvider with ChangeNotifier {
   /// 删除下载列表
   ///
   Future<void> deleteDownloads(List<DownloadModel> models) async {
-    if (models == null || models.isEmpty) return;
+    if (models.isEmpty) return;
     // 1. 如果有正在 下载，先暂停
-    DownloadModel runningDownload = models.firstWhere((e) => e.status == DownloadStatus.RUNNING, orElse: () => null);
-    if (runningDownload != null) {
-      await pause(runningDownload.url);
+    int runningIndex = _downloadList.indexWhere((e) => e.status == DownloadStatus.RUNNING);
+    if (runningIndex > -1) {
+      await pause(_downloadList[runningIndex].url!);
     }
     // 2. 删除本地文件
     models.forEach((e) {
-      M3u8Downloader.cancel(e.url, isDelete: true);
+      M3u8Downloader.cancel(e.url!, isDelete: true);
     });
     // 3. 删除下载记录
-    int count = await _db.deleteDownloadByIds(models.map((e) => e.id).toList());
+    int count = await _db.deleteDownloadByIds(models.map((e) => e.id!).toList());
     if (count <= 0) {
       BotToast.showText(text: '删除失败！');
       return;
@@ -251,7 +264,7 @@ class DownloadTaskProvider with ChangeNotifier {
     // 4. 更新下载列表
     _downloadList = await _db.getDownloadList();
     // 5. 开启新的下载
-    if (runningDownload != null) {
+    if (runningIndex > -1) {
       _downloadNext();
     }
     notifyListeners();
@@ -262,15 +275,17 @@ class DownloadTaskProvider with ChangeNotifier {
   ///
   Future<void> _downloadNext() async {
     // 先寻找正在下载的视频
-    DownloadModel runningDownload = _downloadList.firstWhere((e) => e.status == DownloadStatus.RUNNING, orElse: () => null);
-    if (runningDownload != null) {
-      await _startDownload(runningDownload.url, runningDownload.name);
+    int runningIndex = _downloadList.indexWhere((e) => e.status == DownloadStatus.RUNNING);
+    if (runningIndex > -1) {
+      DownloadModel runningDownload = _downloadList[runningIndex];
+      await _startDownload(runningDownload.url!, runningDownload.name!);
       return;
     }
     // 寻找等待下载的视频
-    DownloadModel waitDownload = _downloadList.firstWhere((e) => e.status == DownloadStatus.WAITING, orElse: () => null);
-    if (waitDownload != null) {
-      await _startDownload(waitDownload.url, waitDownload.name);
+    int wartIndex = _downloadList.indexWhere((e) => e.status == DownloadStatus.WAITING);
+    if (wartIndex > -1) {
+      DownloadModel waitDownload = _downloadList[wartIndex];
+      await _startDownload(waitDownload.url!, waitDownload.name!);
       return;
     }
   }
@@ -301,7 +316,7 @@ class DownloadTaskProvider with ChangeNotifier {
     final directory = Platform.isAndroid
         ? await getExternalStorageDirectory()
         : await getApplicationDocumentsDirectory();
-    String saveDir = directory.path + '/video';
+    String saveDir = directory!.path + '/video';
     Directory root = Directory(saveDir);
     if (!root.existsSync()) {
       await root.create();
@@ -323,7 +338,7 @@ class DownloadTaskProvider with ChangeNotifier {
   @override
   void dispose() {
     super.dispose();
-    _netSubscription.cancel();
+    _netSubscription?.cancel();
     _db.close();
   }
 }
@@ -339,8 +354,8 @@ class DownloadTask {
   String currentFormatSize;
 
   DownloadTask({
-    @required this.name,
-    @required this.url,
+    required this.name,
+    required this.url,
     this.progress = 0,
     this.speed = 0,
     this.formatSpeed = '',

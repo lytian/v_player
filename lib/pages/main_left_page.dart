@@ -57,11 +57,11 @@ class _MainLeftPageState extends State<MainLeftPage> {
                 _ListItemInfo item = _items[index];
                 return ListTile(
                     leading: Icon(item.icon),
-                    title: Text(item.title),
+                    title: Text(item.title ?? ''),
                     onTap: () {
                       if (item.route != null) {
-                        Application.router.pop(context);  // 先关闭Drawer
-                        Application.router.navigateTo(context, item.route);
+                        Application.router!.pop(context);  // 先关闭Drawer
+                        Application.router!.navigateTo(context, item.route!);
                       }
                     }
                 );
@@ -75,9 +75,9 @@ class _MainLeftPageState extends State<MainLeftPage> {
 }
 
 class _ListItemInfo {
-  final String title;
-  final IconData icon;
-  final String route;
+  final String? title;
+  final IconData? icon;
+  final String? route;
 
   _ListItemInfo({this.title, this.icon, this.route});
 }

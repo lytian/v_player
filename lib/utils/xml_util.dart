@@ -1,12 +1,12 @@
 import 'package:v_player/models/category_model.dart';
 import 'package:v_player/models/video_model.dart';
-import 'package:xml/xml.dart' as xml;
+import 'package:xml/xml.dart';
 
 class XmlUtil {
   static List<CategoryModel> parseCategoryList(String xmlStr) {
     List<CategoryModel> list = [];
 
-    final document = xml.parse(xmlStr);
+    final document = XmlDocument.parse(xmlStr);
     final types = document.findAllElements('ty');
     types.forEach((node) {
       list.add(CategoryModel(id: node.getAttribute('id'), name: node.text));
@@ -18,7 +18,7 @@ class XmlUtil {
   static List<VideoModel> parseVideoList(String xmlStr) {
     List<VideoModel> list = [];
 
-    final document = xml.parse(xmlStr);
+    final document = XmlDocument.parse(xmlStr);
     final videos = document.findAllElements('video');
     videos.forEach((node) {
       list.add(VideoModel(
@@ -42,12 +42,13 @@ class XmlUtil {
     return list;
   }
 
-  static VideoModel parseVideo(String xmlStr) {
-    final document = xml.parse(xmlStr);
-    final video = document.findAllElements('video').first;
-    if (video == null) return null;
+  static VideoModel? parseVideo(String xmlStr) {
+    final document = XmlDocument.parse(xmlStr);
+    final videos = document.findAllElements('video');
+    if (videos.isEmpty) return null;
+    final video = videos.first;
     List<Anthology> anthologies = [];
-    String str = getNodeCData(video.findElements('dl').first, 'dd');
+    String? str = getNodeCData(video.findElements('dl').first, 'dd');
     if (str != null) {
       str.split('#').forEach((s) {
         if (s.indexOf('\$') > -1) {
@@ -57,7 +58,6 @@ class XmlUtil {
         }
       });
     }
-    String stateStr = getNodeText(video, 'state');
     return VideoModel(
       id: getNodeText(video, 'id'),
       tid: getNodeText(video, 'tid'),
@@ -77,19 +77,17 @@ class XmlUtil {
     );
   }
 
-  static String getNodeText(xml.XmlElement node, String name) {
-//    if (node == null) return null;
+  static String? getNodeText(XmlElement node, String name) {
     final elements = node.findElements(name);
-    if (elements.isEmpty || elements.first == null) return null;
+    if (elements.isEmpty) return null;
     return elements.first.text;
   }
 
-  static String getNodeCData(xml.XmlElement node, String name) {
-    if (node == null) return null;
+  static String? getNodeCData(XmlElement node, String name) {
     final elements = node.findElements(name);
-    if (elements.isEmpty || elements.first == null) return null;
+    if (elements.isEmpty ) return null;
     final children = node.findElements(name).first.children;
-    if (children.isEmpty || children.first == null) return null;
+    if (children.isEmpty) return null;
     return children.first.text;
   }
 }
