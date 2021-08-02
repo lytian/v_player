@@ -8,8 +8,7 @@ import 'package:v_player/pages/main_left_page.dart';
 import 'package:v_player/pages/search_bar.dart';
 import 'package:v_player/provider/download_task.dart';
 import 'package:v_player/provider/source.dart';
-import 'package:v_player/router/application.dart';
-import 'package:v_player/router/routers.dart';
+import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/http_utils.dart';
 import 'package:v_player/widgets/animated_floating_action_button.dart';
 import 'package:v_player/widgets/no_data.dart';
@@ -154,7 +153,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       floatingActionButton: AnimatedFloatingActionButton(
         key: _buttonKey,
         onPress: () {
-          Application.router!.navigateTo(context, Routers.sourceManagePage);
+          Navigator.of(context).pushNamed(Application.sourceManagePage);
         },
       ),
       drawer: Drawer(

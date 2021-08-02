@@ -4,7 +4,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:fijkplayer/fijkplayer.dart';
-import 'package:wakelock/wakelock.dart';
 
 import 'animated_play_pause.dart';
 import 'center_play_button.dart';
@@ -151,8 +150,6 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
         _buffering = v;
       });
     });
-
-    Wakelock.enable();
   }
 
   @override
@@ -331,8 +328,6 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
     _bufferPosSubs?.cancel();
     _bufferingSubs?.cancel();
     _animationController.dispose();
-
-    Wakelock.disable();
   }
 
   /// 开启隐藏操作栏定时器

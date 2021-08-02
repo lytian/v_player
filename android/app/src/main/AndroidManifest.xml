@@ -12,7 +12,7 @@
 
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="v_player"
+        android:label="免费视频"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
         <activity

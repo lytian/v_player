@@ -37,7 +37,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   RecordModel? _recordModel;
   bool _isSingleVideo = false; // 是否单视频，没有选集
   int _cachePlayedSecond = -1; // 临时的播放秒数
-  StreamSubscription? _currentPosSubs;
+  StreamSubscription? _currentPosSubs; // 播放位置监听
 
   @override
   void initState() {
@@ -89,7 +89,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   }
 
   void _startPlay(String url, String name, {
-    int playPosition = 0,
+    int playPosition = -1,
     bool reset = false,
   }) async {
     setState(() {
@@ -102,8 +102,10 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       await _fijkPlayer.stop();
       await _fijkPlayer.reset();
     } else {
+      //播放时屏幕常亮
+      await _fijkPlayer.setOption(FijkOption.hostCategory, "request-screen-on", 1);
       // 添加播放完成状态的监听器
-      _fijkPlayer.addListener(_completedListener);
+      _fijkPlayer.addListener(_fijkStateListener);
       // 播放位置变化监听
       _currentPosSubs = _fijkPlayer.onCurrentPosUpdate.listen((curPos) {
         // 视频播放同一秒内不执行操作
@@ -144,25 +146,25 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
         }
       });
     }
-
+    // 设置进度
+    if (playPosition > 0) {
+      await _fijkPlayer.setOption(FijkOption.playerCategory, 'seek-at-start', playPosition * 1000);
+    }
     // 设置视频源，并自动播放
     await _fijkPlayer.setDataSource(url, autoPlay: true);
-    // Future.delayed(Duration(seconds: 10), () {
-    //   _fijkPlayer.seekTo(playPosition * 1000);
-    // });
   }
 
   @override
   void dispose() {
     _db.close();
-    _fijkPlayer.removeListener(_completedListener);
+    _fijkPlayer.removeListener(_fijkStateListener);
     _currentPosSubs?.cancel();
     _fijkPlayer.release();
 
     super.dispose();
   }
 
-  void _completedListener() async {
+  void _fijkStateListener() async {
     // 播放完成
     if (_fijkPlayer.state == FijkState.completed) {
       // 多个选集，自动播放下一个
@@ -430,9 +432,9 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
         child: HtmlWidget(
           video.des ?? '',
           textStyle: TextStyle(
-              height: 1.8,
-              fontSize: 14,
-              color: Colors.black
+            height: 1.8,
+            fontSize: 14,
+            color: Colors.black
           ),
         )
       ),
@@ -452,24 +454,24 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
 
   Widget _buildLabelText(String label, String? text) {
     return RichText(
-        text: TextSpan(
-            children: [
-              TextSpan(text: label, style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  letterSpacing: 4
-              )),
-              TextSpan(text: '：  ', style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              )),
-              TextSpan(text: text ?? '', style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black,
-                  height: 1.6
-              )),
-            ]
-        )
+      text: TextSpan(
+        children: [
+          TextSpan(text: label, style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+              letterSpacing: 4
+          )),
+          TextSpan(text: '：  ', style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+          )),
+          TextSpan(text: text ?? '', style: TextStyle(
+              fontSize: 14,
+              color: Colors.black,
+              height: 1.6
+          )),
+        ]
+      )
     );
   }
 

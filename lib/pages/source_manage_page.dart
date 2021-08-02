@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:v_player/models/source_model.dart';
 import 'package:v_player/provider/source.dart';
+import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/db_helper.dart';
 
 class SourceManagePage extends StatefulWidget {
@@ -27,11 +28,13 @@ class _SourceManagePageState extends State<SourceManagePage> {
   void initState() {
     super.initState();
 
-    Future.delayed(Duration(milliseconds: 200), () async {
-      List<SourceModel> list = await _db.getSourceList();
-      setState(() {
-        _sourceList = list;
-      });
+    _getSourceList();
+  }
+
+  void _getSourceList() async {
+    List<SourceModel> list = await _db.getSourceList();
+    setState(() {
+      _sourceList = list;
     });
   }
 
@@ -55,7 +58,7 @@ class _SourceManagePageState extends State<SourceManagePage> {
               switch (v) {
                 case 0:
                   // 添加资源
-                  _showFormDialog(null);
+                  Navigator.of(context).pushNamed(Application.sourceFormPage).then((value) => _getSourceList());
                   break;
                 case 1:
                   // 导入资源
@@ -95,7 +98,7 @@ class _SourceManagePageState extends State<SourceManagePage> {
                 IconButton(
                   icon: Icon(Icons.camera),
                   onPressed: () async {
-                    if (model.url == null) {
+                    if (model.url == null || model.url!.isEmpty) {
                       BotToast.showText(text: '空地址');
                       return;
                     }
@@ -108,7 +111,9 @@ class _SourceManagePageState extends State<SourceManagePage> {
                 ),
                 IconButton(
                   icon: Icon(Icons.settings),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(Application.sourceFormPage, arguments: model);
+                  },
                 ),
                 IconButton(
                   icon: Icon(Icons.delete_sweep),
@@ -130,12 +135,6 @@ class _SourceManagePageState extends State<SourceManagePage> {
         },
       ),
     );
-  }
-
-  /// 显示表单
-  /// model 为null时，添加，不为null时修改
-  void _showFormDialog(SourceModel? model) {
-
   }
 
   /// 导入资源
@@ -186,7 +185,12 @@ class _SourceManagePageState extends State<SourceManagePage> {
   /// 导出资源到剪贴板
   void _exportSource() {
     try {
-      Clipboard.setData(ClipboardData(text: json.encode(_sourceList)));
+      Clipboard.setData(ClipboardData(text: json.encode(_sourceList.map((e) => {
+        'name': e.name,
+        'url': e.url,
+        'httpApi': e.httpApi,
+        'type': e.type,
+      }))));
       BotToast.showText(text: '导出成功！');
     } catch(e) {
       print(e);

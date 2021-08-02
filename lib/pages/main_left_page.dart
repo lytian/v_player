@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:v_player/router/application.dart';
-import 'package:v_player/router/routers.dart';
+import 'package:v_player/utils/application.dart';
 
 class MainLeftPage extends StatefulWidget {
   @override
@@ -10,10 +9,10 @@ class MainLeftPage extends StatefulWidget {
 class _MainLeftPageState extends State<MainLeftPage> {
 
   List<_ListItemInfo> _items = <_ListItemInfo>[
-    new _ListItemInfo(title: '下载记录', icon: Icons.file_download, route: Routers.downloadPage),
-    new _ListItemInfo(title: '我的收藏', icon: Icons.star, route: Routers.collectionPage),
-    new _ListItemInfo(title: '播放记录', icon: Icons.access_time, route: Routers.playRecordPage),
-    new _ListItemInfo(title: '设置', icon: Icons.settings, route: Routers.settingPage),
+    new _ListItemInfo(title: '下载记录', icon: Icons.file_download, route: Application.downloadPage),
+    new _ListItemInfo(title: '我的收藏', icon: Icons.star, route: Application.collectionPage),
+    new _ListItemInfo(title: '播放记录', icon: Icons.access_time, route: Application.playRecordPage),
+    new _ListItemInfo(title: '设置', icon: Icons.settings, route: Application.settingPage),
     new _ListItemInfo(title: '关于', icon: Icons.info),
   ];
 
@@ -60,8 +59,8 @@ class _MainLeftPageState extends State<MainLeftPage> {
                     title: Text(item.title ?? ''),
                     onTap: () {
                       if (item.route != null) {
-                        Application.router!.pop(context);  // 先关闭Drawer
-                        Application.router!.navigateTo(context, item.route!);
+                        Navigator.of(context).pop();  // 先关闭Drawer
+                        Navigator.of(context).pushNamed(item.route!);
                       }
                     }
                 );

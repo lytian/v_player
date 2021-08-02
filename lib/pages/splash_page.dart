@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/source_model.dart';
 import 'package:v_player/provider/app_info.dart';
 import 'package:v_player/provider/source.dart';
-import 'package:v_player/router/application.dart';
-import 'package:v_player/router/routers.dart';
+import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/db_helper.dart';
 import 'package:v_player/utils/sp_helper.dart';
 
@@ -72,7 +70,7 @@ class _SplashPageState extends State<SplashPage> {
 
   // 跳转主页
   void _goMain() {
-    Application.router!.navigateTo(context, Routers.mainPage, clearStack: true, transition: TransitionType.fadeIn);
+    Navigator.of(context).pushReplacementNamed(Application.mainPage);
   }
 
   @override

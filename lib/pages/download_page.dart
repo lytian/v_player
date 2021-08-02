@@ -33,6 +33,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
       });
     });
 
+    _fijkPlayer.setOption(FijkOption.hostCategory, "request-screen-on", 1);
     _fijkPlayer.addListener(_fullscreenListener);
   }
 

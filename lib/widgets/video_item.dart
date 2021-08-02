@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:v_player/models/video_model.dart';
-import 'package:v_player/router/application.dart';
-import 'package:v_player/router/routers.dart';
-import 'package:v_player/utils/fluro_convert_util.dart';
+import 'package:v_player/utils/application.dart';
 
 /// 横向的
 class VideoItem extends StatelessWidget {
@@ -20,7 +18,7 @@ class VideoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Application.router!.navigateTo(context, Routers.detailPage + '?id=${video.id}');
+        Navigator.of(context).pushNamed(Application.videoDetailPage, arguments: video.id);
       },
       child: this.type == 0 ? _buildPortraitItem() : _buildLandscapeItem()
     );

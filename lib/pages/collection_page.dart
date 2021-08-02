@@ -2,10 +2,8 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:v_player/models/record_model.dart';
-import 'package:v_player/router/application.dart';
-import 'package:v_player/router/routers.dart';
+import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/db_helper.dart';
-import 'package:v_player/utils/fluro_convert_util.dart';
 import 'package:v_player/widgets/no_data.dart';
 
 class CollectionPage extends StatefulWidget {
@@ -98,7 +96,7 @@ class _CollectionPageState extends State<CollectionPage> {
                     onPressed: () => _cancelRecord(model)
                   ),
                 ),
-                onTap: ()  => _playVideo(model.api!, model.vid!),
+                onTap: ()  => _playVideo(model.vid!),
               );
             },
               childCount: _recordList.length,
@@ -136,8 +134,8 @@ class _CollectionPageState extends State<CollectionPage> {
     );
   }
 
-  void _playVideo(String api, String vid) {
-    Application.router!.navigateTo(context, Routers.detailPage + '?id=$vid');
+  void _playVideo(String vid) {
+    Navigator.of(context).pushNamed(Application.videoDetailPage, arguments: vid);
   }
 
   void _cancelRecord(RecordModel model) {

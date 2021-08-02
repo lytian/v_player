@@ -14,8 +14,7 @@ import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/download_model.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/provider/source.dart';
-import 'package:v_player/router/application.dart';
-import 'package:v_player/router/routers.dart';
+import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/db_helper.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:v_player/utils/sp_helper.dart';
@@ -66,7 +65,7 @@ class DownloadTaskProvider with ChangeNotifier {
         threadCount: 3,
         debugMode: false,
         onSelect: () async {
-          Application.router!.navigateTo(context, Routers.downloadPage);
+          Navigator.of(context).pushNamed(Application.downloadPage);
           return null;
         }
     );
