@@ -997,7 +997,9 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
 
   @override
   Widget build(BuildContext context) {
-    Rect rect = player.value.fullScreen || player.state == FijkState.asyncPreparing
+    Rect rect = player.value.fullScreen
+      || player.state == FijkState.asyncPreparing
+      || player.state == FijkState.error
         ? Rect.fromLTWH(
       0,
       0,

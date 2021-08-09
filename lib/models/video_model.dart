@@ -35,20 +35,24 @@ class VideoModel {
     this.anthologies});
 
   VideoModel.fromJson(Map<String, dynamic> json) {
-    this.id = json['id'];
-    this.name = json['name'];
-    this.type = json['type'];
-    this.tid = json['tid'];
-    this.pic = json['pic'];
-    this.lang = json['lang'];
-    this.area = json['area'];
-    this.year = json['year'];
-    this.last = json['last'];
+    if (json['vod_id'] != null) {
+      this.id = json['vod_id'].toString();
+    }
+    this.name = json['vod_name'];
+    if (json['vod_cid'] != null || json['type_id'] != null) {
+      this.tid = (json['vod_cid'] ?? json['type_id']).toString();
+    }
+    this.type = json['category'] ?? json['type_name'];
+    this.pic = json['vod_pic'];
+    this.lang = json['vod_lang'] ?? json['vod_language'];
+    this.area = json['vod_area'];
+    this.year = json['vod_year'];
+    this.last = json['vod_addtime'] ?? json['vod_pubdate'];
     this.state = json['state'];
-    this.note = json['note'];
-    this.actor = json['actor'];
-    this.director = json['director'];
-    this.des = json['des'];
+    this.note = json['vod_note'] ?? json['vod_remarks'];
+    this.actor = json['vod_actor'];
+    this.director = json['vod_director'];
+    this.des = json['vod_content'];
     if (json['anthologies'] != null) {
       this.anthologies = [];
       json['anthologies'].forEach((e) {
@@ -59,20 +63,20 @@ class VideoModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['type'] = this.type;
-    data['tid'] = this.tid;
-    data['pic'] = this.pic;
-    data['lang'] = this.lang;
-    data['area'] = this.area;
-    data['year'] = this.year;
-    data['last'] = this.last;
+    data['vod_id'] = this.id;
+    data['vod_name'] = this.name;
+    data['type_name'] = this.type;
+    data['type_id'] = this.tid;
+    data['vod_pic'] = this.pic;
+    data['vod_lang'] = this.lang;
+    data['vod_area'] = this.area;
+    data['vod_year'] = this.year;
+    data['vod_addtime'] = this.last;
     data['state'] = this.state;
-    data['note'] = this.note;
-    data['actor'] = this.actor;
-    data['director'] = this.director;
-    data['des'] = this.des;
+    data['vod_note'] = this.note;
+    data['vod_actor'] = this.actor;
+    data['vod_director'] = this.director;
+    data['vod_content'] = this.des;
     if (this.anthologies != null) {
       data['anthologies'] = this.anthologies!.map((v) => v.toJson()).toList();
     }

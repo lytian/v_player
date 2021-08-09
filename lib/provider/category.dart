@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:v_player/models/category_model.dart';
-import 'package:v_player/utils/http_utils.dart';
+import 'package:v_player/utils/http_util.dart';
 
 class CategoryProvider with ChangeNotifier {
 
@@ -17,7 +17,7 @@ class CategoryProvider with ChangeNotifier {
   }
 
   void getCategoryList() async {
-    List<CategoryModel> list = await HttpUtils.getCategoryList();
+    List<CategoryModel> list = await HttpUtil().getCategoryList();
     _categoryList = [CategoryModel(id: '', name: '最新')] + list;
     notifyListeners();
   }

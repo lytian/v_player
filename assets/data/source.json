@@ -1,8 +1,8 @@
 [
   {
-    "name": "百度云资源",
-    "url": "http://hct.dbyunzy.com/",
-    "httpApi": "https://cj.apibdzy.com/inc/api.php",
-    "type": "影视资源"
+    "name": "88资源网",
+    "url": "http://www.88zyw.net/",
+    "httpApi": "http://www.88zy.live/inc/m3u8.php",
+    "type": "XML接口"
   }
 ]

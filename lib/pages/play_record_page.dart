@@ -88,7 +88,7 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
                       onPressed: () => _deleteRecord(model),
                     ),
                   ),
-                  onTap: ()  => _playVideo(model.vid!),
+                  onTap: ()  => _playVideo(model.api!, model.vid!),
                 );
               },
                 childCount: _recordList.length,
@@ -126,8 +126,11 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
     );
   }
 
-  void _playVideo(String vid) {
-    Navigator.of(context).pushNamed(Application.videoDetailPage, arguments: vid);
+  void _playVideo(String api, String vid) {
+    Navigator.of(context).pushNamed(Application.videoDetailPage, arguments: {
+      'videoId': vid,
+      'api': api
+    });
   }
 
   void _deleteRecord(RecordModel model) async {

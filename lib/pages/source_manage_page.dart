@@ -190,7 +190,7 @@ class _SourceManagePageState extends State<SourceManagePage> {
         'url': e.url,
         'httpApi': e.httpApi,
         'type': e.type,
-      }))));
+      }).toList())));
       BotToast.showText(text: '导出成功！');
     } catch(e) {
       print(e);

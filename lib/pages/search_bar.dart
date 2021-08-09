@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:v_player/models/video_model.dart';
-import 'package:v_player/utils/http_utils.dart';
+import 'package:v_player/utils/http_util.dart';
 import 'package:v_player/widgets/video_item.dart';
 
 class SearchBarDelegate extends SearchDelegate<String> {
@@ -17,7 +17,7 @@ class SearchBarDelegate extends SearchDelegate<String> {
   Future<List<VideoModel>> _getSearchResult(str) async {
     if (str == null || str == '') return [];
 
-    return await HttpUtils.searchVideo(str);
+    return await HttpUtil().getVideoList(keyword: str);
   }
 
   Widget _buildText(String str) {

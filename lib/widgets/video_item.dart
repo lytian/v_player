@@ -18,7 +18,9 @@ class VideoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed(Application.videoDetailPage, arguments: video.id);
+        Navigator.of(context).pushNamed(Application.videoDetailPage, arguments: {
+          'videoId': video.id
+        });
       },
       child: this.type == 0 ? _buildPortraitItem() : _buildLandscapeItem()
     );
@@ -44,7 +46,7 @@ class VideoItem extends StatelessWidget {
                     width: double.infinity,
                     height: double.infinity,
                     imageErrorBuilder: (context, _, strace) {
-                      return Container(
+                      return strace == null ? Container() : Container(
                         decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: AssetImage('assets/image/placeholder-l.jpg')
@@ -107,7 +109,10 @@ class VideoItem extends StatelessWidget {
                   width: double.infinity,
                   height: double.infinity,
                   imageErrorBuilder: (context, _, strace) {
-                    return Container(
+                    if (strace != null) {
+                      print(strace);
+                    }
+                    return strace == null ? Container() : Container(
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: AssetImage('assets/image/placeholder-p.jpg')

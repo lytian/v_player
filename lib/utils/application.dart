@@ -27,8 +27,9 @@ class Application {
   static final Map<String, WidgetBuilder> routes = {
     splashPage: (context) => SplashPage(),
     mainPage: (context) => MainPage(),
-    videoDetailPage: (context, { String? arguments }) => VideoDetailPage(
-      videoId: arguments!,
+    videoDetailPage: (context, { arguments }) => VideoDetailPage(
+      videoId: arguments['videoId']!,
+      api: arguments['api'],
     ),
     sourceManagePage: (context) => SourceManagePage(),
     sourceFormPage: (context, { SourceModel? arguments }) => SourceFormPage(source: arguments,),

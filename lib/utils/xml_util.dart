@@ -47,8 +47,8 @@ class XmlUtil {
     final videos = document.findAllElements('video');
     if (videos.isEmpty) return null;
     final video = videos.first;
-    List<Anthology> anthologies = [];
     String? str = getNodeCData(video.findElements('dl').first, 'dd');
+    List<Anthology> anthologies = [];
     if (str != null) {
       str.split('#').forEach((s) {
         if (s.indexOf('\$') > -1) {

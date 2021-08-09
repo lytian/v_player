@@ -9,7 +9,7 @@ import 'package:v_player/pages/search_bar.dart';
 import 'package:v_player/provider/download_task.dart';
 import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/application.dart';
-import 'package:v_player/utils/http_utils.dart';
+import 'package:v_player/utils/http_util.dart';
 import 'package:v_player/widgets/animated_floating_action_button.dart';
 import 'package:v_player/widgets/no_data.dart';
 import 'package:v_player/widgets/video_item.dart';
@@ -70,7 +70,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       _type = '';
       _categoryList = [];
     });
-    List<CategoryModel> list = await HttpUtils.getCategoryList();
+    List<CategoryModel> list = await HttpUtil().getCategoryList();
     setState(() {
       _categoryList = [CategoryModel(id: '', name: '最新')] + list;
       _navController = TabController(length: _categoryList.length, vsync: this);
@@ -83,7 +83,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     if (_type == null || _type!.isEmpty) {
       hour = 72;
     }
-    List<VideoModel> videos = await HttpUtils.getVideoList(pageNum: _pageNum, type: _type, hour: hour);
+    List<VideoModel> videos = await HttpUtil().getVideoList(pageNum: _pageNum, type: _type, hour: hour);
     if (!mounted) return 0;
     setState(() {
       if (this._pageNum <= 1) {

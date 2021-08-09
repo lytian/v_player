@@ -11,15 +11,16 @@ import 'package:v_player/models/video_model.dart';
 import 'package:v_player/provider/download_task.dart';
 import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/db_helper.dart';
-import 'package:v_player/utils/http_utils.dart';
+import 'package:v_player/utils/http_util.dart';
 import 'package:provider/provider.dart';
 import 'package:fijkplayer/fijkplayer.dart';
 import 'package:v_player/widgets/fijk_panel/fijk_panel.dart';
 
 class VideoDetailPage extends StatefulWidget {
   final String videoId;
+  final String? api;
 
-  VideoDetailPage({required this.videoId});
+  VideoDetailPage({required this.videoId, this.api});
 
   @override
   _VideoDetailPageState createState() => _VideoDetailPageState();
@@ -47,12 +48,12 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
 
   Future<VideoModel?>  _getVideoInfo() async {
     SourceModel? sourceModel = context.read<SourceProvider>().currentSource;
-    VideoModel? video = await HttpUtils.getVideoById(sourceModel!.httpApi!, widget.videoId);
+    VideoModel? video = await HttpUtil().getVideoById(widget.videoId, widget.api);
     _videoModel = video;
     if (video != null) {
       if (video.anthologies != null && video.anthologies!.isNotEmpty) {
         // 先查看是否有播放记录，默认从上次开始播放
-        RecordModel? recordModel = await _db.getRecordByVid(sourceModel.httpApi!, widget.videoId);
+        RecordModel? recordModel = await _db.getRecordByVid(widget.api ?? sourceModel!.httpApi!, widget.videoId);
         setState(() {
           _recordModel = recordModel;
           // 单视频，只有一个anthology，并且name为null
