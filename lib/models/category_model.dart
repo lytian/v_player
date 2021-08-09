@@ -7,10 +7,10 @@ class CategoryModel {
       this.name});
 
   CategoryModel.fromJson(Map<String, dynamic> json) {
-    if (json['type_id'] != null) {
-      id = json['type_id'].toString();
+    if (json['type_id'] != null || json['cid'] != null) {
+      id = (json['type_id'] ?? json['cid']).toString();
     }
-    name = json['type_name'];
+    name = json['type_name'] ?? json['title'];
   }
 
   Map<String, dynamic> toJson() {

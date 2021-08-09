@@ -136,7 +136,10 @@ class HttpUtil {
         return XmlUtil.parseVideoList(res);
       } else {
         var data = json.decode(res);
-        return (data['list'] as List).map((e) => VideoModel.fromJson(e)).toList();
+        var list = data['list'] ?? data['data'];
+        if (list != null) {
+          return (list as List).map((e) => VideoModel.fromJson(e)).toList();
+        }
       }
     } catch (e, s) {
       print(s);
@@ -160,23 +163,26 @@ class HttpUtil {
         return XmlUtil.parseVideo(res);
       } else {
         var data = json.decode(res);
-        return (data['list'] as List).map((e) {
-          VideoModel model = VideoModel.fromJson(e);
-          // 处理选集
-          String? playUrl = e['vpath'] ?? e['vod_play_url'];
-          List<Anthology> anthologies = [];
-          if (playUrl != null) {
-            playUrl.split('#').forEach((s) {
-              if (s.indexOf('\$') > -1) {
-                anthologies.add(Anthology(name: s.split('\$')[0], url: s.split('\$')[1]));
-              } else {
-                anthologies.add(Anthology(name: null, url: s));
-              }
-            });
-          }
-          model.anthologies = anthologies;
-          return model;
-        }).toList()[0];
+        var list = data['list'] ?? data['data'];
+        if (list != null) {
+          return (list as List).map((e) {
+            VideoModel model = VideoModel.fromJson(e);
+            // 处理选集
+            String? playUrl = e['vpath'] ?? e['vod_play_url'];
+            List<Anthology> anthologies = [];
+            if (playUrl != null) {
+              playUrl.split('#').forEach((s) {
+                if (s.indexOf('\$') > -1) {
+                  anthologies.add(Anthology(name: s.split('\$')[0], url: s.split('\$')[1]));
+                } else {
+                  anthologies.add(Anthology(name: null, url: s));
+                }
+              });
+            }
+            model.anthologies = anthologies;
+            return model;
+          }).toList()[0];
+        }
       }
     } catch (e, s) {
       print(s);
