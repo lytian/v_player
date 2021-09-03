@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:fijkplayer/fijkplayer.dart';
+import 'package:v_player/widgets/fijk_panel/custom_slider.dart';
 
 import 'animated_play_pause.dart';
 import 'center_play_button.dart';
@@ -292,7 +293,6 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
         _duration = value.duration;
       });
     }
-    print('+++++++++ $value.state  播放器状态  ${value.state == FijkState.started} ++++++++++');
     bool playing = (value.state == FijkState.started);
     bool prepared = value.prepared;
     String? exception = value.exception.message;
@@ -559,8 +559,8 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(right: 8, left: 8),
-                  child: FijkSlider(
-                    colors: FijkSliderColors(
+                  child: CustomSlider(
+                    colors: CustomSliderColors(
                       cursorColor: Theme.of(context).primaryColor,
                       playedColor: Theme.of(context).primaryColor,
                     ),
@@ -577,7 +577,6 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
                     onChangeEnd: (v) {
                       setState(() {
                         player.seekTo(v.toInt());
-                        print("seek to $v");
                         _currentPos = Duration(milliseconds: _seekPos.toInt());
                         _seekPos = -1;
                       });
@@ -825,7 +824,7 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
     }
     return Positioned(
       right: speedMargin,
-      bottom: 0,
+      bottom: barHeight + 5,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.black45,
@@ -908,7 +907,6 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
   Widget _buildHitArea() {
     return GestureDetector(
       onTap: _cancelAndRestartTimer,
-      behavior: HitTestBehavior.opaque,
       onHorizontalDragStart: _onHorizontalDragStart,
       onHorizontalDragUpdate: _onHorizontalDragUpdate,
       onHorizontalDragEnd: _onHorizontalDragEnd,
@@ -917,54 +915,57 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
       onVerticalDragEnd: _onVerticalDragEnd,
       child: AbsorbPointer(
         absorbing: _hideStuff,
-        child: Column(
-          children: <Widget>[
+        child: Stack(
+          children: [
             // 播放器顶部控制器
             if (widget.showTopCon)
-              _buildTopBar(),
-            // 中间区域
-            Expanded(
-              child: Stack(
-                children: <Widget>[
-                  // 顶部显示 (快进时间、音量、亮度)
-                  if (_isTouch || _varTouchInitSuc)
-                    Positioned(
-                      top: player.value.fullScreen ? 20 : 0,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 显示左右滑动快进时间的块
-                          if (_isTouch)
-                            _buildDragProgressTime(),
-                          // 显示上下滑动音量亮度
-                          if (_varTouchInitSuc)
-                            _buildDragVolumeAndBrightness(),
-                        ],
-                      ),
-                    ),
-                  // 中间按钮
-                  Align(
-                    alignment: Alignment.center,
-                    child: !_prepared || _buffering
-                            ? _buildLoading()
-                            : _buildCenterPlayBtn(),
-                  ),
-                  // 倍数选择
-                  if (!_hideSpeedStu)
-                    _buildSpeedList(),
-                  // 锁按钮
-                  if (player.value.fullScreen)
-                    _buildLockBtn(),
-                ],
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _buildTopBar(),
               ),
+            // 顶部显示 (快进时间、音量、亮度)
+            if (_isTouch || _varTouchInitSuc)
+              Positioned(
+                top: barHeight + 20,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // 显示左右滑动快进时间的块
+                    if (_isTouch)
+                      _buildDragProgressTime(),
+                    // 显示上下滑动音量亮度
+                    if (_varTouchInitSuc)
+                      _buildDragVolumeAndBrightness(),
+                  ],
+                ),
+              ),
+            // 中间按钮
+            Align(
+              alignment: Alignment.center,
+              child: !_prepared || _buffering
+                ? _buildLoading()
+                : _buildCenterPlayBtn(),
             ),
+            // 倍数选择
+            if (!_hideSpeedStu)
+              _buildSpeedList(),
+            // 锁按钮
+            if (player.value.fullScreen)
+              _buildLockBtn(),
             // 播放器底部控制器
             if (_prepared)
-              _buildBottomBar(),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: _buildBottomBar(),
+              ),
           ],
-        ),
+        )
       ),
     );
   }
@@ -997,20 +998,11 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
 
   @override
   Widget build(BuildContext context) {
-    Rect rect = player.value.fullScreen
-      || player.state == FijkState.asyncPreparing
-      || player.state == FijkState.error
-        ? Rect.fromLTWH(
+    Rect rect = Rect.fromLTWH(
       0,
       0,
       widget.viewSize.width,
       widget.viewSize.height,
-    )
-        : Rect.fromLTRB(
-      max(0.0, widget.texturePos.left),
-      max(0.0, widget.texturePos.top),
-      min(widget.viewSize.width, widget.texturePos.right),
-      min(widget.viewSize.height, widget.texturePos.bottom),
     );
 
     Widget child;
@@ -1038,7 +1030,6 @@ class _FijkPanelState extends State<FijkPanel> with TickerProviderStateMixin, Wi
         child = _buildHitArea();
       }
     }
-
     return WillPopScope(
       child: Positioned.fromRect(
         rect: rect,

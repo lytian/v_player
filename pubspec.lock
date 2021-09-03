@@ -63,14 +63,14 @@ packages:
       name: connectivity_for_web
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.4.0"
+    version: "0.4.0+1"
   connectivity_macos:
     dependency: transitive
     description:
       name: connectivity_macos
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.2.0"
+    version: "0.2.1+2"
   connectivity_platform_interface:
     dependency: transitive
     description:
@@ -155,7 +155,7 @@ packages:
       name: flutter_widget_from_html_core
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.6.1+4"
+    version: "0.6.2"
   html:
     dependency: transitive
     description:
@@ -182,10 +182,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: bd7fdb58919fc474d1d61cf16aa1041132484956
+      resolved-ref: ea20b5d3c7974a53a435f31459d3b87d86d62159
       url: "https://github.com/lytian/m3u8_downloader.git"
     source: git
-    version: "1.2.1"
+    version: "1.3.0"
   matcher:
     dependency: transitive
     description:
@@ -276,7 +276,7 @@ packages:
       name: platform
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.2"
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -304,7 +304,7 @@ packages:
       name: shared_preferences
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.6"
+    version: "2.0.7"
   shared_preferences_linux:
     dependency: transitive
     description:
@@ -332,7 +332,7 @@ packages:
       name: shared_preferences_web
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.1"
+    version: "2.0.2"
   shared_preferences_windows:
     dependency: transitive
     description:
@@ -358,14 +358,14 @@ packages:
       name: sqflite
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.0+3"
+    version: "2.0.0+4"
   sqflite_common:
     dependency: transitive
     description:
       name: sqflite_common
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.0+2"
+    version: "2.0.1"
   stack_trace:
     dependency: transitive
     description:
@@ -449,14 +449,14 @@ packages:
       name: url_launcher_web
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.2"
+    version: "2.0.4"
   url_launcher_windows:
     dependency: transitive
     description:
       name: url_launcher_windows
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.0.1"
+    version: "2.0.2"
   vector_math:
     dependency: transitive
     description:
@@ -470,7 +470,7 @@ packages:
       name: win32
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.2.5"
+    version: "2.2.7"
   xdg_directories:
     dependency: transitive
     description:

@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AppInfoProvider()),
         ChangeNotifierProvider(create: (_) => SourceProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        ChangeNotifierProvider(create: (_) => DownloadTaskProvider()),
+        ChangeNotifierProvider(create: (_) => DownloadTaskProvider(context)),
       ],
       child: Consumer<AppInfoProvider>(
         builder: (context, appInfo, _) {

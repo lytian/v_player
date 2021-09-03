@@ -30,6 +30,10 @@ class DownloadTaskProvider with ChangeNotifier {
   List<DownloadModel> get downloadList => _downloadList;
   DownloadTask? get currentTask => _currentTask;
 
+  DownloadTaskProvider(BuildContext context) {
+    initialize(context);
+  }
+
   static progressCallback(dynamic args) {
     final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
     if (send != null) {
@@ -58,16 +62,18 @@ class DownloadTaskProvider with ChangeNotifier {
   void initialize(BuildContext context) async {
     // 1. 初始化下载器
     WidgetsFlutterBinding.ensureInitialized();
-    M3u8Downloader.initialize(
-        saveDir: await findSavePath(),
-        isConvert: SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: true) ?? true,
-        showNotification: true,
-        threadCount: 3,
-        debugMode: false,
+    await M3u8Downloader.initialize(
         onSelect: () async {
           Navigator.of(context).pushNamed(Application.downloadPage);
           return null;
         }
+    );
+    await M3u8Downloader.config(
+      saveDir: await findSavePath(),
+      convertMp4: SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: false) ?? false,
+      showNotification: true,
+      threadCount: 4,
+      debugMode: false,
     );
     await Future.delayed(Duration(milliseconds: 500));
 
@@ -166,7 +172,8 @@ class DownloadTaskProvider with ChangeNotifier {
     }
 
     // 3.1 创建新的下载 TODO 与收藏的冲突处理。 api字段暂未处理
-    String m3u8Path = await M3u8Downloader.getM3U8Path(url);
+    var savePath = await M3u8Downloader.getSavePath(url);
+    String m3u8Path = savePath['m3u8'];
     String fileId = '';
     if (m3u8Path.indexOf(path.separator) > -1) {
       fileId = m3u8Path.split(path.separator)[m3u8Path.split(path.separator).length - 2];
@@ -196,7 +203,7 @@ class DownloadTaskProvider with ChangeNotifier {
   /// 暂停下载
   ///
   Future<void> pause(String url) async {
-    M3u8Downloader.cancel(url);
+    M3u8Downloader.pause(url);
     await _db.updateDownloadByUrl(url, status: DownloadStatus.WAITING);
   }
 
@@ -252,7 +259,7 @@ class DownloadTaskProvider with ChangeNotifier {
     }
     // 2. 删除本地文件
     models.forEach((e) {
-      M3u8Downloader.cancel(e.url!, isDelete: true);
+      M3u8Downloader.delete(e.url!);
     });
     // 3. 删除下载记录
     int count = await _db.deleteDownloadByIds(models.map((e) => e.id!).toList());

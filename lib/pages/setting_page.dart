@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:m3u8_downloader/m3u8_downloader.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/provider/app_info.dart';
@@ -22,7 +23,7 @@ class _SettingPageState extends State<SettingPage> {
 
     _colorKey = SpHelper.getString(Constant.key_theme_color, defValue: 'blue');
     _wifiAutoDownload = SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true)!;
-    _toMP4 = SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: true)!;
+    _toMP4 = SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: false)!;
   }
 
   @override
@@ -41,26 +42,26 @@ class _SettingPageState extends State<SettingPage> {
               Padding(
                 padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
                 child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: themeColorMap.keys.map((key) {
-                      Color? value = themeColorMap[key];
-                      return InkWell(
-                        onTap: () {
-                          setState(() {
-                           _colorKey = key; 
-                          });
-                          context.read<AppInfoProvider>().setTheme(key);
-                        },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          color: value,
-                          child: _colorKey == key ? Icon(Icons.done, color: Colors.white,) : null,
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: themeColorMap.keys.map((key) {
+                    Color? value = themeColorMap[key];
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                         _colorKey = key;
+                        });
+                        context.read<AppInfoProvider>().setTheme(key);
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        color: value,
+                        child: _colorKey == key ? Icon(Icons.done, color: Colors.white,) : null,
+                      ),
+                    );
+                  }).toList(),
+                ),
               )
             ],
           ),
@@ -88,20 +89,11 @@ class _SettingPageState extends State<SettingPage> {
             leading: Icon(Icons.crop),
             title: Text('M3U8转MP4'),
             trailing: Switch(
-                value: _toMP4,
-                onChanged: (v) {
-                  setState(() {
-                    _toMP4 = v;
-                  });
-                  SpHelper.putBool(Constant.key_m3u8_to_mp4, v);
-                }
+              value: _toMP4,
+              onChanged: _toggleConvertMp4,
             ),
             onTap: () {
-              bool v = !_toMP4;
-              setState(() {
-                _toMP4 = v;
-              });
-              SpHelper.putBool(Constant.key_m3u8_to_mp4, v);
+              _toggleConvertMp4(!_toMP4);
             },
           ),
           ListTile(
@@ -115,5 +107,16 @@ class _SettingPageState extends State<SettingPage> {
         ],
       ),
     );
+  }
+
+  void _toggleConvertMp4(bool flag) {
+    M3u8Downloader.config(convertMp4: flag).then((value) {
+      setState(() {
+        _toMP4 = flag;
+      });
+      SpHelper.putBool(Constant.key_m3u8_to_mp4, flag);
+    }).catchError((err) {
+      BotToast.showText(text: '设置失败');
+    });
   }
 }

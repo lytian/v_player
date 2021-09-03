@@ -103,7 +103,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       await _fijkPlayer.stop();
       await _fijkPlayer.reset();
     } else {
-      //播放时屏幕常亮
+      // 播放时屏幕常亮
       await _fijkPlayer.setOption(FijkOption.hostCategory, "request-screen-on", 1);
       // 添加播放完成状态的监听器
       _fijkPlayer.addListener(_fijkStateListener);
