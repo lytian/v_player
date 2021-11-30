@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:bot_toast/bot_toast.dart';
@@ -16,7 +17,6 @@ import 'package:v_player/models/video_model.dart';
 import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/db_helper.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:v_player/utils/sp_helper.dart';
 
 class DownloadTaskProvider with ChangeNotifier {
