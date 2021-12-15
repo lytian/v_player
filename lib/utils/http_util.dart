@@ -69,7 +69,11 @@ class HttpUtil {
             }
             break;
           default:
-            msg = '未知错误';
+            if (e.message.contains('Network is unreachable')) {
+              msg = '网络无法访问！';
+            } else {
+              msg = e.message;
+            }
             break;
         }
         BotToast.showText(text: msg);

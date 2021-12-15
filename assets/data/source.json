@@ -1,8 +1,8 @@
 [
   {
-    "name": "88资源网",
-    "url": "http://www.88zyw.net/",
-    "httpApi": "http://www.88zy.live/inc/m3u8.php",
+    "name": "天空资源网",
+    "url": "https://caiji.tiankongapi.com",
+    "httpApi": "https://caiji.tiankongapi.com/inc/api.php",
     "type": "XML接口"
   }
 ]

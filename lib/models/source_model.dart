@@ -12,7 +12,7 @@ class SourceModel {
       this.httpApi,
       this.type,});
 
-  SourceModel.fromJson(Map<String, dynamic> json) {
+  SourceModel.fromJson(Map json) {
     id = json['id'];
     name = json['name'];
     url = json['url'];

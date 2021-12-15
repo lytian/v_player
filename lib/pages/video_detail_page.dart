@@ -1,26 +1,28 @@
 import 'dart:async';
-import 'dart:core';
 import 'dart:ui';
+import 'package:collection/collection.dart';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/record_model.dart';
 import 'package:v_player/models/source_model.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/provider/download_task.dart';
-import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/db_helper.dart';
 import 'package:v_player/utils/http_util.dart';
+import 'package:v_player/utils/sp_helper.dart';
+import 'package:v_player/widgets/video_controls/video_controls.dart';
+import 'package:video_player/video_player.dart';
 import 'package:provider/provider.dart';
-import 'package:fijkplayer/fijkplayer.dart';
-import 'package:v_player/widgets/fijk_panel/fijk_panel.dart';
 
 class VideoDetailPage extends StatefulWidget {
-  final String videoId;
   final String? api;
+  final String videoId;
 
-  VideoDetailPage({required this.videoId, this.api});
+  VideoDetailPage({this.api, required this.videoId});
 
   @override
   _VideoDetailPageState createState() => _VideoDetailPageState();
@@ -28,17 +30,17 @@ class VideoDetailPage extends StatefulWidget {
 
 class _VideoDetailPageState extends State<VideoDetailPage> {
   late Future<VideoModel?> _futureFetch;
-  DBHelper _db = DBHelper();
-  final FijkPlayer _fijkPlayer = FijkPlayer();
+  VideoPlayerController? _controller;
+  ChewieController? _chewieController;
+  final DBHelper _db = DBHelper();
+
 
   String? _url;
-  String? _title;
-
+  SourceModel? _currentSource;
   VideoModel? _videoModel;
   RecordModel? _recordModel;
   bool _isSingleVideo = false; // 是否单视频，没有选集
   int _cachePlayedSecond = -1; // 临时的播放秒数
-  StreamSubscription? _currentPosSubs; // 播放位置监听
 
   @override
   void initState() {
@@ -47,133 +49,167 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   }
 
   Future<VideoModel?>  _getVideoInfo() async {
-    SourceModel? sourceModel = context.read<SourceProvider>().currentSource;
-    VideoModel? video = await HttpUtil().getVideoById(widget.videoId, widget.api);
+    String? baseUrl = widget.api;
+    if (baseUrl == null) {
+      Map? sourceJson = SpHelper.getObject(Constant.key_current_source);
+      _currentSource = SourceModel.fromJson(sourceJson!);
+      baseUrl = _currentSource?.httpApi;
+    }
+    VideoModel? video  = await HttpUtil().getVideoById(widget.videoId, baseUrl);
     _videoModel = video;
     if (video != null) {
       if (video.anthologies != null && video.anthologies!.isNotEmpty) {
         // 先查看是否有播放记录，默认从上次开始播放
-        RecordModel? recordModel = await _db.getRecordByVid(widget.api ?? sourceModel!.httpApi!, widget.videoId);
+        RecordModel? recordModel = await _db.getRecordByVid(baseUrl!, widget.videoId);
         setState(() {
           _recordModel = recordModel;
+
           // 单视频，只有一个anthology，并且name为null
           if (video.anthologies!.length == 1 && video.anthologies!.first.name == null) {
             _isSingleVideo = true;
           }
         });
 
-        String url;
-        String name;
+        String? url;
+        String? name;
         int? position;
         if (_recordModel == null) {
           // 默认播放第一个
-          url = video.anthologies!.first.url!;
-          name = video.anthologies!.first.name == null ? video.name! : (video.name! + '  ' + video.anthologies!.first.name!);
+          url = video.anthologies!.first.url;
+          name = video.anthologies!.first.name == null ? video.name : (video.name! + '  ' + (video.anthologies!.first.name ?? ''));
         } else {
           // 自动跳转到历史
-          int index = video.anthologies!.indexWhere((e) => e.name == _recordModel!.anthologyName);
-          if (index > -1) {
-            Anthology anthology = video.anthologies![index];
-            url = anthology.url!;
-            name = anthology.name == null ? video.name! : (video.name! + '  ' + anthology.name!);
+          Anthology? anthology = video.anthologies!.firstWhereOrNull((e) => e.name == _recordModel!.anthologyName);
+          if (anthology != null) {
+            url = anthology.url;
+            name = anthology.name == null ? video.name : (video.name! + '  ' + anthology.name!);
           } else {
-            url = video.anthologies!.first.url!;
-            name = video.anthologies!.first.name == null ? video.name! : (video.name! + '  ' + video.anthologies!.first.name!);
+            url = video.anthologies!.first.url;
+            name = video.anthologies!.first.name == null ? video.name : (video.name! + '  ' + (video.anthologies!.first.name ?? ''));
           }
           position = recordModel!.playedTime;
         }
 
-        _startPlay(url, name, playPosition: position ?? 0);
+        _startPlay(url!, name!, playPosition: position);
       }
     }
     return video;
   }
 
-  void _startPlay(String url, String name, {
-    int playPosition = -1,
-    bool reset = false,
-  }) async {
+  void _startPlay(String url, String name, { int? playPosition }) async {
+    // 切换视频，重置_cachePlayedSecond
+    _cachePlayedSecond = -1;
+
     setState(() {
       _url = url;
-      _title = name;
     });
-    if (reset) {
-      // 切换视频，重置_cachePlayedSecond
-      _cachePlayedSecond = -1;
-      await _fijkPlayer.stop();
-      await _fijkPlayer.reset();
-    } else {
-      // 播放时屏幕常亮
-      await _fijkPlayer.setOption(FijkOption.hostCategory, "request-screen-on", 1);
-      // 添加播放完成状态的监听器
-      _fijkPlayer.addListener(_fijkStateListener);
-      // 播放位置变化监听
-      _currentPosSubs = _fijkPlayer.onCurrentPosUpdate.listen((curPos) {
-        // 视频播放同一秒内不执行操作
-        int position = curPos.inSeconds;
-        if (position == _cachePlayedSecond) return;
-        _cachePlayedSecond = position;
-
-        String? anthologyName;
-        if (!_isSingleVideo) {
-          int index = _videoModel!.anthologies!.indexWhere((e) => e.url == _url);
-          if (index > -1) {
-            anthologyName = _videoModel!.anthologies![index].name;
-          }
-        }
-
-        // 播放记录
-        if (_recordModel == null) {
-          SourceModel? sourceModel = context.read<SourceProvider>().currentSource;
-          _recordModel = RecordModel(
-              api: sourceModel!.httpApi,
-              vid: widget.videoId,
-              tid: _videoModel!.tid,
-              type: _videoModel!.type,
-              name: _videoModel!.name,
-              pic: _videoModel!.pic,
-              collected: 0,
-              anthologyName: anthologyName,
-              progress: 0,
-              playedTime: 0
-          );
-          _db.insertRecord(_recordModel!).then((id) => _recordModel!.id = id);
-        } else {
-          _db.updateRecord(_recordModel!.id!,
-              anthologyName: anthologyName,
-              playedTime: position,
-              progress: position / _fijkPlayer.value.duration.inSeconds
-          );
-        }
-      });
+    if (_controller == null) {
+      _initController(url, name, playPosition: playPosition);
+      return;
     }
-    // 设置进度
-    if (playPosition > 0) {
-      await _fijkPlayer.setOption(FijkOption.playerCategory, 'seek-at-start', playPosition * 1000);
+    // 备份旧的controller
+    final oldController = _controller;
+    // 在下一帧处理完成后
+    WidgetsBinding.instance!.addPostFrameCallback((_) async {
+      oldController!.removeListener(_videoListener);
+      // 注销旧的controller;
+      await oldController.dispose();
+      _chewieController?.dispose();
+      // 初始化一个新的controller
+      _initController(url, name);
+    });
+    // 刷新状态
+    setState(() {
+      _controller = null;
+    });
+  }
+
+  void _initController(String url, String name, { int? playPosition }) async {
+    // 设置资源
+    _controller = VideoPlayerController.network(url, videoPlayerOptions: VideoPlayerOptions(
+      mixWithOthers: true
+    ));
+    try {
+      // 为了自适应视频比例
+      await _controller!.initialize();
+    } catch(err) {
+      print(err);
     }
-    // 设置视频源，并自动播放
-    await _fijkPlayer.setDataSource(url, autoPlay: true);
+
+    _chewieController = ChewieController(
+        videoPlayerController: _controller!,
+        autoPlay: true,
+        allowedScreenSleep: false,
+        startAt: playPosition != null ? Duration(milliseconds: playPosition) : null,
+        playbackSpeeds: [0.5, 1, 1.25, 1.5, 2],
+        customControls: VideoControls(
+          title: name,
+          actions: _buildDownload(url, name),
+        )
+        // customControls: VideoControls(
+        //   title: name,
+        //   actions: _buildDownload(url, name),
+        // )
+    );
+    _controller!.addListener(_videoListener);
+    setState(() {});
   }
 
   @override
   void dispose() {
+    _controller?.removeListener(_videoListener);
+    _controller?.dispose();
+    _chewieController?.dispose();
     _db.close();
-    _fijkPlayer.removeListener(_fijkStateListener);
-    _currentPosSubs?.cancel();
-    _fijkPlayer.release();
 
     super.dispose();
   }
 
-  void _fijkStateListener() async {
-    // 播放完成
-    if (_fijkPlayer.state == FijkState.completed) {
-      // 多个选集，自动播放下一个
-      if (_videoModel!.anthologies != null && _videoModel!.anthologies!.length > 1) {
+  void _videoListener() async {
+    if (_videoModel == null || _controller == null || !_controller!.value.isPlaying) return;
+    // 视频播放同一秒内不执行操作
+    if (_controller!.value.position.inSeconds == _cachePlayedSecond) return;
+    _cachePlayedSecond = _controller!.value.position.inSeconds;
+
+    String? anthologyName;
+    if (!_isSingleVideo) {
+      Anthology? anthology = _videoModel!.anthologies!.firstWhereOrNull((e) => e.url == _url);
+      if (anthology != null) {
+        anthologyName = anthology.name;
+      }
+    }
+
+    // 播放记录
+    if (_recordModel == null) {
+      _recordModel = RecordModel(
+          api: _currentSource!.httpApi,
+          vid: widget.videoId,
+          tid: _videoModel!.tid,
+          type: _videoModel!.type,
+          name: _videoModel!.name,
+          pic: _videoModel!.pic,
+          collected: 0,
+          anthologyName: anthologyName,
+          progress: 0,
+          playedTime: 0
+      );
+      _recordModel!.id = await _db.insertRecord(_recordModel!);
+    } else {
+      _db.updateRecord(_recordModel!.id!,
+          anthologyName: anthologyName,
+          playedTime: _controller!.value.position.inMilliseconds,
+          progress: _controller!.value.position.inMilliseconds / _controller!.value.duration.inMilliseconds
+      );
+    }
+
+    // 多个选集
+    if (_videoModel!.anthologies != null && _videoModel!.anthologies!.length > 1) {
+      // 播放到最后，切换下一个视频
+      if (_cachePlayedSecond >= _controller!.value.duration.inSeconds) {
         int index = _videoModel!.anthologies!.indexWhere((e) => e.url == _url);
         if (index > -1 && index != (_videoModel!.anthologies!.length - 1)) {
           Anthology next = _videoModel!.anthologies![index + 1];
-          _startPlay(next.url!, _videoModel!.name! + '  ' + next.name!, reset: true);
+          _startPlay(next.url!, _videoModel!.name! + '  ' + next.name!);
         }
       }
     }
@@ -183,40 +219,28 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
-        children: [
-          Container(
-            height: MediaQuery.of(context).padding.top,
-            color: Colors.black,
-          ),
-          FijkView(
-            height: MediaQuery.of(context).size.width / (16 / 9),
-            color: Colors.black,
-            player: _fijkPlayer,
-            panelBuilder: (
-                FijkPlayer player,
-                FijkData data,
-                BuildContext context,
-                Size viewSize,
-                Rect texturePos,
-                ) {
-              /// 使用自定义的布局
-              return FijkPanel(
-                player: player,
-                pageContext: context,
-                viewSize: viewSize,
-                texturePos: texturePos,
-                playerTitle: _title ?? '',
-                actionWidget: _buildDownload(),
-                playlistBuilder: (context, onClose) {
-                  return _buildVideoPlaylist(onClose);
-                },
-                onReplay: () {
-                  if (_url == null) return;
-
-                  _startPlay(_url!, _title!, reset: true);
-                },
-              );
-            },
+        children: <Widget>[
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Container(
+              padding: EdgeInsets.only(top: MediaQueryData.fromWindow(window).padding.top),
+              color: Colors.black,
+              child: _chewieController != null && _controller != null
+                ? Chewie(
+                  controller: _chewieController!,
+                )
+                : Stack(
+                  children: <Widget>[
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: BackButton(color: Colors.white,),
+                    ),
+                    Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  ],
+                )
+            ),
           ),
           Expanded(
             flex: 1,
@@ -248,7 +272,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
               }
             ),
           )
-        ],
+        ]
       )
     );
   }
@@ -283,64 +307,65 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     // 添加视频标题和说明
     children.addAll([
       Padding(
-        padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-                flex: 1,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(video.name ?? '', style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18
-                    ),),
-                    SizedBox(
-                      height: 4,
-                    ),
-                    Text(arr.join('/'), style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 13,
-                        height: 1
-                    ),),
-                  ],
-                )
-            ),
-            Container(
-              height: 12,
-              child: VerticalDivider(color: Colors.grey,),
-            ),
-            Container(
-              width: 48,
-              height: 30,
-              margin: EdgeInsets.only(right: 6),
-              child: MaterialButton(
-                padding: EdgeInsets.zero,
-                child: Icon(_recordModel?.collected == 1 ? Icons.star : Icons.star_border,
-                  color: _recordModel?.collected == 1 ? Theme.of(context).primaryColor : Colors.grey,
-                  size: 24,
-                ),
-                onPressed: () async {
-                  if (_videoModel == null) return;
-                  if (_recordModel == null) {
-                    BotToast.showText(text: '请等待视频加载完成');
-                    return;
-                  }
-                  int newCollected = _recordModel!.collected == 1 ? 0 : 1;
-                  await _db.updateRecord(_recordModel!.id!, collected: newCollected);
-                  setState(() {
-                    _recordModel!.collected = newCollected;
-                  });
-                  BotToast.showText(text: newCollected == 1 ? '收藏成功' : '取消收藏成功');
-                },
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                  flex: 1,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(video.name ?? '', style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18
+                      ),),
+                      SizedBox(
+                        height: 4,
+                      ),
+                      Text(arr.join('/'), style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                          height: 1
+                      ),),
+                    ],
+                  )
               ),
-            ),
-          ],
-        )
+              Container(
+                height: 12,
+                child: VerticalDivider(color: Colors.grey,),
+              ),
+              Container(
+                width: 48,
+                height: 30,
+                margin: EdgeInsets.only(right: 6),
+                child: MaterialButton(
+                  padding: EdgeInsets.zero,
+                  child: Icon(_recordModel?.collected == 1 ? Icons.star : Icons.star_border,
+                    color: _recordModel?.collected == 1 ? Theme.of(context).primaryColor : Colors.grey,
+                    size: 24,
+                  ),
+                  onPressed: () async {
+                    if (_currentSource == null || _videoModel == null) return;
+
+                    if (_recordModel == null) {
+                      BotToast.showText(text: '请等待视频加载完成');
+                      return;
+                    }
+                    int newCollected = _recordModel!.collected == 1 ? 0 : 1;
+                    await _db.updateRecord(_recordModel!.id!, collected: newCollected);
+                    setState(() {
+                      _recordModel!.collected = newCollected;
+                    });
+                    BotToast.showText(text: newCollected == 1 ? '收藏成功' : '取消收藏成功');
+                  },
+                ),
+              ),
+            ],
+          )
       ),
       Padding(
         padding: EdgeInsets.only(top: 8, bottom: 4),
@@ -355,9 +380,9 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
         Padding(
           padding: EdgeInsets.only(left: 16,),
           child: Text('选集', style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            height: 1
+              color: Colors.black,
+              fontSize: 18,
+              height: 1
           )),
         ),
         Padding(
@@ -370,19 +395,19 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                 height: 36,
                 child: ElevatedButton(
                   style: ButtonStyle(
-                      elevation: MaterialStateProperty.all(0),
-                      padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 8)),
-                      backgroundColor: MaterialStateProperty.all(_url != e.url ? Colors.grey[300] : null)
+                    elevation: MaterialStateProperty.all(0),
+                    padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 8)),
+                    backgroundColor: MaterialStateProperty.all(_url != e.url ? Colors.grey[300] : null)
                   ),
                   child: Text(e.name ?? '', style: TextStyle(
-                      color: _url != e.url ? Colors.black : null,
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal
+                    color: _url != e.url ? Colors.black : null,
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal
                   ),),
                   onPressed: () async {
                     if (_url == e.url) return;
 
-                    _startPlay(e.url!, video.name! + '  ' + e.name!, reset: true);
+                    _startPlay(e.url!, video.name! + '  ' + e.name!);
                   },
                 )
               );
@@ -429,15 +454,15 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
         child: _buildLabelText('发布', video.last),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: HtmlWidget(
-          video.des ?? '',
-          textStyle: TextStyle(
-            height: 1.8,
-            fontSize: 14,
-            color: Colors.black
-          ),
-        )
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: HtmlWidget(
+            video.des ?? '',
+            textStyle: TextStyle(
+                height: 1.8,
+                fontSize: 14,
+                color: Colors.black
+            ),
+          )
       ),
     ]);
     // 添加底部占位
@@ -476,33 +501,24 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     );
   }
 
-  GestureDetector _buildDownload() {
+  GestureDetector _buildDownload(String url, String name) {
     return GestureDetector(
       onTap: () async {
-        if (_url == null || _url!.isEmpty
-          || _title == null || _title!.isEmpty) {
-          BotToast.showText(text: '视频未加载');
-          return;
-        }
-        var provider = context.read<DownloadTaskProvider>();
-        if (!await provider.checkStoragePermission()) {
-          BotToast.showText(text: '没有存储权限');
-          return;
-        }
-        await provider.createDownload(
-          context: context,
-          video: _videoModel!,
-          url: _url!,
-          name: _title!,
+        await context.read<DownloadTaskProvider>().createDownload(
+            context: context,
+            video: _videoModel!,
+            url: url,
+            name: name
         );
-        BotToast.showText(text: '开始下载【$_title】');
+        BotToast.showText(text: '开始下载【$name】');
       },
       child: Container(
+        height: 48,
         color: Colors.transparent,
-        margin: EdgeInsets.only(left: 8.0, right: 8.0),
+        margin: EdgeInsets.only(left: 8.0, right: 4.0),
         padding: EdgeInsets.only(
-          left: 8.0,
-          right: 8.0,
+          left: 12.0,
+          right: 12.0,
         ),
         child: Icon(
           Icons.file_download,
@@ -511,44 +527,4 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       ),
     );
   }
-
-  Widget _buildVideoPlaylist(Function onClose) {
-    if (_videoModel == null || _isSingleVideo) {
-      return Container();
-    }
-
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(15, 0, 15, 10),
-      child: Wrap(
-          spacing: 15,
-          children: _videoModel!.anthologies!.map((anthology) {
-            return ElevatedButton(
-              style: ButtonStyle(
-                shape: MaterialStateProperty.all(
-                  RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                      side: BorderSide(color: _url == anthology.url ? Theme.of(context).primaryColor : Colors.white54)
-                  ),
-                ),
-                elevation: MaterialStateProperty.all(0),
-                backgroundColor: MaterialStateProperty.all(
-                    _url == anthology.url ? Theme.of(context).primaryColor : Colors.black12
-                ),
-              ),
-              onPressed: () {
-                onClose.call();
-                _startPlay(anthology.url!, _videoModel!.name! + '  ' + anthology.name!, reset: true);
-              },
-              child: Text(
-                anthology.name ?? '',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-            );
-          }).toList()
-      ),
-    );
-  }
 }
-
