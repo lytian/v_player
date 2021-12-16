@@ -242,7 +242,7 @@ class _VideoControlsState extends State<VideoControls> {
                 flex: 1,
                 child: Text(title,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.white, fontSize: 16.0),
+                  style: TextStyle(color: Colors.white, fontSize: 14.0),
                 )
             ),
             widget.actions ?? Container()
@@ -318,7 +318,7 @@ class _VideoControlsState extends State<VideoControls> {
           _buildPlayPause(controller),
           if (!chewieController.isLive)
             Padding(
-              padding: const EdgeInsets.only(right: 4.0),
+              padding: const EdgeInsets.only(right: 6.0),
               child: Text(formatDuration(position),
                 style: const TextStyle(
                   fontSize: 14.0,
@@ -332,7 +332,7 @@ class _VideoControlsState extends State<VideoControls> {
             _buildProgressBar(),
           if (!chewieController.isLive)
             Padding(
-              padding: const EdgeInsets.only(left: 4.0),
+              padding: const EdgeInsets.only(left: 6.0),
               child: Text(formatDuration(duration),
                 style: const TextStyle(
                   fontSize: 14.0,
@@ -447,7 +447,7 @@ class _VideoControlsState extends State<VideoControls> {
               }
               setState(() {});
             },
-            child: Icon(_lockStuff ? Icons.lock_outline : Icons.lock_open, color: Colors.white, size: 30,),
+            child: Icon(_lockStuff ? Icons.lock_outline : Icons.lock_open, color: Colors.white, size: 25,),
           )
         ),
       ),
@@ -593,7 +593,7 @@ class _VideoControlsState extends State<VideoControls> {
                 child: Text("${val}X",
                   style: TextStyle(
                     color: _speed == val ? Colors.blue : Colors.white,
-                    fontSize: 16.0,
+                    fontSize: 14.0,
                   ),
                 ),
               ),
@@ -731,12 +731,12 @@ class _VideoControlsState extends State<VideoControls> {
           _startHideTimer();
         },
         colors: chewieController.materialProgressColors ??
-            ChewieProgressColors(
-              playedColor: Theme.of(context).colorScheme.secondary,
-              handleColor: Theme.of(context).colorScheme.secondary,
-              bufferedColor: Theme.of(context).backgroundColor.withOpacity(0.5),
-              backgroundColor: Theme.of(context).disabledColor.withOpacity(.5),
-            ),
+          ChewieProgressColors(
+            playedColor: Theme.of(context).colorScheme.secondary,
+            handleColor: Theme.of(context).colorScheme.secondary,
+            bufferedColor: Theme.of(context).backgroundColor.withOpacity(0.5),
+            backgroundColor: Theme.of(context).disabledColor.withOpacity(.5),
+          ),
       ),
     );
   }
@@ -758,7 +758,7 @@ class _VideoControlsState extends State<VideoControls> {
           '${formatDuration(_dragPos)} / ${formatDuration(_latestValue.duration)}',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: 14.0,
           ),
         ),
       ),

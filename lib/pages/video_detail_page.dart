@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:auto_orientation/auto_orientation.dart';
 import 'package:collection/collection.dart';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/record_model.dart';
@@ -129,27 +131,39 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     _controller = VideoPlayerController.network(url, videoPlayerOptions: VideoPlayerOptions(
       mixWithOthers: true
     ));
-    try {
-      // 为了自适应视频比例
-      await _controller!.initialize();
-    } catch(err) {
-      print(err);
-    }
-
     _chewieController = ChewieController(
-        videoPlayerController: _controller!,
-        autoPlay: true,
-        allowedScreenSleep: false,
-        startAt: playPosition != null ? Duration(milliseconds: playPosition) : null,
-        playbackSpeeds: [0.5, 1, 1.25, 1.5, 2],
-        customControls: VideoControls(
-          title: name,
-          actions: _buildDownload(url, name),
-        )
-        // customControls: VideoControls(
-        //   title: name,
-        //   actions: _buildDownload(url, name),
-        // )
+      videoPlayerController: _controller!,
+      autoPlay: true,
+      allowedScreenSleep: false,
+      startAt: playPosition != null ? Duration(milliseconds: playPosition) : null,
+      playbackSpeeds: [0.5, 1, 1.25, 1.5, 2],
+      customControls: VideoControls(
+        title: name,
+        actions: _buildDownload(url, name),
+      ),
+      routePageBuilder: (BuildContext context, Animation<double> animation,
+          Animation<double> secondAnimation, provider) {
+        // 全屏时，横向视频自动旋转
+        final videoWidth = provider.controller.videoPlayerController.value.size.width;
+        final videoHeight = provider.controller.videoPlayerController.value.size.height;
+        if (videoWidth > videoHeight) {
+          AutoOrientation.landscapeAutoMode(forceSensor: true);
+        }
+        // chewie _defaultRoutePageBuilder
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (BuildContext context, Widget? child) {
+            return Scaffold(
+              resizeToAvoidBottomInset: false,
+              body: Container(
+                alignment: Alignment.center,
+                color: Colors.black,
+                child: provider,
+              ),
+            );
+          },
+        );
+      }
     );
     _controller!.addListener(_videoListener);
     setState(() {});
