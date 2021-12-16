@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/provider/app_info.dart';
@@ -35,10 +36,12 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
+              brightness: Brightness.light,
               primaryColor: _themeColor,
-              accentColor: _themeColor,
               indicatorColor: Colors.white,
-              appBarTheme: AppBarTheme(brightness: Brightness.dark)
+              appBarTheme: AppBarTheme(
+                backgroundColor: _themeColor
+              )
             ),
             builder: BotToastInit(),
             navigatorObservers: [
