@@ -18,7 +18,7 @@ class VideoControls extends StatefulWidget {
     this.title,
     this.speedList = const [],
     this.actions,
-    this.showTitle = false,
+    this.alwaysShowTitle = false,
     this.horizontalGesture = true,
     this.verticalGesture = true,
   }) : super(key: key);
@@ -26,8 +26,8 @@ class VideoControls extends StatefulWidget {
   /// 视频标题
   final String? title;
 
-  /// 是否显示头部
-  final bool showTitle;
+  /// 总是显示标题
+  final bool alwaysShowTitle;
 
   /// 播放速率列表
   final List<double> speedList;
@@ -62,7 +62,6 @@ class _VideoControlsState extends State<VideoControls> {
   Timer? _hideLockTimer;
 
   final barHeight = 48.0;
-  final marginSize = 5.0;
 
   late VideoPlayerController controller;
   ChewieController? _chewieController;
@@ -149,13 +148,13 @@ class _VideoControlsState extends State<VideoControls> {
                 child: _buildBottomBar(context),
               ),
               // 锁按钮
-              if (chewieController.isFullScreen)
+              if (widget.alwaysShowTitle || chewieController.isFullScreen)
                 _buildLockBtn(),
               // 倍数选择
               if (!_hideSpeedStuff)
                 _buildSpeedList(),
               // 顶部显示 (快进时间、音量、亮度)
-              if (_dragging || _varTouchInitSuc)
+              if (_isHorizontalTouching || _isVerticalTouching)
                 Positioned(
                   top: barHeight + 20,
                   left: 0,
@@ -164,10 +163,10 @@ class _VideoControlsState extends State<VideoControls> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // 显示左右滑动快进时间的块
-                      if (_dragging)
+                      if (_isHorizontalTouching)
                         _buildDragProgressTime(),
                       // 显示上下滑动音量亮度
-                      if (_varTouchInitSuc)
+                      if (_isVerticalTouching)
                         _buildDragVolumeAndBrightness(),
                     ],
                   ),
@@ -207,10 +206,14 @@ class _VideoControlsState extends State<VideoControls> {
     super.didChangeDependencies();
   }
 
+  bool get fullscreen {
+    return widget.alwaysShowTitle || chewieController.isFullScreen;
+  }
+
   /// 顶部导航条
   AnimatedOpacity _buildTopBar(BuildContext context,) {
     String title = '';
-    if (chewieController.isFullScreen || widget.showTitle) {
+    if (fullscreen) {
       title = widget.title ?? '';
     }
     return AnimatedOpacity(
@@ -218,8 +221,12 @@ class _VideoControlsState extends State<VideoControls> {
       duration: Duration(milliseconds: 300),
       child: Container(
         width: double.infinity,
-        height: barHeight - 8 + (chewieController.isFullScreen || widget.showTitle ? MediaQuery.of(context).padding.top : 0),
-        padding: EdgeInsets.only(left: marginSize, right: marginSize, top: chewieController.isFullScreen || widget.showTitle ? MediaQuery.of(context).padding.top : 0),
+        height: barHeight - 8 + (fullscreen ? 6.0 : 0),
+        padding: EdgeInsets.only(
+          left: 6.0,
+          right: 6.0,
+          top: fullscreen ? 6.0 : 0
+        ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -239,11 +246,11 @@ class _VideoControlsState extends State<VideoControls> {
               color: Colors.white,
             ),
             Expanded(
-                flex: 1,
-                child: Text(title,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.white, fontSize: 14.0),
-                )
+              flex: 1,
+              child: Text(title,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.white, fontSize: 14.0),
+              )
             ),
             widget.actions ?? Container()
           ],
@@ -258,19 +265,19 @@ class _VideoControlsState extends State<VideoControls> {
     final duration = _latestValue.duration;
 
     Widget bottomWidget;
-    if (chewieController.isFullScreen) {
+    if (fullscreen) {
       // 全屏
       bottomWidget = SafeArea(
-        bottom: chewieController.isFullScreen,
+        bottom: fullscreen,
         child: Container(
           padding: EdgeInsets.only(
             right: 20,
             left: 20,
-            bottom: chewieController.isFullScreen ? 5.0 : 0,
+            bottom: fullscreen ? 6.0 : 0,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               if (!chewieController.isLive)
                 Expanded(child: Row(
@@ -349,17 +356,17 @@ class _VideoControlsState extends State<VideoControls> {
       opacity: _hideStuff ? 0.0 : 1.0,
       duration: const Duration(milliseconds: 300),
       child: Container(
-        height: barHeight + (chewieController.isFullScreen ? 20.0 : 0),
+        height: barHeight + (fullscreen ? 18.0 : 0),
         decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [
-                Colors.black38,
-                Colors.black26,
-                Colors.transparent,
-              ],
-            )
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [
+              Colors.black38,
+              Colors.black26,
+              Colors.transparent,
+            ],
+          )
         ),
         child: bottomWidget,
       ),
@@ -457,13 +464,13 @@ class _VideoControlsState extends State<VideoControls> {
   /// 中间区域
   Widget _buildHitArea() {
     final bool isFinished = _latestValue.position >= _latestValue.duration;
-    final bool showPlayButton = !_dragging && !_hideStuff;
+    final bool showPlayButton = !_dragging && !_hideStuff && !_isHorizontalTouching && !_isVerticalTouching;
 
     return Positioned(
       left: 0,
-      top: barHeight - 8 + (chewieController.isFullScreen || widget.showTitle ? MediaQuery.of(context).padding.top : 0),
+      top: barHeight - 8 +(fullscreen ? 6.0 : 0),
       right: 0,
-      bottom: barHeight + (chewieController.isFullScreen ? 20.0 : 0),
+      bottom: barHeight + (fullscreen ? 18.0 : 0),
       child: GestureDetector(
         onTap: () {
           if (_latestValue.isPlaying) {
@@ -813,7 +820,8 @@ class _VideoControlsState extends State<VideoControls> {
   bool? _isDragVerLeft;
 
   double? _updateDragVarVal;
-  bool _varTouchInitSuc = false;
+  bool _isVerticalTouching = false;
+  bool _isHorizontalTouching = false;
 
   // 水平滑动
   _onHorizontalDragStart(details) {
@@ -846,7 +854,7 @@ class _VideoControlsState extends State<VideoControls> {
     }
     this.setState(() {
       _hideStuff = false;
-      _dragging = true;
+      _isHorizontalTouching = true;
       // 更新下上一次存的滑动位置
       _updatePrevDx = curDragDx;
       // 更新时间
@@ -859,7 +867,7 @@ class _VideoControlsState extends State<VideoControls> {
 
     chewieController.seekTo(_dragPos);
     this.setState(() {
-      _dragging = false;
+      _isHorizontalTouching = false;
       _hideStuff = true;
     });
   }
@@ -878,7 +886,7 @@ class _VideoControlsState extends State<VideoControls> {
     if (!_isDragVerLeft!) {
       // 音量
       await _volumeController.getVolume().then((double v) {
-        _varTouchInitSuc = true;
+        _isVerticalTouching = true;
         setState(() {
           _updateDragVarVal = v;
         });
@@ -886,7 +894,7 @@ class _VideoControlsState extends State<VideoControls> {
     } else {
       // 亮度
       await FlutterScreenWake.brightness.then((double v) {
-        _varTouchInitSuc = true;
+        _isVerticalTouching = true;
         setState(() {
           _updateDragVarVal = v;
         });
@@ -895,7 +903,7 @@ class _VideoControlsState extends State<VideoControls> {
   }
   _onVerticalDragUpdate(details) {
     if (widget.verticalGesture != true) return;
-    if (!_varTouchInitSuc) return;
+    if (!_isVerticalTouching) return;
     double curDragDy = details.globalPosition.dy;
     // 确定当前是前进或者后退
     int cdy = curDragDy.toInt();
@@ -914,7 +922,7 @@ class _VideoControlsState extends State<VideoControls> {
     }
     setState(() {
       _updatePrevDy = curDragDy;
-      _varTouchInitSuc = true;
+      _isVerticalTouching = true;
       _updateDragVarVal = dragRange;
       // 音量
       if (!_isDragVerLeft!) {
@@ -928,7 +936,7 @@ class _VideoControlsState extends State<VideoControls> {
     if (widget.verticalGesture != true) return;
 
     setState(() {
-      _varTouchInitSuc = false;
+      _isVerticalTouching = false;
     });
   }
 

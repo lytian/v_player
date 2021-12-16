@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:v_player/models/source_model.dart';
 import 'package:v_player/pages/collection_page.dart';
 import 'package:v_player/pages/download_page.dart';
+import 'package:v_player/pages/local_video_page.dart';
 import 'package:v_player/pages/main_page.dart';
 import 'package:v_player/pages/play_record_page.dart';
 import 'package:v_player/pages/setting_page.dart';
@@ -21,6 +22,7 @@ class Application {
   static final String sourceFormPage = '/sourceForm';
   static final String settingPage = '/setting';
   static final String downloadPage = '/download';
+  static final String localVideoPage = '/localVideo';
   static final String collectionPage = '/collection';
   static final String playRecordPage = '/playRecord';
 
@@ -35,6 +37,10 @@ class Application {
     sourceFormPage: (context, { SourceModel? arguments }) => SourceFormPage(source: arguments,),
     settingPage: (context) => SettingPage(),
     downloadPage: (context) => DownloadPage(),
+    localVideoPage: (context, { arguments }) => LocalVideoPage(
+      localPath: arguments['localPath'],
+      name: arguments['name'],
+    ),
     collectionPage: (context) => CollectionPage(),
     playRecordPage: (context) => PlayRecordPage(),
   };

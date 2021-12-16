@@ -1,11 +1,12 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:fijkplayer/fijkplayer.dart';
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/models/download_model.dart';
 import 'package:v_player/provider/download_task.dart';
-import 'package:v_player/widgets/fijk_panel/fijk_panel.dart';
+import 'package:v_player/utils/application.dart';
 import 'package:v_player/widgets/no_data.dart';
+import 'package:video_player/video_player.dart';
 
 class DownloadPage extends StatefulWidget {
   @override
@@ -14,7 +15,8 @@ class DownloadPage extends StatefulWidget {
 
 class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final FijkPlayer _fijkPlayer = FijkPlayer();
+  VideoPlayerController? _controller;
+  ChewieController? _chewieController;
   bool _isEdit = false;
   int _tabIndex = 0;
   bool _opened = false;
@@ -33,21 +35,26 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
       });
     });
 
-    _fijkPlayer.setOption(FijkOption.hostCategory, "request-screen-on", 1);
-    _fijkPlayer.addListener(_fullscreenListener);
   }
 
   @override
   void dispose() {
-    _fijkPlayer.removeListener(_fullscreenListener);
-    _fijkPlayer.release();
     _tabController.dispose();
+    disposeVideo();
     super.dispose();
+  }
+
+  void disposeVideo() {
+    _controller?.dispose();
+    _chewieController?.removeListener(_fullscreenListener);
+    _chewieController?.dispose();
+
+    // _controller = null;
+    // _chewieController = null;
   }
 
   @override
   Widget build(BuildContext context) {
-
     bool isAllChecked = false;
     if (_isEdit) {
       if (_tabIndex == 0) {
@@ -303,48 +310,17 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   }
 
   void _fullscreenListener() {
-    if (_opened && !_fijkPlayer.value.fullScreen) {
+    if (_opened && _chewieController != null && _chewieController!.isFullScreen) {
       // 退出全屏，关闭弹窗
       Navigator.pop(context);
     }
   }
 
   /// 播放视频
-  void _playVideo(String url, String name) async {
-    await _fijkPlayer.setDataSource(url, autoPlay: true);
-    _fijkPlayer.enterFullScreen();
-    _opened = true;
-    showDialog(
-      context: context,
-      builder: (BuildContext buildContext) {
-        return Material(
-          child: FijkView(
-            color: Colors.black,
-            player: _fijkPlayer,
-            panelBuilder: (
-                FijkPlayer player,
-                FijkData data,
-                BuildContext context,
-                Size viewSize,
-                Rect texturePos,
-                ) {
-              /// 使用自定义的布局
-              return FijkPanel(
-                player: player,
-                pageContext: context,
-                viewSize: viewSize,
-                texturePos: texturePos,
-                playerTitle: name,
-                allowFullScreen: false,
-              );
-            },
-          ),
-        );
-      }
-    ).then((res) async {
-      _opened = false;
-      await _fijkPlayer.stop();
-      await _fijkPlayer.reset();
+  void _playVideo(String localPath, String name) async {
+    Navigator.of(context).pushNamed(Application.localVideoPage, arguments: {
+      'localPath': localPath,
+      'name': name,
     });
   }
 

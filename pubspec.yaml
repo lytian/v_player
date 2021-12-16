@@ -37,7 +37,6 @@ dependencies:
   path_provider: ^2.0.7
   permission_handler: ^8.3.0
   bot_toast: ^4.0.1
-  fijkplayer: ^0.10.0
   flutter_widget_from_html_core: ^0.8.2
   connectivity_plus: ^2.0.3
   xml: ^5.3.1

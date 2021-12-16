@@ -6,7 +6,6 @@ import 'package:collection/collection.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/record_model.dart';
@@ -15,6 +14,7 @@ import 'package:v_player/models/video_model.dart';
 import 'package:v_player/provider/download_task.dart';
 import 'package:v_player/utils/db_helper.dart';
 import 'package:v_player/utils/http_util.dart';
+import 'package:v_player/utils/permission_util.dart';
 import 'package:v_player/utils/sp_helper.dart';
 import 'package:v_player/widgets/video_controls/video_controls.dart';
 import 'package:video_player/video_player.dart';
@@ -35,7 +35,6 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   VideoPlayerController? _controller;
   ChewieController? _chewieController;
   final DBHelper _db = DBHelper();
-
 
   String? _url;
   SourceModel? _currentSource;
@@ -131,6 +130,12 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     _controller = VideoPlayerController.network(url, videoPlayerOptions: VideoPlayerOptions(
       mixWithOthers: true
     ));
+    try {
+      await _controller!.initialize();
+    } catch(err) {
+      print(err);
+    }
+
     _chewieController = ChewieController(
       videoPlayerController: _controller!,
       autoPlay: true,
@@ -235,7 +240,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       body: Column(
         children: <Widget>[
           AspectRatio(
-            aspectRatio: 16 / 9,
+            aspectRatio: 4 / 3,
             child: Container(
               padding: EdgeInsets.only(top: MediaQueryData.fromWindow(window).padding.top),
               color: Colors.black,
@@ -253,7 +258,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                       child: CircularProgressIndicator(),
                     )
                   ],
-                )
+              )
             ),
           ),
           Expanded(
@@ -518,13 +523,15 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   GestureDetector _buildDownload(String url, String name) {
     return GestureDetector(
       onTap: () async {
-        await context.read<DownloadTaskProvider>().createDownload(
+        if (await checkStoragePermission()) {
+          await context.read<DownloadTaskProvider>().createDownload(
             context: context,
             video: _videoModel!,
             url: url,
             name: name
-        );
-        BotToast.showText(text: '开始下载【$name】');
+          );
+          BotToast.showText(text: '开始下载【$name】');
+        }
       },
       child: Container(
         height: 48,

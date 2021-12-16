@@ -6,7 +6,6 @@ import 'package:v_player/models/source_model.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/pages/main_left_page.dart';
 import 'package:v_player/pages/search_bar.dart';
-import 'package:v_player/provider/download_task.dart';
 import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/http_util.dart';
@@ -104,7 +103,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       print(e);
     }
     setState(() {
-      _firstLoading = false;
+      if (mounted)
+        _firstLoading = false;
     });
   }
 

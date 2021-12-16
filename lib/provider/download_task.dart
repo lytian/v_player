@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -8,8 +7,6 @@ import 'package:path/path.dart' as path;
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/widgets.dart';
 import 'package:m3u8_downloader/m3u8_downloader.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/download_model.dart';
@@ -17,6 +14,7 @@ import 'package:v_player/models/video_model.dart';
 import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/db_helper.dart';
+import 'package:v_player/utils/permission_util.dart';
 import 'package:v_player/utils/sp_helper.dart';
 
 class DownloadTaskProvider with ChangeNotifier {
@@ -69,7 +67,7 @@ class DownloadTaskProvider with ChangeNotifier {
         }
     );
     await M3u8Downloader.config(
-      saveDir: await findSavePath(),
+      saveDir: await findSavePath('video'),
       convertMp4: SpHelper.getBool(Constant.key_m3u8_to_mp4, defValue: false) ?? false,
       showNotification: true,
       threadCount: 4,
@@ -80,7 +78,6 @@ class DownloadTaskProvider with ChangeNotifier {
     // 2. 绑定监听
     IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) async {
-      print(data);
       if (_currentTask == null) return;
 
       int status = data["status"];
@@ -122,16 +119,13 @@ class DownloadTaskProvider with ChangeNotifier {
     _netSubscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult res) {
       if (res == ConnectivityResult.none) {
         // 没有网络的处理
-        print('没有网络了......');
       } else if (res == ConnectivityResult.mobile) {
         // 没有网络的处理
-        print('切换到移动网络了......');
       } else if (res == ConnectivityResult.wifi) {
         // wifi自动下载
         if (currentTask == null && SpHelper.getBool(Constant.key_wifi_auto_download, defValue: true) == true) {
           _downloadNext();
         }
-        print('切换到WiFi了......');
       }
     });
 
@@ -300,8 +294,6 @@ class DownloadTaskProvider with ChangeNotifier {
   /// 开启下载
   ///
   Future<void> _startDownload(String url, String name) async {
-    bool hasGranted = await checkStoragePermission();
-    if (!hasGranted) return;
     _currentTask = DownloadTask(name: name, url: url);
     await _db.updateDownloadByUrl(url, status: DownloadStatus.RUNNING);
     M3u8Downloader.download(
@@ -313,32 +305,6 @@ class DownloadTaskProvider with ChangeNotifier {
     );
     _downloadList = await _db.getDownloadList();
     notifyListeners();
-  }
-
-  ///
-  /// 获取文件存储路径。跟路径
-  ///
-  Future<String> findSavePath() async {
-    final directory = Platform.isAndroid
-        ? await getExternalStorageDirectory()
-        : await getApplicationDocumentsDirectory();
-    String saveDir = directory!.path + '/video';
-    Directory root = Directory(saveDir);
-    if (!root.existsSync()) {
-      await root.create();
-    }
-    return saveDir;
-  }
-
-  ///
-  /// 检查存储权限
-  ///
-  Future<bool> checkStoragePermission() async {
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      status = await Permission.storage.request();
-    }
-    return status.isGranted;
   }
 
   @override
