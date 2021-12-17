@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 import 'package:flutter_screen_wake/flutter_screen_wake.dart';
+import 'package:video_player/video_player.dart';
 import 'package:volume_controller/volume_controller.dart';
 
 import 'animated_play_pause.dart';
 import 'center_play_button.dart';
-import 'material_progress_bar.dart';
+import 'progress_bar.dart';
 import 'utils.dart';
 
 class VideoControls extends StatefulWidget {
@@ -111,7 +111,7 @@ class _VideoControlsState extends State<VideoControls> {
             ),
             AnimatedOpacity(
               opacity: _hideLockStuff ? 0.0 : 1,
-              duration: Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 300),
               child: _buildLockBtn(),
             ),
           ],
@@ -218,16 +218,16 @@ class _VideoControlsState extends State<VideoControls> {
     }
     return AnimatedOpacity(
       opacity: _hideStuff ? 0.0 : 1.0,
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
       child: Container(
         width: double.infinity,
         height: barHeight - 8 + (fullscreen ? 6.0 : 0),
         padding: EdgeInsets.only(
           left: 6.0,
           right: 6.0,
-          top: fullscreen ? 6.0 : 0
+          top: fullscreen ? 6.0 : 0,
         ),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -236,21 +236,18 @@ class _VideoControlsState extends State<VideoControls> {
               Colors.black26,
               Colors.transparent,
             ],
-          )
+          ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            BackButton(
+            const BackButton(
               color: Colors.white,
             ),
             Expanded(
-              flex: 1,
               child: Text(title,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.white, fontSize: 14.0),
-              )
+                style: const TextStyle(color: Colors.white, fontSize: 14.0),
+              ),
             ),
             widget.actions ?? Container()
           ],
@@ -277,7 +274,6 @@ class _VideoControlsState extends State<VideoControls> {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               if (!chewieController.isLive)
                 Expanded(child: Row(
@@ -357,7 +353,7 @@ class _VideoControlsState extends State<VideoControls> {
       duration: const Duration(milliseconds: 300),
       child: Container(
         height: barHeight + (fullscreen ? 18.0 : 0),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
@@ -366,7 +362,7 @@ class _VideoControlsState extends State<VideoControls> {
               Colors.black26,
               Colors.transparent,
             ],
-          )
+          ),
         ),
         child: bottomWidget,
       ),
@@ -387,14 +383,14 @@ class _VideoControlsState extends State<VideoControls> {
       },
       behavior: HitTestBehavior.opaque,
       child: ConstrainedBox(
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           minWidth: 92.0,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.speed,color: Colors.white,),
-            SizedBox(width: 4.0,),
+            const Icon(Icons.speed,color: Colors.white,),
+            const SizedBox(width: 4.0,),
             Text(str,
               style: const TextStyle(
                 fontSize: 14.0,
@@ -437,9 +433,9 @@ class _VideoControlsState extends State<VideoControls> {
       alignment: Alignment.centerLeft,
       child: AnimatedOpacity(
         opacity: _hideStuff ? 0.0 : 1,
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         child: Padding(
-          padding: EdgeInsets.only(left: 20.0),
+          padding: const EdgeInsets.only(left: 20.0),
           child: GestureDetector(
             onTap: () {
               _lockStuff = !_lockStuff;
@@ -455,7 +451,7 @@ class _VideoControlsState extends State<VideoControls> {
               setState(() {});
             },
             child: Icon(_lockStuff ? Icons.lock_outline : Icons.lock_open, color: Colors.white, size: 25,),
-          )
+          ),
         ),
       ),
     );
@@ -575,13 +571,13 @@ class _VideoControlsState extends State<VideoControls> {
           color: Colors.black54,
           borderRadius: BorderRadius.circular(5),
         ),
-        padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: chewieController.playbackSpeeds.reversed.map((val) => Ink(
             child: InkWell(
               onTap: () async {
-                if (_speed == val) return null;
+                if (_speed == val) return;
                 await controller.setPlaybackSpeed(val);
                 setState(() {
                   _speed = val;
@@ -591,11 +587,11 @@ class _VideoControlsState extends State<VideoControls> {
               child: Container(
                 alignment: Alignment.center,
                 width: 50,
-                padding: EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: const BoxDecoration(
                   border: Border(
                     bottom: BorderSide(color: Colors.white54, width: 0.5),
-                  )
+                  ),
                 ),
                 child: Text("${val}X",
                   style: TextStyle(
@@ -605,9 +601,9 @@ class _VideoControlsState extends State<VideoControls> {
                 ),
               ),
             ),
-          )).toList(),
+          ),).toList(),
         ),
-      )
+      ),
     );
   }
 
@@ -721,7 +717,7 @@ class _VideoControlsState extends State<VideoControls> {
 
   Widget _buildProgressBar() {
     return Expanded(
-      child: MaterialVideoProgressBar(
+      child: VideoProgressBar(
         controller,
         onDragStart: () {
           setState(() {
@@ -753,17 +749,17 @@ class _VideoControlsState extends State<VideoControls> {
     return Container(
       height: 40,
       alignment: Alignment.center,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(
           Radius.circular(5),
         ),
         color: Color.fromRGBO(0, 0, 0, 0.8),
       ),
       child: Padding(
-        padding: EdgeInsets.only(left: 10, right: 10),
+        padding: const EdgeInsets.only(left: 10, right: 10),
         child: Text(
           '${formatDuration(_dragPos)} / ${formatDuration(_latestValue.duration)}',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 14.0,
           ),
@@ -777,17 +773,17 @@ class _VideoControlsState extends State<VideoControls> {
     IconData iconData;
     // 判断当前值范围，显示的图标
     if (_updateDragVarVal! <= 0) {
-      iconData = !_isDragVerLeft! ? Icons.volume_off : Icons.brightness_low;
+      iconData = !_isDragVerLeft ? Icons.volume_off : Icons.brightness_low;
     } else if (_updateDragVarVal! < 0.25) {
-      iconData = !_isDragVerLeft! ? Icons.volume_mute : Icons.brightness_medium;
+      iconData = !_isDragVerLeft ? Icons.volume_mute : Icons.brightness_medium;
     } else if (_updateDragVarVal! < 0.75) {
-      iconData = !_isDragVerLeft! ? Icons.volume_down : Icons.brightness_medium;
+      iconData = !_isDragVerLeft ? Icons.volume_down : Icons.brightness_medium;
     } else {
-      iconData = !_isDragVerLeft! ? Icons.volume_up : Icons.brightness_high;
+      iconData = !_isDragVerLeft ? Icons.volume_up : Icons.brightness_high;
     }
     // 显示，亮度 || 音量
     return Card(
-      color: Color.fromRGBO(0, 0, 0, 0.8),
+      color: const Color.fromRGBO(0, 0, 0, 0.8),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         child: Row(
@@ -800,11 +796,11 @@ class _VideoControlsState extends State<VideoControls> {
             Container(
               width: 100.0,
               height: 3.0,
-              margin: EdgeInsets.only(left: 8.0),
+              margin: const EdgeInsets.only(left: 8.0),
               child: LinearProgressIndicator(
                 value: _updateDragVarVal,
                 backgroundColor: Colors.white54,
-                valueColor: AlwaysStoppedAnimation(Colors.lightBlue),
+                valueColor: const AlwaysStoppedAnimation(Colors.lightBlue),
               ),
             ),
           ],
@@ -813,18 +809,18 @@ class _VideoControlsState extends State<VideoControls> {
     );
   }
 
-  Duration _dragPos = Duration(); // 滑动后的时间值
-  double? _updatePrevDx;
-  double? _updatePrevDy;
-  int? _updatePosX;
-  bool? _isDragVerLeft;
+  Duration _dragPos = Duration.zero; // 滑动后的时间值
+  bool _isDragVerLeft = false;
+  late double _updatePrevDx;
+  late double _updatePrevDy;
+  late int _updatePosX;
 
   double? _updateDragVarVal;
   bool _isVerticalTouching = false;
   bool _isHorizontalTouching = false;
 
   // 水平滑动
-  _onHorizontalDragStart(details) {
+  void _onHorizontalDragStart(DragStartDetails details) {
     if (widget.horizontalGesture != true) return;
 
     setState(() {
@@ -832,19 +828,19 @@ class _VideoControlsState extends State<VideoControls> {
       _updatePosX = _latestValue.position.inSeconds;
     });
   }
-  _onHorizontalDragUpdate(details) {
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
     if (widget.horizontalGesture != true) return;
 
-    double curDragDx = details.globalPosition.dx;
+    final double curDragDx = details.globalPosition.dx;
     // 确定当前是前进或者后退
-    int cdx = curDragDx.toInt();
-    int pdx = _updatePrevDx!.toInt();
-    bool isBefore = cdx > pdx;
+    final int cdx = curDragDx.toInt();
+    final int pdx = _updatePrevDx.toInt();
+    final bool isBefore = cdx > pdx;
     // + -, 不满足, 左右滑动合法滑动值，> 4
-    if (isBefore && cdx - pdx < 3 || !isBefore && pdx - cdx < 3) return null;
+    if (isBefore && cdx - pdx < 3 || !isBefore && pdx - cdx < 3) return;
 
-    int dragRange = isBefore ? _updatePosX! + 1 : _updatePosX! - 1;
-    int lastSecond = _latestValue.duration.inSeconds;
+    int dragRange = isBefore ? _updatePosX + 1 : _updatePosX - 1;
+    final int lastSecond = _latestValue.duration.inSeconds;
     if (dragRange >= lastSecond) {
       // 是否溢出 最大
       dragRange = lastSecond;
@@ -852,38 +848,38 @@ class _VideoControlsState extends State<VideoControls> {
       // 是否溢出 最小
       dragRange = 0;
     }
-    this.setState(() {
+    setState(() {
       _hideStuff = false;
       _isHorizontalTouching = true;
       // 更新下上一次存的滑动位置
       _updatePrevDx = curDragDx;
       // 更新时间
-      _updatePosX = dragRange.toInt();
-      _dragPos = Duration(seconds: _updatePosX!.toInt());
+      _updatePosX = dragRange;
+      _dragPos = Duration(seconds: _updatePosX);
     });
   }
-  _onHorizontalDragEnd(details) {
+  void _onHorizontalDragEnd(DragEndDetails details) {
     if (widget.horizontalGesture != true) return;
 
     chewieController.seekTo(_dragPos);
-    this.setState(() {
+    setState(() {
       _isHorizontalTouching = false;
       _hideStuff = true;
     });
   }
 
   // 垂直滑动
-  _onVerticalDragStart(details) async {
+  Future<void> _onVerticalDragStart(DragStartDetails details) async {
     if (widget.verticalGesture != true) return;
 
-    RenderBox renderObject = context.findRenderObject() as RenderBox;
-    var bounds = renderObject.paintBounds;
-    Offset localOffset = renderObject.globalToLocal(details.globalPosition);
+    final RenderBox renderObject = context.findRenderObject()! as RenderBox;
+    final bounds = renderObject.paintBounds;
+    final Offset localOffset = renderObject.globalToLocal(details.globalPosition);
     _isDragVerLeft  = localOffset.dx / bounds.width <= 0.5;
     _updatePrevDy = details.globalPosition.dy;
 
     // 大于 右边 音量 ， 小于 左边 亮度
-    if (!_isDragVerLeft!) {
+    if (!_isDragVerLeft) {
       // 音量
       await _volumeController.getVolume().then((double v) {
         _isVerticalTouching = true;
@@ -901,16 +897,16 @@ class _VideoControlsState extends State<VideoControls> {
       });
     }
   }
-  _onVerticalDragUpdate(details) {
+  void _onVerticalDragUpdate(DragUpdateDetails details) {
     if (widget.verticalGesture != true) return;
     if (!_isVerticalTouching) return;
-    double curDragDy = details.globalPosition.dy;
+    final double curDragDy = details.globalPosition.dy;
     // 确定当前是前进或者后退
-    int cdy = curDragDy.toInt();
-    int pdy = _updatePrevDy!.toInt();
-    bool isBefore = cdy < pdy;
+    final int cdy = curDragDy.toInt();
+    final int pdy = _updatePrevDy.toInt();
+    final bool isBefore = cdy < pdy;
     // + -, 不满足, 上下滑动合法滑动值，> 3
-    if (isBefore && pdy - cdy < 10 || !isBefore && cdy - pdy < 10) return null;
+    if (isBefore && pdy - cdy < 10 || !isBefore && cdy - pdy < 10) return;
     // 区间
     double dragRange = isBefore ? _updateDragVarVal! + 0.1 : _updateDragVarVal! - 0.1;
     // 是否溢出
@@ -925,14 +921,14 @@ class _VideoControlsState extends State<VideoControls> {
       _isVerticalTouching = true;
       _updateDragVarVal = dragRange;
       // 音量
-      if (!_isDragVerLeft!) {
+      if (!_isDragVerLeft) {
         _volumeController.setVolume(dragRange, showSystemUI: false);
       } else {
         FlutterScreenWake.setBrightness(dragRange);
       }
     });
   }
-  _onVerticalDragEnd(details) {
+  void _onVerticalDragEnd(DragEndDetails details) {
     if (widget.verticalGesture != true) return;
 
     setState(() {

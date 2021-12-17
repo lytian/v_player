@@ -38,8 +38,8 @@ Future<String> findSavePath([ String? basePath ]) async {
   if (basePath == null) {
     return directory!.path;
   }
-  String saveDir = path.join(directory!.path, basePath);
-  Directory root = Directory(saveDir);
+  final String saveDir = path.join(directory!.path, basePath);
+  final Directory root = Directory(saveDir);
   if (!root.existsSync()) {
     await root.create();
   }

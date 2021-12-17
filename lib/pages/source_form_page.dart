@@ -5,17 +5,18 @@ import 'package:v_player/models/source_model.dart';
 import 'package:v_player/utils/db_helper.dart';
 
 class SourceFormPage extends StatefulWidget {
-  final SourceModel? source;
-  const SourceFormPage({
+  const SourceFormPage({Key? key,
     this.source
-  });
+  }) : super(key: key);
+
+  final SourceModel? source;
 
   @override
   _SourceFormPageState createState() => _SourceFormPageState();
 }
 
 class _SourceFormPageState extends State<SourceFormPage> {
-  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final FocusScopeNode _focusNode = FocusScopeNode();
   final DBHelper _db = DBHelper();
 
@@ -45,7 +46,7 @@ class _SourceFormPageState extends State<SourceFormPage> {
         title: Text(widget.source == null ? '添加视频源' : '修改视频源'),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(30, 0, 30, 30),
+        padding: const EdgeInsets.fromLTRB(30, 0, 30, 30),
         child: Form(
           key: _formKey,
           child: FocusScope(
@@ -55,13 +56,11 @@ class _SourceFormPageState extends State<SourceFormPage> {
                 _buildFormItem(
                   key: 'name',
                   label: '资源名称',
-                  keyboardType: TextInputType.text,
                   maxLength: 10,
                 ),
                 _buildFormItem(
                   key: 'type',
                   label: '资源类型',
-                  keyboardType: TextInputType.text,
                   maxLength: 10,
                 ),
                 _buildFormItem(
@@ -79,16 +78,16 @@ class _SourceFormPageState extends State<SourceFormPage> {
                 ),
                 Container(
                   height: 44,
-                  margin: EdgeInsets.only(top: 80),
+                  margin: const EdgeInsets.only(top: 80),
                   child: ElevatedButton.icon(
                     onPressed: _submit,
                     style: ButtonStyle(
                       elevation: MaterialStateProperty.all(2),
                       backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor),
-                      minimumSize: MaterialStateProperty.all(Size.fromHeight(44))
+                      minimumSize: MaterialStateProperty.all(const Size.fromHeight(44))
                     ),
-                    icon: Icon(Icons.save, color: Colors.white,),
-                    label: Text('提交', style: TextStyle(fontSize: 18, color: Colors.white, height: 1),),
+                    icon: const Icon(Icons.save, color: Colors.white,),
+                    label: const Text('提交', style: TextStyle(fontSize: 18, color: Colors.white, height: 1),),
                   ),
                 ),
               ],
@@ -109,13 +108,13 @@ class _SourceFormPageState extends State<SourceFormPage> {
     int maxLength = 30,
   }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 10),
       child: TextFormField(
         keyboardType: keyboardType,
         textInputAction: textInputAction,
         decoration: InputDecoration(
           counterText: '',
-          hintText: hint != null ? hint : '请输入$label',
+          hintText: hint ?? '请输入$label',
           labelText: label,
           labelStyle: TextStyle(
             color: Theme.of(context).primaryColor
@@ -142,10 +141,10 @@ class _SourceFormPageState extends State<SourceFormPage> {
   }
 
   void _submit() {
-    var _form = _formKey.currentState;
+    final _form = _formKey.currentState;
     if (_form!.validate()) {
       _form.save();
-      CancelFunc cancelFunc = BotToast.showLoading();
+      final CancelFunc cancelFunc = BotToast.showLoading();
       try {
         if (_formData['id'] == null) {
           // 新增
@@ -156,11 +155,10 @@ class _SourceFormPageState extends State<SourceFormPage> {
           _db.updateSourceById(SourceModel.fromJson(_formData));
           BotToast.showText(text: '修改成功！');
         }
-      } catch(err) {
-        print(err);
+      } finally {
+        cancelFunc.call();
+        Navigator.of(context).pop();
       }
-      cancelFunc.call();
-      Navigator.of(context).pop();
     }
   }
 }

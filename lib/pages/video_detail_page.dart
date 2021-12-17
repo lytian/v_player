@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:auto_orientation/auto_orientation.dart';
-import 'package:collection/collection.dart';
 
+import 'package:auto_orientation/auto_orientation.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:chewie/chewie.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/record_model.dart';
 import 'package:v_player/models/source_model.dart';
@@ -18,13 +19,12 @@ import 'package:v_player/utils/permission_util.dart';
 import 'package:v_player/utils/sp_helper.dart';
 import 'package:v_player/widgets/video_controls/video_controls.dart';
 import 'package:video_player/video_player.dart';
-import 'package:provider/provider.dart';
 
 class VideoDetailPage extends StatefulWidget {
+  const VideoDetailPage({Key? key, this.api, required this.videoId}) : super(key: key);
+
   final String? api;
   final String videoId;
-
-  VideoDetailPage({this.api, required this.videoId});
 
   @override
   _VideoDetailPageState createState() => _VideoDetailPageState();
@@ -52,16 +52,16 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   Future<VideoModel?>  _getVideoInfo() async {
     String? baseUrl = widget.api;
     if (baseUrl == null) {
-      Map? sourceJson = SpHelper.getObject(Constant.key_current_source);
-      _currentSource = SourceModel.fromJson(sourceJson!);
+      final Map? sourceJson = SpHelper.getObject(Constant.keyCurrentSource);
+      _currentSource = SourceModel.fromJson(sourceJson);
       baseUrl = _currentSource?.httpApi;
     }
-    VideoModel? video  = await HttpUtil().getVideoById(widget.videoId, baseUrl);
+    final VideoModel? video  = await HttpUtil().getVideoById(widget.videoId, baseUrl);
     _videoModel = video;
     if (video != null) {
       if (video.anthologies != null && video.anthologies!.isNotEmpty) {
         // 先查看是否有播放记录，默认从上次开始播放
-        RecordModel? recordModel = await _db.getRecordByVid(baseUrl!, widget.videoId);
+        final RecordModel? recordModel = await _db.getRecordByVid(baseUrl!, widget.videoId);
         setState(() {
           _recordModel = recordModel;
 
@@ -77,16 +77,16 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
         if (_recordModel == null) {
           // 默认播放第一个
           url = video.anthologies!.first.url;
-          name = video.anthologies!.first.name == null ? video.name : (video.name! + '  ' + (video.anthologies!.first.name ?? ''));
+          name = video.anthologies!.first.name == null ? video.name : ('${video.name!}  ${video.anthologies!.first.name ?? ''}');
         } else {
           // 自动跳转到历史
-          Anthology? anthology = video.anthologies!.firstWhereOrNull((e) => e.name == _recordModel!.anthologyName);
+          final Anthology? anthology = video.anthologies!.firstWhereOrNull((e) => e.name == _recordModel!.anthologyName);
           if (anthology != null) {
             url = anthology.url;
-            name = anthology.name == null ? video.name : (video.name! + '  ' + anthology.name!);
+            name = anthology.name == null ? video.name : ('${video.name!}  ${anthology.name!}');
           } else {
             url = video.anthologies!.first.url;
-            name = video.anthologies!.first.name == null ? video.name : (video.name! + '  ' + (video.anthologies!.first.name ?? ''));
+            name = video.anthologies!.first.name == null ? video.name : ('${video.name!}  ${video.anthologies!.first.name ?? ''}');
           }
           position = recordModel!.playedTime;
         }
@@ -97,7 +97,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     return video;
   }
 
-  void _startPlay(String url, String name, { int? playPosition }) async {
+  Future<void> _startPlay(String url, String name, { int? playPosition }) async {
     // 切换视频，重置_cachePlayedSecond
     _cachePlayedSecond = -1;
 
@@ -125,16 +125,12 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     });
   }
 
-  void _initController(String url, String name, { int? playPosition }) async {
+  Future<void> _initController(String url, String name, { int? playPosition }) async {
     // 设置资源
     _controller = VideoPlayerController.network(url, videoPlayerOptions: VideoPlayerOptions(
       mixWithOthers: true
     ));
-    try {
-      await _controller!.initialize();
-    } catch(err) {
-      print(err);
-    }
+    await _controller!.initialize();
 
     _chewieController = ChewieController(
       videoPlayerController: _controller!,
@@ -184,7 +180,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     super.dispose();
   }
 
-  void _videoListener() async {
+  Future<void> _videoListener() async {
     if (_videoModel == null || _controller == null || !_controller!.value.isPlaying) return;
     // 视频播放同一秒内不执行操作
     if (_controller!.value.position.inSeconds == _cachePlayedSecond) return;
@@ -192,7 +188,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
 
     String? anthologyName;
     if (!_isSingleVideo) {
-      Anthology? anthology = _videoModel!.anthologies!.firstWhereOrNull((e) => e.url == _url);
+      final Anthology? anthology = _videoModel!.anthologies!.firstWhereOrNull((e) => e.url == _url);
       if (anthology != null) {
         anthologyName = anthology.name;
       }
@@ -225,10 +221,10 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     if (_videoModel!.anthologies != null && _videoModel!.anthologies!.length > 1) {
       // 播放到最后，切换下一个视频
       if (_cachePlayedSecond >= _controller!.value.duration.inSeconds) {
-        int index = _videoModel!.anthologies!.indexWhere((e) => e.url == _url);
+        final int index = _videoModel!.anthologies!.indexWhere((e) => e.url == _url);
         if (index > -1 && index != (_videoModel!.anthologies!.length - 1)) {
-          Anthology next = _videoModel!.anthologies![index + 1];
-          _startPlay(next.url!, _videoModel!.name! + '  ' + next.name!);
+          final Anthology next = _videoModel!.anthologies![index + 1];
+          _startPlay(next.url!, '${_videoModel!.name!}  ${next.name!}');
         }
       }
     }
@@ -249,7 +245,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                   controller: _chewieController!,
                 )
                 : Stack(
-                  children: <Widget>[
+                  children: const <Widget>[
                     Align(
                       alignment: Alignment.topLeft,
                       child: BackButton(color: Colors.white,),
@@ -262,21 +258,18 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
             ),
           ),
           Expanded(
-            flex: 1,
             child: FutureBuilder(
               future: _futureFetch,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
                   if (snapshot.hasError) {
-                    print(snapshot.error);
                     return _buildText('网络请求出错了');
                   }
                   if (snapshot.hasData && snapshot.data != null) {
                     try {
-                      return _buildScrollContent(snapshot.data as VideoModel);
+                      return _buildScrollContent(snapshot.data! as VideoModel);
                     } catch (e) {
-                      print(e);
-                      return Center(
+                      return const Center(
                         child: Text('数据解析错误'),
                       );
                     }
@@ -284,7 +277,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                     return _buildText('没有找到视频');
                   }
                 } else {
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator(),
                   );
                 }
@@ -297,18 +290,16 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   }
 
   Widget _buildText(String str) {
-    return Container(
-      child: Center(
-        child: Text(str, style: TextStyle(
-            color: Colors.redAccent,
-            fontSize: 16
-        )),
-      ),
+    return Center(
+      child: Text(str, style: const TextStyle(
+          color: Colors.redAccent,
+          fontSize: 16
+      )),
     );
   }
 
   Widget _buildScrollContent(VideoModel video) {
-    List arr = [];
+    final List<String?> arr = [];
     if (video.year != null && video.year!.isNotEmpty) {
       arr.add(video.year);
     }
@@ -322,30 +313,28 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       arr.add(video.type);
     }
 
-    List<Widget> children = [];
+    final List<Widget> children = [];
     // 添加视频标题和说明
     children.addAll([
       Padding(
-          padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Expanded(
-                  flex: 1,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(video.name ?? '', style: TextStyle(
+                      Text(video.name ?? '', style: const TextStyle(
                           color: Colors.black,
                           fontSize: 18
                       ),),
-                      SizedBox(
+                      const SizedBox(
                         height: 4,
                       ),
-                      Text(arr.join('/'), style: TextStyle(
+                      Text(arr.join('/'), style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 13,
                           height: 1
@@ -353,14 +342,14 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                     ],
                   )
               ),
-              Container(
+              const SizedBox(
                 height: 12,
                 child: VerticalDivider(color: Colors.grey,),
               ),
               Container(
                 width: 48,
                 height: 30,
-                margin: EdgeInsets.only(right: 6),
+                margin: const EdgeInsets.only(right: 6),
                 child: MaterialButton(
                   padding: EdgeInsets.zero,
                   child: Icon(_recordModel?.collected == 1 ? Icons.star : Icons.star_border,
@@ -374,7 +363,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                       BotToast.showText(text: '请等待视频加载完成');
                       return;
                     }
-                    int newCollected = _recordModel!.collected == 1 ? 0 : 1;
+                    final int newCollected = _recordModel!.collected == 1 ? 0 : 1;
                     await _db.updateRecord(_recordModel!.id!, collected: newCollected);
                     setState(() {
                       _recordModel!.collected = newCollected;
@@ -387,7 +376,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
           )
       ),
       Padding(
-        padding: EdgeInsets.only(top: 8, bottom: 4),
+        padding: const EdgeInsets.only(top: 8, bottom: 4),
         child: Divider(
           color: Colors.grey.withOpacity(0.5),
         ),
@@ -396,7 +385,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     // 添加选集
     if (!_isSingleVideo) {
       children.addAll([
-        Padding(
+        const Padding(
           padding: EdgeInsets.only(left: 16,),
           child: Text('选集', style: TextStyle(
               color: Colors.black,
@@ -405,7 +394,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
           )),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -415,7 +404,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                 child: ElevatedButton(
                   style: ButtonStyle(
                     elevation: MaterialStateProperty.all(0),
-                    padding: MaterialStateProperty.all(EdgeInsets.symmetric(horizontal: 8)),
+                    padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 8)),
                     backgroundColor: MaterialStateProperty.all(_url != e.url ? Colors.grey[300] : null)
                   ),
                   child: Text(e.name ?? '', style: TextStyle(
@@ -426,7 +415,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
                   onPressed: () async {
                     if (_url == e.url) return;
 
-                    _startPlay(e.url!, video.name! + '  ' + e.name!);
+                    _startPlay(e.url!, '${video.name!}  ${e.name!}');
                   },
                 )
               );
@@ -440,7 +429,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     }
     // 添加简介
     children.addAll([
-      Padding(
+      const Padding(
         padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Text('简介', style: TextStyle(
             color: Colors.black,
@@ -449,34 +438,34 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
         )),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: _buildLabelText('地区', video.area),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: _buildLabelText('年份', video.year),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: _buildLabelText('分类', video.type),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: _buildLabelText('导演', video.director),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: _buildLabelText('演员', video.actor),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: _buildLabelText('发布', video.last),
       ),
       Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: HtmlWidget(
             video.des ?? '',
-            textStyle: TextStyle(
+            textStyle: const TextStyle(
                 height: 1.8,
                 fontSize: 14,
                 color: Colors.black
@@ -485,7 +474,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       ),
     ]);
     // 添加底部占位
-    children.add(SizedBox(
+    children.add(const SizedBox(
       height: 20,
     ));
 
@@ -501,16 +490,16 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     return RichText(
       text: TextSpan(
         children: [
-          TextSpan(text: label, style: TextStyle(
+          TextSpan(text: label, style: const TextStyle(
               fontSize: 14,
               color: Colors.grey,
               letterSpacing: 4
           )),
-          TextSpan(text: '：  ', style: TextStyle(
+          const TextSpan(text: '：  ', style: TextStyle(
             fontSize: 14,
             color: Colors.grey,
           )),
-          TextSpan(text: text ?? '', style: TextStyle(
+          TextSpan(text: text ?? '', style: const TextStyle(
               fontSize: 14,
               color: Colors.black,
               height: 1.6
@@ -536,12 +525,12 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       child: Container(
         height: 48,
         color: Colors.transparent,
-        margin: EdgeInsets.only(left: 8.0, right: 4.0),
-        padding: EdgeInsets.only(
+        margin: const EdgeInsets.only(left: 8.0, right: 4.0),
+        padding: const EdgeInsets.only(
           left: 12.0,
           right: 12.0,
         ),
-        child: Icon(
+        child: const Icon(
           Icons.file_download,
           color: Colors.white,
         ),

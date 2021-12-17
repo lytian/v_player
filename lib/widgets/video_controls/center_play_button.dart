@@ -1,5 +1,5 @@
-import 'package:chewie/src/animated_play_pause.dart';
 import 'package:flutter/material.dart';
+import 'animated_play_pause.dart';
 
 class CenterPlayButton extends StatelessWidget {
   const CenterPlayButton({
@@ -33,7 +33,7 @@ class CenterPlayButton extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Padding(
-              padding: EdgeInsets.all(6.0),
+              padding: const EdgeInsets.all(6.0),
               // Always set the iconSize on the IconButton, not on the Icon itself:
               // https://github.com/flutter/flutter/issues/52980
               child: IconButton(

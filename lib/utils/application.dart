@@ -11,56 +11,56 @@ import 'package:v_player/pages/source_manage_page.dart';
 import 'package:v_player/pages/splash_page.dart';
 import 'package:v_player/pages/video_detail_page.dart';
 
-class Application {
+mixin Application {
   /// 全局导航的Key
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey();
 
-  static final String splashPage = '/splash';
-  static final String mainPage = '/main';
-  static final String videoDetailPage = '/videoDetail';
-  static final String sourceManagePage = '/sourceManage';
-  static final String sourceFormPage = '/sourceForm';
-  static final String settingPage = '/setting';
-  static final String downloadPage = '/download';
-  static final String localVideoPage = '/localVideo';
-  static final String collectionPage = '/collection';
-  static final String playRecordPage = '/playRecord';
+  static const String splashPage = '/splash';
+  static const String mainPage = '/main';
+  static const String videoDetailPage = '/videoDetail';
+  static const String sourceManagePage = '/sourceManage';
+  static const String sourceFormPage = '/sourceForm';
+  static const String settingPage = '/setting';
+  static const String downloadPage = '/download';
+  static const String localVideoPage = '/localVideo';
+  static const String collectionPage = '/collection';
+  static const String playRecordPage = '/playRecord';
 
   static final Map<String, WidgetBuilder> routes = {
-    splashPage: (context) => SplashPage(),
-    mainPage: (context) => MainPage(),
-    videoDetailPage: (context, { arguments }) => VideoDetailPage(
-      videoId: arguments['videoId']!,
-      api: arguments['api'],
+    splashPage: (context) => const SplashPage(),
+    mainPage: (context) => const MainPage(),
+    videoDetailPage: (context, { dynamic arguments }) => VideoDetailPage(
+      videoId: arguments['videoId'] as String,
+      api: arguments['api'] as String?,
     ),
-    sourceManagePage: (context) => SourceManagePage(),
+    sourceManagePage: (context) => const SourceManagePage(),
     sourceFormPage: (context, { SourceModel? arguments }) => SourceFormPage(source: arguments,),
-    settingPage: (context) => SettingPage(),
-    downloadPage: (context) => DownloadPage(),
-    localVideoPage: (context, { arguments }) => LocalVideoPage(
-      localPath: arguments['localPath'],
-      name: arguments['name'],
+    settingPage: (context) => const SettingPage(),
+    downloadPage: (context) => const DownloadPage(),
+    localVideoPage: (context, { dynamic arguments }) => LocalVideoPage(
+      localPath: arguments['localPath'] as String,
+      name: arguments['name'] as String,
     ),
-    collectionPage: (context) => CollectionPage(),
-    playRecordPage: (context) => PlayRecordPage(),
+    collectionPage: (context) => const CollectionPage(),
+    playRecordPage: (context) => const PlayRecordPage(),
   };
 
-  static final RouteFactory generateRoute = (settings) {
+  static Route<dynamic>? generateRoute (RouteSettings settings) {
     // 路由参数处理
     final Function? pageBuilder = routes[settings.name];
     if (pageBuilder != null) {
       if (settings.arguments != null) {
-        return MaterialPageRoute(
-            settings: settings,
-            builder: (context) => pageBuilder(context, arguments: settings.arguments)
+        return MaterialPageRoute<Widget>(
+          settings: settings,
+          builder: (context) => pageBuilder(context, arguments: settings.arguments) as Widget,
         );
       } else{
-        return MaterialPageRoute(
-            settings: settings,
-            builder: (context) => pageBuilder(context)
+        return MaterialPageRoute<Widget>(
+          settings: settings,
+          builder: (context) => pageBuilder(context) as Widget,
         );
       }
     }
     return null;
-  };
+  }
 }

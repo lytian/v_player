@@ -9,7 +9,7 @@ import 'package:v_player/widgets/video_controls/video_controls.dart';
 import 'package:video_player/video_player.dart';
 
 class LocalVideoPage extends StatefulWidget {
-  LocalVideoPage({required this.localPath, required this.name});
+  const LocalVideoPage({Key? key, required this.localPath, required this.name}) : super(key: key);
 
   final String localPath;
   final String name;
@@ -31,21 +31,17 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
     _initAsync();
   }
 
-  void _initAsync() async {
+  Future<void> _initAsync() async {
     _controller = VideoPlayerController.file(File(widget.localPath));
-    try {
-      await _controller.initialize();
-      // 隐藏状态栏
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-      // 判断是否需要自动旋转
-      final videoWidth = _controller.value.size.width;
-      final videoHeight = _controller.value.size.height;
-      _isLandscape = videoWidth > videoHeight;
-      if (_isLandscape) {
-        AutoOrientation.landscapeAutoMode(forceSensor: true);
-      }
-    } catch(err) {
-      print(err);
+    await _controller.initialize();
+    // 隐藏状态栏
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+    // 判断是否需要自动旋转
+    final videoWidth = _controller.value.size.width;
+    final videoHeight = _controller.value.size.height;
+    _isLandscape = videoWidth > videoHeight;
+    if (_isLandscape) {
+      AutoOrientation.landscapeAutoMode(forceSensor: true);
     }
     // 打开屏幕唤醒状态
     FlutterScreenWake.keepOn(true);
@@ -54,12 +50,11 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
       autoPlay: true,
       allowedScreenSleep: false,
       allowFullScreen: false,
-      fullScreenByDefault: false,
       playbackSpeeds: [0.5, 1, 1.25, 1.5, 2],
       customControls: VideoControls(
         title: widget.name,
         alwaysShowTitle: true,
-      )
+      ),
     );
     setState(() {});
   }
@@ -87,7 +82,7 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
       backgroundColor: Colors.transparent,
       body: _chewieController != null ? Chewie(
         controller: _chewieController!,
-      ) : Center(
+      ) : const Center(
         child: CircularProgressIndicator(),
       )
     );

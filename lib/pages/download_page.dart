@@ -9,6 +9,8 @@ import 'package:v_player/widgets/no_data.dart';
 import 'package:video_player/video_player.dart';
 
 class DownloadPage extends StatefulWidget {
+  const DownloadPage({Key? key}) : super(key: key);
+
   @override
   _DownloadPageState createState() => _DownloadPageState();
 }
@@ -19,7 +21,6 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   ChewieController? _chewieController;
   bool _isEdit = false;
   int _tabIndex = 0;
-  bool _opened = false;
 
   List<bool> _checkSuccessList = [];
   List<bool> _checkDownloadList = [];
@@ -66,7 +67,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("下载列表"),
+        title: const Text("下载列表"),
         actions: <Widget>[
           IconButton(
             tooltip: _isEdit ? '完成' : '管理',
@@ -86,13 +87,13 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
         bottom: TabBar(
           controller: _tabController,
           indicatorSize: TabBarIndicatorSize.label,
-          labelStyle: TextStyle(
+          labelStyle: const TextStyle(
             fontSize: 16
           ),
-          unselectedLabelStyle: TextStyle(
+          unselectedLabelStyle: const TextStyle(
             fontSize: 14
           ),
-          tabs: <Widget>[
+          tabs: const <Widget>[
             Tab(text: '已完成',),
             Tab(text: '缓存中',),
           ],
@@ -102,11 +103,10 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
       body: Column(
         children: <Widget>[
           Expanded(
-              flex: 1,
               child: Consumer<DownloadTaskProvider>(
                 builder: (context, provider, _) {
-                  List<DownloadModel> _successList = provider.downloadList.where((e) => e.status == DownloadStatus.SUCCESS).toList();
-                  List<DownloadModel> _downloadList = provider.downloadList.where((e) => e.status != DownloadStatus.SUCCESS).toList();
+                  final List<DownloadModel> _successList = provider.downloadList.where((e) => e.status == DownloadStatus.success).toList();
+                  final List<DownloadModel> _downloadList = provider.downloadList.where((e) => e.status != DownloadStatus.success).toList();
                   if (_successList.length != _checkSuccessList.length) {
                     _checkSuccessList = List.filled(_successList.length, false);
                   }
@@ -123,9 +123,10 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                 },
               )
           ),
-          _isEdit ? Container(
-            height: 44,
-            decoration: BoxDecoration(
+          if (_isEdit)
+            Container(
+              height: 44,
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
@@ -134,44 +135,46 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                     spreadRadius: 1, //阴影浓度
                   )
                 ]
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.only(left: 16),
-                  width: 68,
-                  height: 32,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor),
-                        elevation: MaterialStateProperty.all(2),
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32)
-                        ))
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Container(
+                    margin: const EdgeInsets.only(left: 16),
+                    width: 68,
+                    height: 32,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(Theme.of(context).primaryColor),
+                          elevation: MaterialStateProperty.all(2),
+                          shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(32)
+                          ))
+                      ),
+                      onPressed: _deleteDownload,
+                      child: const Text('删除'),
                     ),
-                    child: Text('删除'),
-                    onPressed: _deleteDownload,
                   ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(right: 16),
-                  width: 68,
-                  height: 32,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                        elevation: MaterialStateProperty.all(2),
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32)
-                        ))
+                  Container(
+                    margin: const EdgeInsets.only(right: 16),
+                    width: 68,
+                    height: 32,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          elevation: MaterialStateProperty.all(2),
+                          shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(32)
+                          ))
+                      ),
+                      onPressed: _toggleAllChecked,
+                      child: Text(isAllChecked ? '反选' : '全选'),
                     ),
-                    child: Text(isAllChecked ? '反选' : '全选'),
-                    onPressed: _toggleAllChecked,
                   ),
-                ),
-              ],
-            ),
-          ) : Container(),
+                ],
+              ),
+            )
+          else
+            Container(),
         ],
       )
     );
@@ -179,16 +182,16 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
 
   Widget _buildSuccessList(List<DownloadModel> list) {
     if (list.isEmpty) {
-      return NoData(
+      return const NoData(
         tip: '没有已完成下载的视频\n快去添加吧~',
       );
     }
     return ListView.separated(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       itemBuilder: (context, index) {
-        DownloadModel model = list[index];
+        final DownloadModel model = list[index];
         return ListTile(
-          contentPadding: EdgeInsets.all(0),
+          contentPadding: EdgeInsets.zero,
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(3),
             child: FadeInImage.assetNetwork(
@@ -199,8 +202,8 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
               height: 75,
             ),
           ),
-          title: Text(model.name ?? '暂无标题', style: TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
-          subtitle: Text(model.type ?? '无', style: TextStyle(fontSize: 13),),
+          title: Text(model.name ?? '暂无标题', style: const TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
+          subtitle: Text(model.type ?? '无', style: const TextStyle(fontSize: 13),),
           trailing: _isEdit
             ? Checkbox(
               value: _checkSuccessList[index],
@@ -211,16 +214,16 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
               },
             )
             : IconButton(
-              icon: Icon(Icons.play_circle_outline),
+              icon: const Icon(Icons.play_circle_outline),
               iconSize: 32,
-              color: Color(0xff3d3d3d),
+              color: const Color(0xff3d3d3d),
               onPressed: ()  => _playVideo(model.savePath!, model.name!),
             ),
           onTap: () => _isEdit ? _toggleChecked(index) : _playVideo(model.savePath!, model.name!),
         );
       },
       separatorBuilder: (_, index) {
-        return Divider(color: Color(0xffd0d0d0),);
+        return const Divider(color: Color(0xffd0d0d0),);
       },
       itemCount: list.length
     );
@@ -228,33 +231,33 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
 
   Widget _buildDownloadList(List<DownloadModel> list, DownloadTask? currentTask) {
     if (list.isEmpty) {
-      return NoData(
+      return const NoData(
         tip: '没有缓存中的视频\n快去添加吧~',
       );
     }
     return ListView.separated(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         itemBuilder: (context, index) {
-          DownloadModel model = list[index];
+          final DownloadModel model = list[index];
           String statusStr = '';
           switch (model.status) {
-            case DownloadStatus.RUNNING:
+            case DownloadStatus.running:
               statusStr = '正在下载';
               break;
-            case DownloadStatus.WAITING:
+            case DownloadStatus.waiting:
               statusStr = '等待下载';
               break;
-            case DownloadStatus.SUCCESS:
+            case DownloadStatus.success:
               statusStr = '下载成功';
               break;
-            case DownloadStatus.FAIL:
+            case DownloadStatus.fail:
               statusStr = '下载失败';
               break;
             default:
               break;
           }
           return ListTile(
-            contentPadding: EdgeInsets.all(0),
+            contentPadding: EdgeInsets.zero,
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(3),
               child: FadeInImage.assetNetwork(
@@ -265,20 +268,18 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                 height: 75,
               ),
             ),
-            title: Text(model.name ?? '暂无标题', style: TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
+            title: Text(model.name ?? '暂无标题', style: const TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
             subtitle: currentTask != null && model.url == currentTask.url
                 ? RichText(
                   text: TextSpan(
-                    style: TextStyle(fontSize: 13),
+                    style: const TextStyle(fontSize: 13),
                     children: [
-                      model.status == DownloadStatus.WAITING
-                      ? TextSpan(text: '暂停中', style: TextStyle(color: Colors.grey))
-                      : TextSpan(text: '正在下载', style: TextStyle(color: Colors.grey)) ,
-                      TextSpan(text: '    ' +  (currentTask.formatSpeed == '' ? '加载中...' : currentTask.formatSpeed), style: TextStyle(color: Theme.of(context).primaryColor))
+                      TextSpan(text: model.status == DownloadStatus.waiting ? '暂停中' : '正在下载', style: const TextStyle(color: Colors.grey)),
+                      TextSpan(text: '    ${currentTask.formatSpeed == '' ? '加载中...' : currentTask.formatSpeed}', style: TextStyle(color: Theme.of(context).primaryColor))
                     ]
                   ),
                 )
-                : Text(statusStr, style: TextStyle(fontSize: 13, color: model.status == DownloadStatus.FAIL ? Colors.redAccent : null),),
+                : Text(statusStr, style: TextStyle(fontSize: 13, color: model.status == DownloadStatus.fail ? Colors.redAccent : null),),
             trailing: _isEdit
                 ? Checkbox(
               value: _checkDownloadList[index],
@@ -294,30 +295,30 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
                 CircularProgressIndicator(
                   value: currentTask != null && model.url == currentTask.url ? currentTask.progress : model.progress,
                   strokeWidth: 3,
-                  backgroundColor: Color(0xfff0f0f0),
+                  backgroundColor: const Color(0xfff0f0f0),
                 ),
-                Icon(model.status == DownloadStatus.RUNNING ? Icons.pause : Icons.file_download, size: 20, color: Colors.grey,),
+                Icon(model.status == DownloadStatus.running ? Icons.pause : Icons.file_download, size: 20, color: Colors.grey,),
               ],
             ),
             onTap: () => _isEdit ? _toggleChecked(index) : _toggleDownload(model.url!),
           );
         },
         separatorBuilder: (_, index) {
-          return Divider(color: Color(0xffd0d0d0),);
+          return const Divider(color: Color(0xffd0d0d0),);
         },
         itemCount: list.length
     );
   }
 
   void _fullscreenListener() {
-    if (_opened && _chewieController != null && _chewieController!.isFullScreen) {
+    if (_chewieController != null && _chewieController!.isFullScreen) {
       // 退出全屏，关闭弹窗
       Navigator.pop(context);
     }
   }
 
   /// 播放视频
-  void _playVideo(String localPath, String name) async {
+  Future<void> _playVideo(String localPath, String name) async {
     Navigator.of(context).pushNamed(Application.localVideoPage, arguments: {
       'localPath': localPath,
       'name': name,
@@ -325,7 +326,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   }
 
   /// 切换单个选择
-  void _toggleChecked(index) {
+  void _toggleChecked(int index) {
     setState(() {
       if (_tabIndex == 0) {
         _checkSuccessList[index] = !_checkSuccessList[index];
@@ -339,7 +340,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
   void _toggleAllChecked() {
       if (_tabIndex == 0) {
         if (_checkSuccessList.isEmpty) return;
-        bool isAllChecked = _checkSuccessList.every((e) => e);
+        final bool isAllChecked = _checkSuccessList.every((e) => e);
         setState(() {
           if (isAllChecked) {
             _checkSuccessList = List.filled(_checkSuccessList.length, false);
@@ -349,7 +350,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
         });
       } else {
         if (_checkDownloadList.isEmpty) return;
-        bool isAllChecked = _checkDownloadList.every((e) => e);
+        final bool isAllChecked = _checkDownloadList.every((e) => e);
         setState(() {
           if (isAllChecked) {
             _checkDownloadList = List.filled(_checkDownloadList.length, false);
@@ -367,17 +368,17 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
 
   /// 删除下载
   void _deleteDownload() {
-    List<DownloadModel> _models = [];
-    List<DownloadModel> downloadList = context.read<DownloadTaskProvider>().downloadList;
+    final List<DownloadModel> _models = [];
+    final List<DownloadModel> downloadList = context.read<DownloadTaskProvider>().downloadList;
     if (_tabIndex == 0) {
-      List<DownloadModel> _successList = downloadList.where((e) => e.status == DownloadStatus.SUCCESS).toList();
+      final List<DownloadModel> _successList = downloadList.where((e) => e.status == DownloadStatus.success).toList();
       for (int i = 0; i < _checkSuccessList.length; i++) {
         if (_checkSuccessList[i]) {
           _models.add(_successList[i]);
         }
       }
     } else {
-      List<DownloadModel> _downloadList = downloadList.where((e) => e.status != DownloadStatus.SUCCESS).toList();
+      final List<DownloadModel> _downloadList = downloadList.where((e) => e.status != DownloadStatus.success).toList();
       for (int i = 0; i < _checkDownloadList.length; i++) {
         if (_checkDownloadList[i]) {
           _models.add(_downloadList[i]);
@@ -388,36 +389,38 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
       BotToast.showText(text: '请选择待删除的视频');
       return;
     }
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (_) {
         return AlertDialog(
-          title: Text('温馨提示'),
+          title: const Text('温馨提示'),
           content: RichText(
             text: TextSpan(
-              style: TextStyle(color: Colors.black),
+              style: const TextStyle(color: Colors.black),
               children: [
-                TextSpan(text: '确定删除 '),
-                TextSpan(text: _models.length == 1 ? _models[0].name : '这${_models.length}个视频', style: TextStyle(color: Colors.orange)),
-                TextSpan(text: ' 吗？'),
+                const TextSpan(text: '确定删除 '),
+                TextSpan(text: _models.length == 1 ? _models[0].name : '这${_models.length}个视频', style: const TextStyle(color: Colors.orange)),
+                const TextSpan(text: ' 吗？'),
               ]
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('取消', style: TextStyle(color: Colors.grey),),
+              child: const Text('取消', style: TextStyle(color: Colors.grey),),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('确定'),
+              child: const Text('确定'),
               onPressed: () async {
                 await context.read<DownloadTaskProvider>().deleteDownloads(_models);
                 setState(() {
                   _isEdit = false;
                 });
-                Navigator.of(context).pop();
+                if (mounted) {
+                  Navigator.of(context).pop();
+                }
               },
             )
           ],

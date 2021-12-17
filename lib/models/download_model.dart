@@ -1,4 +1,36 @@
 class DownloadModel {
+  DownloadModel({
+    this.id,
+    this.api,
+    this.vid,
+    this.tid,
+    this.type,
+    this.name,
+    this.pic,
+    this.url,
+    this.fileId,
+    this.status,
+    this.progress,
+    this.savePath,
+  });
+
+  DownloadModel.fromJson(dynamic json) {
+    id = json['id'] as int?;
+    api = json['api'] as String?;
+    vid = json['vid'] as String?;
+    tid = json['tid'] as String?;
+    type = json['type'] as String?;
+    name = json['name'] as String?;
+    pic = json['pic'] as String?;
+    url = json['url'] as String?;
+    fileId = json['fileId'] as String?;
+    if (json['status'] != null) {
+      status = DownloadStatus.values[json['status'] as int];
+    }
+    progress = json['progress'] as double?;
+    savePath = json['savePath'] as String?;
+  }
+
   int? id;
   String? api; // 视频源API地址
   String? vid; // 视频ID
@@ -13,52 +45,20 @@ class DownloadModel {
   double? progress; // 下载进度  0~1
   String? savePath; // 保存路径
 
-  DownloadModel({
-    this.id,
-    this.api,
-    this.vid,
-    this.tid,
-    this.type,
-    this.name,
-    this.pic,
-    this.url,
-    this.fileId,
-    this.status,
-    this.progress,
-    this.savePath
-  });
-
-  DownloadModel.fromJson(Map<String, dynamic> json) {
-    this.id = json['id'];
-    this.api = json['api'];
-    this.vid = json['vid'];
-    this.tid = json['tid'];
-    this.type = json['type'];
-    this.name = json['name'];
-    this.pic = json['pic'];
-    this.url = json['url'];
-    this.fileId = json['fileId'];
-    if (json['status'] != null) {
-      this.status = DownloadStatus.values[json['status']];
-    }
-    this.progress = json['progress'];
-    this.savePath = json['savePath'];
-  }
-
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['api'] = this.api;
-    data['vid'] = this.vid;
-    data['tid'] = this.tid;
-    data['type'] = this.type;
-    data['name'] = this.name;
-    data['pic'] = this.pic;
-    data['url'] = this.url;
-    data['fileId'] = this.fileId;
-    data['status'] = this.status?.index;
-    data['progress'] = this.progress;
-    data['savePath'] = this.savePath;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['api'] = api;
+    data['vid'] = vid;
+    data['tid'] = tid;
+    data['type'] = type;
+    data['name'] = name;
+    data['pic'] = pic;
+    data['url'] = url;
+    data['fileId'] = fileId;
+    data['status'] = status?.index;
+    data['progress'] = progress;
+    data['savePath'] = savePath;
     return data;
   }
 }
@@ -66,13 +66,13 @@ class DownloadModel {
 /// 下载状态
 enum DownloadStatus {
   // 不需要下载
-  NONE,
+  none,
   // 等待下载
-  WAITING,
+  waiting,
   // 正在下载
-  RUNNING,
+  running,
   // 下载成功
-  SUCCESS,
+  success,
   // 下载失败
-  FAIL
+  fail,
 }

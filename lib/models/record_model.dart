@@ -1,4 +1,36 @@
 class RecordModel {
+  RecordModel({
+    this.id,
+    this.api,
+    this.vid,
+    this.tid,
+    this.type,
+    this.name,
+    this.pic,
+    this.collected,
+    this.anthologyName,
+    this.progress,
+    this.playedTime,
+    this.createAt,
+    this.updateAt,
+  });
+
+  RecordModel.fromJson(dynamic json) {
+    id = json['id'] as int?;
+    api = json['api'] as String?;
+    vid = json['vid'] as String?;
+    tid = json['tid'] as String?;
+    type = json['type'] as String?;
+    name = json['name'] as String?;
+    pic = json['pic'] as String?;
+    collected = json['collected'] as int?;
+    anthologyName = json['anthologyName'] as String?;
+    progress = json['progress'] as double?;
+    playedTime = json['playedTime'] as int?;
+    createAt = json['createAt'] as int?;
+    updateAt = json['updateAt'] as int?;
+  }
+
   int? id;
   String? api; // 视频源API地址
   String? vid; // 视频ID
@@ -14,53 +46,22 @@ class RecordModel {
   int? createAt; // 记录时间   时间戳
   int? updateAt; // 更新时间   时间戳
 
-  RecordModel({
-    this.id,
-    this.api,
-    this.vid,
-    this.tid,
-    this.type,
-    this.name,
-    this.pic,
-    this.collected,
-    this.anthologyName,
-    this.progress,
-    this.playedTime,
-    this.createAt,
-    this.updateAt
-  });
-
-  RecordModel.fromJson(Map<String, dynamic> json) {
-    this.id = json['id'];
-    this.api = json['api'];
-    this.vid = json['vid'];
-    this.tid = json['tid'];
-    this.type = json['type'];
-    this.name = json['name'];
-    this.pic = json['pic'];
-    this.collected = json['collected'];
-    this.anthologyName = json['anthologyName'];
-    this.progress = json['progress'];
-    this.playedTime = json['playedTime'];
-    this.createAt = json['createAt'];
-    this.updateAt = json['updateAt'];
-  }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['api'] = this.api;
-    data['vid'] = this.vid;
-    data['tid'] = this.tid;
-    data['type'] = this.type;
-    data['name'] = this.name;
-    data['pic'] = this.pic;
-    data['collected'] = this.collected;
-    data['anthologyName'] = this.anthologyName;
-    data['progress'] = this.progress;
-    data['playedTime'] = this.playedTime;
-    data['createAt'] = this.createAt;
-    data['updateAt'] = this.updateAt;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['api'] = api;
+    data['vid'] = vid;
+    data['tid'] = tid;
+    data['type'] = type;
+    data['name'] = name;
+    data['pic'] = pic;
+    data['collected'] = collected;
+    data['anthologyName'] = anthologyName;
+    data['progress'] = progress;
+    data['playedTime'] = playedTime;
+    data['createAt'] = createAt;
+    data['updateAt'] = updateAt;
     return data;
   }
 }

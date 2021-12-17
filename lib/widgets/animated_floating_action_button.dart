@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AnimatedFloatingActionButton extends StatefulWidget {
-  AnimatedFloatingActionButton({Key? key, required this.onPress}) : super(key: key);
+  const AnimatedFloatingActionButton({Key? key, required this.onPress}) : super(key: key);
 
   final Function onPress;
 
@@ -22,8 +22,8 @@ class AnimatedFloatingActionButtonState extends State<AnimatedFloatingActionButt
   void initState() {
     super.initState();
 
-    _controller = AnimationController(duration: Duration(milliseconds: 300), vsync: this);
-    _translateAnimation = Tween(begin: Offset(0.0, 0.0), end: Offset(0.75, 0.0)).animate(_controller);
+    _controller = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _translateAnimation = Tween(begin: Offset.zero, end: const Offset(0.75, 0.0)).animate(_controller);
     _rotateAnimation = Tween<double>(begin: 0.0, end: 1).animate(_controller);
     _scaleAnimation = Tween<double>(begin: 1, end: 0.8).animate(_controller);
   }
@@ -47,26 +47,26 @@ class AnimatedFloatingActionButtonState extends State<AnimatedFloatingActionButt
   @override
   Widget build(BuildContext context) {
     return SlideTransition(
-          position: _translateAnimation,
-          child: RotationTransition(
-            turns: _rotateAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: MaterialButton(
-                height: 48,
-                shape: CircleBorder(),
-                color: Theme.of(context).primaryColor,
-                child: Icon(Icons.widgets, color: Colors.white, size: 30,),
-                onPressed: () {
-                  if (!this.isShow) {
-                    this.show();
-                    return;
-                  }
-                  widget.onPress();
-                },
-              )
-            )
-          )
+      position: _translateAnimation,
+      child: RotationTransition(
+        turns: _rotateAnimation,
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: MaterialButton(
+            height: 48,
+            shape: const CircleBorder(),
+            color: Theme.of(context).primaryColor,
+            child: const Icon(Icons.widgets, color: Colors.white, size: 30,),
+            onPressed: () {
+              if (!isShow) {
+                show();
+                return;
+              }
+              widget.onPress();
+            },
+          ),
+        ),
+      ),
     );
   }
 }

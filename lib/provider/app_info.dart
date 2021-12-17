@@ -9,7 +9,7 @@ class AppInfoProvider with ChangeNotifier {
 
   void setTheme(String themeColor) {
     _themeColor = themeColor;
-    SpHelper.putString(Constant.key_theme_color, themeColor);
+    SpHelper.putString(Constant.keyThemeColor, themeColor);
     notifyListeners();
   }
 }

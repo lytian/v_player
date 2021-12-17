@@ -1,40 +1,36 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dio/dio.dart';
 import 'package:v_player/common/constant.dart';
-import 'package:v_player/models/video_model.dart';
-import 'package:v_player/utils/xml_util.dart';
-
 import 'package:v_player/models/category_model.dart';
 import 'package:v_player/models/source_model.dart';
+import 'package:v_player/models/video_model.dart';
 import 'package:v_player/utils/sp_helper.dart';
+import 'package:v_player/utils/xml_util.dart';
 
 /// 网络请求数据
 class HttpUtil {
-  static HttpUtil? _instance;
-  factory HttpUtil() =>_getInstance();
+  factory HttpUtil() => _instance;
+  HttpUtil._internal() {
+    _initDio();
+    SpHelper.getInstance();
+  }
+  static final HttpUtil _instance = HttpUtil._internal();
   static late Dio dio;
 
-  HttpUtil._();
-
-  static HttpUtil _getInstance() {
-    if (_instance == null) {
-      _instance = HttpUtil._();
-      _instance!._initDio();
-      SpHelper.getInstance();
-    }
-    return _instance!;
-  }
-
-  _initDio() {
+  void _initDio() {
     dio = Dio();
 
     dio.interceptors.add(InterceptorsWrapper(
       onRequest:(RequestOptions options, RequestInterceptorHandler handler) {
         // 动态获取接口Api
-        SourceModel currentSource = SourceModel.fromJson(SpHelper.getObject(Constant.key_current_source) as Map<String, dynamic>);
-        options.baseUrl = currentSource.httpApi!;
+        final Map? source = SpHelper.getObject(Constant.keyCurrentSource);
+        if (source != null) {
+          final SourceModel currentSource = SourceModel.fromJson(source);
+          options.baseUrl = currentSource.httpApi!;
+        }
         handler.next(options);
       },
       onResponse:(Response response, ResponseInterceptorHandler handler) {
@@ -78,8 +74,8 @@ class HttpUtil {
         }
         BotToast.showText(text: msg);
         handler.next(e);
-      }
-    ));
+      },
+    ),);
   }
 
   bool isXml(String data) => data.startsWith('<?xml');
@@ -88,18 +84,17 @@ class HttpUtil {
   /// 获取分类列表
   ///
   Future<List<CategoryModel>> getCategoryList() async {
-    Map<String, dynamic> params = {"ac": "list"};
-    Response response = await dio.get('', queryParameters: params);
-    String res = response.data.toString();
+    final Map<String, String> params = { 'ac': 'list' };
+    final Response response = await dio.get<dynamic>('', queryParameters: params);
+    final String res = response.data.toString();
     try {
       if (isXml(res)) {
         return XmlUtil.parseCategoryList(res);
       } else {
-        var data = json.decode(res);
-        return (data['class'] as List).map((e) => CategoryModel.fromJson(e)).toList();
+        final dynamic data = json.decode(res);
+        return (data['class'] as List).map((dynamic e) => CategoryModel.fromJson(e)).toList();
       }
-    } catch (e, s) {
-      print(s);
+    } catch (e) {
       BotToast.showText(text: e.toString());
     }
     return [];
@@ -116,7 +111,7 @@ class HttpUtil {
     String? ids,
     int? hour,
   }) async {
-    Map<String, dynamic> params = {
+    final Map<String, Object> params = {
       "ac": "videolist",
       "pg": pageNum,
     };
@@ -133,20 +128,19 @@ class HttpUtil {
     if (hour != null) {
       params["h"] = hour;
     }
-    Response response = await dio.get(api ?? '', queryParameters: params);
-    String res = response.data.toString();
+    final Response response = await dio.get<dynamic>(api ?? '', queryParameters: params);
+    final String res = response.data.toString();
     try {
       if (isXml(res)) {
         return XmlUtil.parseVideoList(res);
       } else {
-        var data = json.decode(res);
-        var list = data['list'] ?? data['data'];
+        final dynamic data = json.decode(res);
+        final dynamic list = data['list'] ?? data['data'];
         if (list != null) {
-          return (list as List).map((e) => VideoModel.fromJson(e)).toList();
+          return (list as List).map((dynamic e) => VideoModel.fromJson(e)).toList();
         }
       }
-    } catch (e, s) {
-      print(s);
+    } catch (e) {
       BotToast.showText(text: e.toString());
     }
     return [];
@@ -156,30 +150,30 @@ class HttpUtil {
   /// 根据ID获取视频
   ///
   Future<VideoModel?> getVideoById(String id, [ String? baseUrl ]) async {
-    Map<String, dynamic> params = {
+    final Map<String, Object> params = {
       "ac": "videolist",
       "ids": id,
     };
-    Response response = await dio.get(baseUrl ?? '', queryParameters: params);
-    String res = response.data.toString();
+    final Response response = await dio.get<dynamic>(baseUrl ?? '', queryParameters: params);
+    final String res = response.data.toString();
     try {
       if (isXml(res)) {
         return XmlUtil.parseVideo(res);
       } else {
-        var data = json.decode(res);
-        var list = data['list'] ?? data['data'];
+        final dynamic data = json.decode(res);
+        final dynamic list = data['list'] ?? data['data'];
         if (list != null) {
-          return (list as List).map((e) {
-            VideoModel model = VideoModel.fromJson(e);
+          return (list as List).map((dynamic e) {
+            final VideoModel model = VideoModel.fromJson(e);
             // 处理选集
-            String? playUrl = e['vpath'] ?? e['vod_play_url'];
-            List<Anthology> anthologies = [];
+            final String? playUrl = (e['vpath'] ?? e['vod_play_url']) as String?;
+            final List<Anthology> anthologies = [];
             if (playUrl != null) {
               playUrl.split('#').forEach((s) {
-                if (s.indexOf('\$') > -1) {
+                if (s.contains('\$')) {
                   anthologies.add(Anthology(name: s.split('\$')[0], url: s.split('\$')[1]));
                 } else {
-                  anthologies.add(Anthology(name: null, url: s));
+                  anthologies.add(Anthology(url: s));
                 }
               });
             }
@@ -188,8 +182,7 @@ class HttpUtil {
           }).toList()[0];
         }
       }
-    } catch (e, s) {
-      print(s);
+    } catch (e) {
       BotToast.showText(text: e.toString());
     }
     return null;

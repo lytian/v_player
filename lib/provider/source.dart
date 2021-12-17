@@ -14,7 +14,7 @@ class SourceProvider with ChangeNotifier {
 
   void setCurrentSource(SourceModel model, BuildContext context) {
     _currentSource = model;
-    SpHelper.putObject(Constant.key_current_source, model);
+    SpHelper.putObject(Constant.keyCurrentSource, model);
 
     context.read<CategoryProvider>().setCategoryIndex(0);
     context.read<CategoryProvider>().getCategoryList();

@@ -12,13 +12,14 @@ import 'package:v_player/utils/db_helper.dart';
 import 'package:v_player/utils/sp_helper.dart';
 
 class SplashPage extends StatefulWidget {
+  const SplashPage({Key? key}) : super(key: key);
+
   @override
   _SplashPageState createState() => _SplashPageState();
 }
 
 class _SplashPageState extends State<SplashPage> {
-
-  DBHelper _db = DBHelper();
+  final DBHelper _db = DBHelper();
   Timer? _timer;
   int _count = 3; // 倒计时秒数
 
@@ -27,28 +28,30 @@ class _SplashPageState extends State<SplashPage> {
     super.initState();
     _initAsync();
   }
-  void _initAsync() async {
+  Future<void> _initAsync() async {
     await SpHelper.getInstance();
-    String colorKey = SpHelper.getString(Constant.key_theme_color, defValue: Constant.default_theme_color);
+    final String colorKey = SpHelper.getString(Constant.keyThemeColor, defValue: Constant.defaultThemeColor);
     // 设置初始化主题颜色
+    if (!mounted) return;
     context.read<AppInfoProvider>().setTheme(colorKey);
     // 加载默认资源
-    Map<String, dynamic>? source = SpHelper.getObject(Constant.key_current_source) as Map<String, dynamic>?;
+    final Map<String, dynamic>? source = SpHelper.getObject(Constant.keyCurrentSource) as Map<String, dynamic>?;
     if (source == null) {
-      String sourceJson = await DefaultAssetBundle.of(context).loadString("assets/data/source.json");
-      List<dynamic> jsonList = json.decode(sourceJson);
-      List<SourceModel> list = jsonList.map((e) => SourceModel.fromJson(e)).toList();
+      final String sourceJson = await DefaultAssetBundle.of(context).loadString("assets/data/source.json");
+      final List<dynamic> jsonList = json.decode(sourceJson) as List<dynamic>;
+      List<SourceModel> list = jsonList.map((dynamic e) => SourceModel.fromJson(e)).toList();
       await _db.insertBatchSource(list);
       list = await _db.getSourceList();
+      if (!mounted) return;
       context.read<SourceProvider>().setCurrentSource(list[0], context);
     } else {
       context.read<SourceProvider>().setCurrentSource(SourceModel.fromJson(source), context);
     }
     // 删除30天以前的播放记录
-    _db.deleteAgoRecord(DateTime.now().subtract(Duration(days: 30)).millisecondsSinceEpoch);
+    _db.deleteAgoRecord(DateTime.now().subtract(const Duration(days: 30)).millisecondsSinceEpoch);
 
     // 倒计时
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (_count <= 1) {
           _timer?.cancel();
@@ -93,15 +96,15 @@ class _SplashPageState extends State<SplashPage> {
                 _goMain();
               },
               child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                      color: const Color(0x66000000),
+                      borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                      border: Border.all(width: 0.33, color: Colors.grey)
+                  ),
                   child: Text(
                     '$_count 跳转',
-                    style: TextStyle(fontSize: 14.0, color: Colors.white),
-                  ),
-                  decoration: BoxDecoration(
-                      color: Color(0x66000000),
-                      borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                      border: Border.all(width: 0.33, color: Colors.grey)
+                    style: const TextStyle(fontSize: 14.0, color: Colors.white),
                   )
               ),
             ),

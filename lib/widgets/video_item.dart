@@ -6,10 +6,11 @@ import 'package:v_player/utils/application.dart';
 /// 横向的
 class VideoItem extends StatelessWidget {
 
-  VideoItem({
+  const VideoItem({
+    Key? key,
     required this.video,
-    this.type = 0
-  });
+    this.type = 0,
+  }): super(key: key);
 
   final VideoModel video;
   final int type; // 0-竖屏(网格布局)    1-横屏(列表布局)
@@ -19,10 +20,10 @@ class VideoItem extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).pushNamed(Application.videoDetailPage, arguments: {
-          'videoId': video.id
-        });
+          'videoId': video.id,
+        },);
       },
-      child: this.type == 0 ? _buildPortraitItem() : _buildLandscapeItem()
+      child: type == 0 ? _buildPortraitItem() : _buildLandscapeItem(),
     );
   }
 
@@ -33,7 +34,7 @@ class VideoItem extends StatelessWidget {
           AspectRatio(
             aspectRatio: 16 / 9,
             child: ClipRRect(
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(5),
                 topRight: Radius.circular(5),
               ),
@@ -47,43 +48,43 @@ class VideoItem extends StatelessWidget {
                     height: double.infinity,
                     imageErrorBuilder: (context, _, strace) {
                       return strace == null ? Container() : Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: AssetImage('assets/image/placeholder-l.jpg')
-                            )
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/image/placeholder-l.jpg'),
+                          ),
                         ),
                         alignment: Alignment.center,
-                        child: Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
+                        child: const Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
                       );
-                    }
+                    },
                   ),
-                  video.note == null || video.note!.isEmpty ? Container() : Positioned(
+                  if (video.note == null || video.note!.isEmpty) Container() else Positioned(
                     top: 0,
                     right: 0,
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(125),
-                          borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(5)
-                          )
+                        color: Colors.black.withAlpha(125),
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(5),
+                        ),
                       ),
-                      child: Text(video.note!, overflow: TextOverflow.ellipsis, style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14
+                      child: Text(video.note!, overflow: TextOverflow.ellipsis, style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
                       ),),
-                    )
-                  )
+                    ),
+                  ),
                 ],
-              )
+              ),
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            margin: EdgeInsets.symmetric(vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            margin: const EdgeInsets.symmetric(vertical: 5),
             child: Text(
               video.name ?? '',
-              style: TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 14),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -97,7 +98,6 @@ class VideoItem extends StatelessWidget {
     return Column(
       children: <Widget>[
         Expanded(
-          flex: 1,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(5),
             child: Stack(
@@ -109,46 +109,43 @@ class VideoItem extends StatelessWidget {
                   width: double.infinity,
                   height: double.infinity,
                   imageErrorBuilder: (context, _, strace) {
-                    if (strace != null) {
-                      print(strace);
-                    }
                     return strace == null ? Container() : Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage('assets/image/placeholder-p.jpg')
-                        )
+                          image: AssetImage('assets/image/placeholder-p.jpg'),
+                        ),
                       ),
                       alignment: Alignment.center,
-                      child: Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
+                      child: const Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
                     );
-                  }
+                  },
                 ),
-                video.note == null || video.note!.isEmpty ? Container() : Positioned(
+                if (video.note == null || video.note!.isEmpty) Container() else Positioned(
                   top: 0,
                   right: 0,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                        color: Colors.black.withAlpha(125),
-                        borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(5)
-                        )
+                      color: Colors.black.withAlpha(125),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(5),
+                      ),
                     ),
-                    child: Text(video.note!, overflow: TextOverflow.ellipsis, style: TextStyle(
+                    child: Text(video.note!, overflow: TextOverflow.ellipsis, style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                     ),),
-                  )
-                )
+                  ),
+                ),
               ],
-            )
-          )
+            ),
+          ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 4),
+          padding: const EdgeInsets.only(top: 4),
           child: Text(
             video.name ?? '',
-            style: TextStyle(fontSize: 14),
+            style: const TextStyle(fontSize: 14),
             overflow: TextOverflow.ellipsis,
           ),
         ),

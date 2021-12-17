@@ -1,12 +1,14 @@
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synchronized/synchronized.dart';
 
 class SpHelper {
+  SpHelper._();
   static SpHelper? _instance;
   static SharedPreferences? _prefs;
-  static Lock _lock = Lock();
+  static final Lock _lock = Lock();
 
   static Future<SpHelper?> getInstance() async {
     if (_instance == null) {
@@ -14,7 +16,7 @@ class SpHelper {
         if (_instance == null) {
           // keep local instance till it is fully initialized.
           // 保持本地实例直到完全初始化。
-          var instance = SpHelper._();
+          final SpHelper instance = SpHelper._();
           await instance._init();
           _instance = instance;
         }
@@ -22,9 +24,6 @@ class SpHelper {
     }
     return _instance;
   }
-
-  // 私有构造函数
-  SpHelper._();
 
   Future _init() async {
     _prefs = await SharedPreferences.getInstance();
@@ -36,30 +35,30 @@ class SpHelper {
   }
 
   /// get obj.
-  static T? getObj<T>(String key, T f(Map v), {T? defValue}) {
-    Map? map = getObject(key);
+  static T? getObj<T>(String key, T Function(Map v) f, {T? defValue}) {
+    final Map? map = getObject(key);
     return map == null ? defValue : f(map);
   }
 
   /// get object.
   static Map? getObject(String key) {
-    String? _data = _prefs?.getString(key);
-    return (_data == null || _data.isEmpty) ? null : json.decode(_data);
+    final String? _data = _prefs?.getString(key);
+    return (_data == null || _data.isEmpty) ? null : (json.decode(_data) as Map);
   }
 
   /// put object list.
   static Future<bool>? putObjectList(String key, List<Object> list) {
-    List<String>? _dataList = list.map((value) {
+    final List<String> _dataList = list.map((value) {
       return json.encode(value);
     }).toList();
     return _prefs?.setStringList(key, _dataList);
   }
 
   /// get obj list.
-  static List<T>? getObjList<T>(String key, T f(Map v),
-      {List<T>? defValue = const []}) {
-    List<Map>? dataList = getObjectList(key);
-    List<T>? list = dataList?.map((value) {
+  static List<T>? getObjList<T>(String key, T Function(Map v) f,
+      {List<T>? defValue = const [],}) {
+    final List<Map>? dataList = getObjectList(key);
+    final List<T>? list = dataList?.map((value) {
       return f(value);
     }).toList();
     return list ?? defValue;
@@ -67,11 +66,8 @@ class SpHelper {
 
   /// get object list.
   static List<Map>? getObjectList(String key) {
-    List<String>? dataLis = _prefs?.getStringList(key);
-    return dataLis?.map((value) {
-      Map _dataMap = json.decode(value);
-      return _dataMap;
-    }).toList();
+    final List<String>? dataList = _prefs?.getStringList(key);
+    return dataList?.map((value) => json.decode(value) as Map).toList();
   }
 
   /// get string.
@@ -116,7 +112,7 @@ class SpHelper {
 
   /// get string list.
   static List<String>? getStringList(String key,
-      {List<String>? defValue = const []}) {
+      {List<String>? defValue = const [],}) {
     return _prefs?.getStringList(key) ?? defValue;
   }
 

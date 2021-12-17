@@ -4,8 +4,6 @@ import 'package:v_player/utils/http_util.dart';
 import 'package:v_player/widgets/video_item.dart';
 
 class SearchBarDelegate extends SearchDelegate<String> {
-  List<String> _suggestList = [];
-  Future<List<VideoModel>>? _future;
 
   SearchBarDelegate({
     String? hintText,
@@ -13,21 +11,21 @@ class SearchBarDelegate extends SearchDelegate<String> {
       searchFieldLabel: hintText
   );
 
+  // final List<String> _suggestList = [];
+  Future<List<VideoModel>>? _future;
 
-  Future<List<VideoModel>> _getSearchResult(str) async {
+  Future<List<VideoModel>> _getSearchResult(String? str) async {
     if (str == null || str == '') return [];
 
-    return await HttpUtil().getVideoList(keyword: str);
+    return HttpUtil().getVideoList(keyword: str);
   }
 
   Widget _buildText(String str) {
-    return Container(
-      child: Center(
-        child: Text(str, style: TextStyle(
-            color: Colors.redAccent,
-            fontSize: 16
-        )),
-      ),
+    return Center(
+      child: Text(str, style: const TextStyle(
+        color: Colors.redAccent,
+        fontSize: 16
+      )),
     );
   }
 
@@ -36,7 +34,7 @@ class SearchBarDelegate extends SearchDelegate<String> {
   List<Widget> buildActions(BuildContext context) {
     return [
       IconButton(
-        icon: Icon(Icons.clear),
+        icon: const Icon(Icons.clear),
         //将搜索内容置为空
         onPressed: () {
           query = "";
@@ -71,16 +69,15 @@ class SearchBarDelegate extends SearchDelegate<String> {
             }
             if (snapshot.hasData && snapshot.data != null) {
               try {
-                List<VideoModel> videoList = snapshot.data as List<VideoModel>;
-                if (videoList.length == 0) {
+                final List<VideoModel> videoList = snapshot.data! as List<VideoModel>;
+                if (videoList.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Expanded(
-                          child: SizedBox(),
+                        const Expanded(
                           flex: 2,
+                          child: SizedBox(),
                         ),
                         SizedBox(
                           width: 100.0,
@@ -91,9 +88,9 @@ class SearchBarDelegate extends SearchDelegate<String> {
                           '没有找到视频',
                           style: TextStyle(fontSize: 16.0, color: Colors.grey[400]),
                         ),
-                        Expanded(
-                          child: SizedBox(),
+                        const Expanded(
                           flex: 3,
+                          child: SizedBox(),
                         ),
                       ],
                     ),
@@ -112,7 +109,7 @@ class SearchBarDelegate extends SearchDelegate<String> {
               return _buildText('没有找到视频');
             }
           } else {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }

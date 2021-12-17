@@ -1,10 +1,4 @@
 class SourceModel {
-  int? id;
-  String? name;
-  String? url;
-  String? httpApi;
-  String? type;
-
   SourceModel(
       {this.id,
       this.name,
@@ -12,21 +6,27 @@ class SourceModel {
       this.httpApi,
       this.type,});
 
-  SourceModel.fromJson(Map json) {
-    id = json['id'];
-    name = json['name'];
-    url = json['url'];
-    httpApi = json['httpApi'];
-    type = json['type'];
+  SourceModel.fromJson(dynamic json) {
+    id = json['id'] as int?;
+    name = json['name'] as String?;
+    url = json['url'] as String?;
+    httpApi = json['httpApi'] as String?;
+    type = json['type'] as String?;
   }
 
+  int? id;
+  String? name;
+  String? url;
+  String? httpApi;
+  String? type;
+
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['url'] = this.url;
-    data['httpApi'] = this.httpApi;
-    data['type'] = this.type;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['url'] = url;
+    data['httpApi'] = httpApi;
+    data['type'] = type;
     return data;
   }
 }

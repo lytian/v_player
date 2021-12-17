@@ -1,0 +1,16 @@
+include: package:lint/analysis_options_package.yaml
+
+analyzer:
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+  exclude:
+    - lib/generated_plugin_registrant.dart
+
+linter:
+  rules:
+    close_sinks: true
+    sort_constructors_first: true
+    sort_pub_dependencies: false
+    avoid_positional_boolean_parameters: false
+    require_trailing_commas: false

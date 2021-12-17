@@ -7,19 +7,21 @@ import 'package:v_player/utils/db_helper.dart';
 import 'package:v_player/widgets/no_data.dart';
 
 class PlayRecordPage extends StatefulWidget {
+  const PlayRecordPage({Key? key}) : super(key: key);
+
   @override
   _PlayRecordPageState createState() => _PlayRecordPageState();
 }
 
 class _PlayRecordPageState extends State<PlayRecordPage> {
-  DBHelper _db = DBHelper();
-  EasyRefreshController _controller = EasyRefreshController();
+  final DBHelper _db = DBHelper();
+  final EasyRefreshController _controller = EasyRefreshController();
 
   int _pageNum = -1; // 从0开始
   List<RecordModel> _recordList = [];
 
   Future<int> _getRecordList() async {
-    List<RecordModel> list = await _db.getRecordList(pageNum: _pageNum, pageSize: 20, played: true);
+    final List<RecordModel> list = await _db.getRecordList(pageNum: _pageNum, played: true);
     if (!mounted) return 0;
     setState(() {
       if (_pageNum <= 0) {
@@ -41,18 +43,18 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('播放记录'),
+        title: const Text('播放记录'),
       ),
       body: EasyRefresh.custom(
           controller: _controller,
           firstRefresh: true,
-          firstRefreshWidget: Center(
+          firstRefreshWidget: const Center(
             child: CircularProgressIndicator(),
           ),
           slivers: <Widget>[
             SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                RecordModel model = _recordList[index];
+                final RecordModel model = _recordList[index];
                 String recordStr = '';
                 if (model.anthologyName != null) {
                   recordStr += model.anthologyName!;
@@ -61,11 +63,11 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
                   if (model.progress! > 0.99) {
                     recordStr += '  ' + '播放完毕';
                   } else {
-                    recordStr += '    ' + (model.progress! * 100).toStringAsFixed(2) + '%';
+                    recordStr += '    ${(model.progress! * 100).toStringAsFixed(2)}%';
                   }
                 }
                 return ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(3),
                     child: FadeInImage.assetNetwork(
@@ -76,15 +78,14 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
                       height: 75,
                     ),
                   ),
-                  title: Text(model.name ?? '', style: TextStyle(color: Colors.black, fontSize: 14), overflow: TextOverflow.ellipsis, maxLines: 2,),
-                  subtitle: Text(recordStr, style: TextStyle(fontSize: 12)),
-                  isThreeLine: false,
+                  title: Text(model.name ?? '', style: const TextStyle(color: Colors.black, fontSize: 14), overflow: TextOverflow.ellipsis, maxLines: 2,),
+                  subtitle: Text(recordStr, style: const TextStyle(fontSize: 12)),
                   trailing: SizedBox(
                     width: 36,
                     height: 36,
                     child: IconButton(
-                      icon: Icon(Icons.delete_forever),
-                      color: Color(0xff3d3d3d),
+                      icon: const Icon(Icons.delete_forever),
+                      color: const Color(0xff3d3d3d),
                       onPressed: () => _deleteRecord(model),
                     ),
                   ),
@@ -95,8 +96,8 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
               ),
             )
           ],
-          emptyWidget: _recordList.length == 0
-              ? NoData(tip: '没有播放记录',)
+          emptyWidget: _recordList.isEmpty
+              ? const NoData(tip: '没有播放记录',)
               : null,
           header: ClassicalHeader(
               refreshText: '下拉刷新',
@@ -117,7 +118,7 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
           },
           onLoad: () async {
             _pageNum++;
-            int len = await _getRecordList();
+            final int len = await _getRecordList();
             if (len < 20) {
               _controller.finishLoad(noMore: true);
             }
@@ -133,9 +134,9 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
     });
   }
 
-  void _deleteRecord(RecordModel model) async {
+  Future<void> _deleteRecord(RecordModel model) async {
     if (model.id == null) return;
-    int i = await _db.deleteRecordById(model.id!);
+    final int i = await _db.deleteRecordById(model.id!);
     if (i > 0) {
       _recordList.remove(model);
       setState(() {});

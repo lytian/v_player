@@ -2,25 +2,25 @@ import 'package:v_player/models/category_model.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:xml/xml.dart';
 
-class XmlUtil {
+mixin XmlUtil {
   static List<CategoryModel> parseCategoryList(String xmlStr) {
-    List<CategoryModel> list = [];
+    final List<CategoryModel> list = [];
 
     final document = XmlDocument.parse(xmlStr);
     final types = document.findAllElements('ty');
-    types.forEach((node) {
+    for (final XmlElement node in types) {
       list.add(CategoryModel(id: node.getAttribute('id'), name: node.text));
-    });
+    }
 
     return list;
   }
 
   static List<VideoModel> parseVideoList(String xmlStr) {
-    List<VideoModel> list = [];
+    final List<VideoModel> list = [];
 
     final document = XmlDocument.parse(xmlStr);
     final videos = document.findAllElements('video');
-    videos.forEach((node) {
+    for (final XmlElement node in videos) {
       list.add(VideoModel(
         id: getNodeText(node, 'id'),
         tid: getNodeText(node, 'tid'),
@@ -35,9 +35,9 @@ class XmlUtil {
         note: getNodeCData(node, 'note'),
         actor: getNodeCData(node, 'actor'),
         director: getNodeCData(node, 'director'),
-        des: getNodeCData(node, 'des')
-      ));
-    });
+        des: getNodeCData(node, 'des'),
+      ),);
+    }
 
     return list;
   }
@@ -47,14 +47,14 @@ class XmlUtil {
     final videos = document.findAllElements('video');
     if (videos.isEmpty) return null;
     final video = videos.first;
-    String? str = getNodeCData(video.findElements('dl').first, 'dd');
-    List<Anthology> anthologies = [];
+    final String? str = getNodeCData(video.findElements('dl').first, 'dd');
+    final List<Anthology> anthologies = [];
     if (str != null) {
       str.split('#').forEach((s) {
-        if (s.indexOf('\$') > -1) {
+        if (s.contains('\$')) {
           anthologies.add(Anthology(name: s.split('\$')[0], url: s.split('\$')[1]));
         } else {
-          anthologies.add(Anthology(name: null, url: s));
+          anthologies.add(Anthology(url: s));
         }
       });
     }
@@ -73,7 +73,7 @@ class XmlUtil {
       actor: getNodeCData(video, 'actor'),
       director: getNodeCData(video, 'director'),
       des: getNodeCData(video, 'des'),
-      anthologies: anthologies
+      anthologies: anthologies,
     );
   }
 

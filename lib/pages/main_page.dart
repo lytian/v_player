@@ -14,6 +14,8 @@ import 'package:v_player/widgets/no_data.dart';
 import 'package:v_player/widgets/video_item.dart';
 
 class MainPage extends StatefulWidget {
+  const MainPage({Key? key}) : super(key: key);
+
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -27,10 +29,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   late EasyRefreshController _controller;
   int _pageNum = 1;
-  List _videoList = [];
+  List<VideoModel> _videoList = [];
   SourceModel? _currentSource;
   late SourceProvider _sourceProvider;
-  GlobalKey<AnimatedFloatingActionButtonState> _buttonKey = GlobalKey<AnimatedFloatingActionButtonState>();
+  final GlobalKey<AnimatedFloatingActionButtonState> _buttonKey = GlobalKey<AnimatedFloatingActionButtonState>();
   bool _firstLoading = false;
 
   @override
@@ -66,7 +68,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       _type = '';
       _categoryList = [];
     });
-    List<CategoryModel> list = await HttpUtil().getCategoryList();
+    final List<CategoryModel> list = await HttpUtil().getCategoryList();
     setState(() {
       _categoryList = [CategoryModel(id: '', name: '最新')] + list;
       _navController = TabController(length: _categoryList.length, vsync: this);
@@ -79,10 +81,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     if (_type == null || _type!.isEmpty) {
       hour = 72;
     }
-    List<VideoModel> videos = await HttpUtil().getVideoList(pageNum: _pageNum, type: _type, hour: hour);
+    final List<VideoModel> videos = await HttpUtil().getVideoList(pageNum: _pageNum, type: _type, hour: hour);
     if (!mounted) return 0;
     setState(() {
-      if (this._pageNum <= 1) {
+      if (_pageNum <= 1) {
         _videoList = videos;
       } else {
         _videoList += videos;
@@ -91,20 +93,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     return videos.length;
   }
 
-  void _initData() async {
+  Future<void> _initData() async {
     setState(() {
       _firstLoading = true;
       _pageNum = 1;
     });
-    try {
-      await _getCategoryList();
-      await _getVideoList();
-    } catch(e) {
-      print(e);
-    }
+    await _getCategoryList();
+    await _getVideoList();
+
     setState(() {
-      if (mounted)
-        _firstLoading = false;
+      _firstLoading = false;
     });
   }
 
@@ -114,20 +112,20 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       appBar: AppBar(
         leading: Builder(builder: (BuildContext ctx) {
           return IconButton(
-              icon: Container(
-                width: 34,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.red,
-                  image: DecorationImage(
-                    fit: BoxFit.fill,
-                    image: AssetImage('assets/image/avatar.png'),
-                  ),
+            icon: Container(
+              width: 34,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.red,
+                image: DecorationImage(
+                  fit: BoxFit.fill,
+                  image: AssetImage('assets/image/avatar.png'),
                 ),
               ),
-              onPressed: () {
-                Scaffold.of(ctx).openDrawer();
-              });
+            ),
+            onPressed: () {
+              Scaffold.of(ctx).openDrawer();
+            });
         }),
         centerTitle: true,
         title: Text(_currentSource != null
@@ -135,7 +133,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             : '没找到视频源'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             onPressed: () {
               if (_currentSource == null) return;
               showSearch(context: context, delegate: SearchBarDelegate(hintText: '搜索【${_currentSource!.name}】的资源'));
@@ -144,7 +142,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         ],
         bottom: _buildCategoryNav(),
       ),
-      body: !_firstLoading ? _buildVideoList() : Center(
+      body: !_firstLoading ? _buildVideoList() : const Center(
         child: CircularProgressIndicator()
       ),
       floatingActionButton: AnimatedFloatingActionButton(
@@ -153,7 +151,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           Navigator.of(context).pushNamed(Application.sourceManagePage);
         },
       ),
-      drawer: Drawer(
+      drawer: const Drawer(
         child: MainLeftPage(),
       ),
     );
@@ -161,26 +159,24 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   PreferredSize _buildCategoryNav() {
     return PreferredSize(
-      preferredSize: Size.fromHeight(40),
+      preferredSize: const Size.fromHeight(40),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Expanded(
-            flex: 1,
             child: _categoryList.isNotEmpty ? TabBar(
               controller: _navController,
               isScrollable: true,
               tabs: _categoryList.map((e) => Tab(text: e.name,)).toList(),
               onTap: (index) {
-                this._type = _categoryList[index].id;
-                this._pageNum = 0;
-                this._controller.callRefresh();
+                _type = _categoryList[index].id;
+                _pageNum = 0;
+                _controller.callRefresh();
               },
             ) : Container()
           ),
           Container(
             height: 20,
-            margin: EdgeInsets.only(left: 4),
+            margin: const EdgeInsets.only(left: 4),
             child: VerticalDivider(
               color: Colors.grey[200],
             ),
@@ -188,10 +184,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           Container(
               width: 40,
               alignment: Alignment.center,
-              padding: EdgeInsets.only(right: 4),
+              padding: const EdgeInsets.only(right: 4),
               child: IconButton(
                 icon: Icon(_isLandscape ? Icons.list : Icons.table_chart),
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 color: Colors.white,
                 onPressed: () {
                   setState(() {
@@ -220,33 +216,34 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       child: EasyRefresh.custom(
           controller: _controller,
           slivers: <Widget>[
-            _isLandscape
-                ? SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                return VideoItem(video: _videoList[index], type: 1,);
-              },
-                childCount: _videoList.length,
-              ),
-            )
-                : SliverPadding(
-              padding: EdgeInsets.all(8),
-              sliver: SliverGrid(
+            if (_isLandscape)
+              SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  return VideoItem(video: _videoList[index], type: 0,);
+                  return VideoItem(video: _videoList[index], type: 1,);
                 },
                   childCount: _videoList.length,
                 ),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 9 / 15
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.all(8),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    return VideoItem(video: _videoList[index],);
+                  },
+                    childCount: _videoList.length,
+                  ),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 8,
+                      childAspectRatio: 9 / 15
+                  ),
                 ),
-              ),
-            )
+              )
           ],
-          emptyWidget: _videoList.length == 0
-              ? NoData(tip: '没有找到视频',)
+          emptyWidget: _videoList.isEmpty
+              ? const NoData(tip: '没有找到视频',)
               : null,
           header: ClassicalHeader(
               refreshText: '下拉刷新',
@@ -267,7 +264,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           },
           onLoad: () async {
             _pageNum++;
-            int len = await _getVideoList();
+            final int len = await _getVideoList();
             if (len < 20) {
               _controller.finishLoad(noMore: true);
             }

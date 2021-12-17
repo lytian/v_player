@@ -10,10 +10,11 @@ import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/application.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<AppInfoProvider>(
         builder: (context, appInfo, _) {
-          String colorKey = appInfo.themeColor;
+          final String colorKey = appInfo.themeColor;
           if (themeColorMap[colorKey] != null) {
             _themeColor = themeColorMap[colorKey];
           }
@@ -40,8 +41,8 @@ class MyApp extends StatelessWidget {
               primaryColor: _themeColor,
               indicatorColor: Colors.white,
               appBarTheme: AppBarTheme(
-                backgroundColor: _themeColor
-              )
+                backgroundColor: _themeColor,
+              ),
             ),
             builder: BotToastInit(),
             navigatorObservers: [
