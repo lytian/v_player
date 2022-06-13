@@ -67,12 +67,15 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     setState(() {
       _type = '';
       _categoryList = [];
-    });
-    final List<CategoryModel> list = await HttpUtil().getCategoryList();
-    setState(() {
-      _categoryList = [CategoryModel(id: '', name: '最新')] + list;
       _navController = TabController(length: _categoryList.length, vsync: this);
     });
+    final List<CategoryModel> list = await HttpUtil().getCategoryList();
+    if (list.isNotEmpty) {
+      setState(() {
+        _categoryList = [CategoryModel(id: '', name: '最新')] + list;
+        _navController = TabController(length: _categoryList.length, vsync: this);
+      });
+    }
   }
 
   /// 获取视频列表
