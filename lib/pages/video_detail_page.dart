@@ -111,7 +111,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     // 备份旧的controller
     final oldController = _controller;
     // 在下一帧处理完成后
-    WidgetsBinding.instance!.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       oldController!.removeListener(_videoListener);
       // 注销旧的controller;
       await oldController.dispose();
