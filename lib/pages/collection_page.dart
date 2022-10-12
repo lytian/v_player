@@ -1,6 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:v_player/models/record_model.dart';
 import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/db_helper.dart';
@@ -10,7 +10,7 @@ class CollectionPage extends StatefulWidget {
   const CollectionPage({Key? key}) : super(key: key);
 
   @override
-  _CollectionPageState createState() => _CollectionPageState();
+  State<CollectionPage> createState() => _CollectionPageState();
 }
 
 class _CollectionPageState extends State<CollectionPage> {
@@ -45,81 +45,8 @@ class _CollectionPageState extends State<CollectionPage> {
       appBar: AppBar(
         title: const Text('我的收藏'),
       ),
-      body: EasyRefresh.custom(
+      body: EasyRefresh(
         controller: _controller,
-        firstRefresh: true,
-        firstRefreshWidget: const Center(
-          child: CircularProgressIndicator(),
-        ),
-        slivers: <Widget>[
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final RecordModel model = _recordList[index];
-              String recordStr = '';
-              if (model.progress != null && model.progress! > 0) {
-                if (model.anthologyName != null) {
-                  recordStr += model.anthologyName!;
-                }
-                if (model.progress! > 0.99) {
-                  recordStr += ' ' + '播放完毕';
-                } else {
-                  recordStr = '播放至：$recordStr ${(model.progress! * 100).toStringAsFixed(2)}';
-                }
-              }
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: FadeInImage.assetNetwork(
-                    placeholder: 'assets/image/placeholder-l.jpg',
-                    image: model.pic ?? '',
-                    fit: BoxFit.cover,
-                    width: 100,
-                    height: 75,
-                  ),
-                ),
-                title: Text(model.name ?? '暂无标题', style: const TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
-                subtitle: recordStr.isEmpty ? RichText(
-                  text: TextSpan(
-                      style: const TextStyle(fontSize: 13, color: Color(0xff666666)),
-                      children: [
-                        TextSpan(text: model.type),
-                        const TextSpan(text: '  暂无播放', style: TextStyle(color: Color(0xff999999)))
-                      ]
-                  ),
-                ) : Text(recordStr, style: const TextStyle(fontSize: 13)),
-                trailing: SizedBox(
-                  width: 36,
-                  height: 36,
-                  child: IconButton(
-                    icon: const Icon(Icons.star_border),
-                    color: const Color(0xff3d3d3d),
-                    onPressed: () => _cancelRecord(model)
-                  ),
-                ),
-                onTap: ()  => _playVideo(model.api!, model.vid!),
-              );
-            },
-              childCount: _recordList.length,
-            ),
-          )
-        ],
-        emptyWidget: _recordList.isEmpty
-            ? const NoData(tip: '没有收藏记录',)
-            : null,
-        header: ClassicalHeader(
-            refreshText: '下拉刷新',
-            refreshReadyText: '释放刷新',
-            refreshingText: '正在刷新...',
-            refreshedText: '已获取最新数据',
-            infoText: '更新于%T'),
-        footer: ClassicalFooter(
-            loadText: '上拉加载',
-            loadReadyText: '释放加载',
-            loadingText: '正在加载',
-            loadedText: '已加载结束',
-            noMoreText: '没有更多数据了~',
-            infoText: '更新于%T'),
         onRefresh: () async {
           _pageNum = 0;
           await _getRecordList();
@@ -128,9 +55,61 @@ class _CollectionPageState extends State<CollectionPage> {
           _pageNum++;
           final int len = await _getRecordList();
           if (len < 20) {
-            _controller.finishLoad(noMore: true);
+            _controller.finishLoad(IndicatorResult.noMore);
           }
-        }
+        },
+        child: _recordList.isEmpty
+          ? const NoData(tip: '没有收藏记录',)
+          : ListView.builder(
+            itemCount: _recordList.length,
+              itemBuilder: (context, index) {
+                final RecordModel model = _recordList[index];
+                String recordStr = '';
+                if (model.progress != null && model.progress! > 0) {
+                  if (model.anthologyName != null) {
+                    recordStr += model.anthologyName!;
+                  }
+                  if (model.progress! > 0.99) {
+                    recordStr += ' ' + '播放完毕';
+                  } else {
+                    recordStr = '播放至：$recordStr ${(model.progress! * 100).toStringAsFixed(2)}';
+                  }
+                }
+                return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: FadeInImage.assetNetwork(
+                      placeholder: 'assets/image/placeholder-l.jpg',
+                      image: model.pic ?? '',
+                      fit: BoxFit.cover,
+                      width: 100,
+                      height: 75,
+                    ),
+                  ),
+                  title: Text(model.name ?? '暂无标题', style: const TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
+                  subtitle: recordStr.isEmpty ? RichText(
+                    text: TextSpan(
+                        style: const TextStyle(fontSize: 13, color: Color(0xff666666)),
+                        children: [
+                          TextSpan(text: model.type),
+                          const TextSpan(text: '  暂无播放', style: TextStyle(color: Color(0xff999999)))
+                        ]
+                    ),
+                  ) : Text(recordStr, style: const TextStyle(fontSize: 13)),
+                  trailing: SizedBox(
+                    width: 36,
+                    height: 36,
+                    child: IconButton(
+                      icon: const Icon(Icons.star_border),
+                      color: const Color(0xff3d3d3d),
+                      onPressed: () => _cancelRecord(model)
+                    ),
+                  ),
+                  onTap: ()  => _playVideo(model.api!, model.vid!),
+                );
+              },
+          )
       ),
     );
   }

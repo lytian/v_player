@@ -4,7 +4,6 @@ import 'dart:ui';
 import 'package:auto_orientation/auto_orientation.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:chewie/chewie.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +26,7 @@ class VideoDetailPage extends StatefulWidget {
   final String videoId;
 
   @override
-  _VideoDetailPageState createState() => _VideoDetailPageState();
+  State<VideoDetailPage> createState() => _VideoDetailPageState();
 }
 
 class _VideoDetailPageState extends State<VideoDetailPage> {
@@ -40,7 +39,6 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
   SourceModel? _currentSource;
   VideoModel? _videoModel;
   RecordModel? _recordModel;
-  bool _isSingleVideo = false; // 是否单视频，没有选集
   int _cachePlayedSecond = -1; // 临时的播放秒数
 
   @override
@@ -64,11 +62,6 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
         final RecordModel? recordModel = await _db.getRecordByVid(baseUrl!, widget.videoId);
         setState(() {
           _recordModel = recordModel;
-
-          // 单视频，只有一个anthology，并且name为null
-          if (video.anthologies!.length == 1 && video.anthologies!.first.name == null) {
-            _isSingleVideo = true;
-          }
         });
 
         String? url;
@@ -80,8 +73,9 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
           name = video.anthologies!.first.name == null ? video.name : ('${video.name!}  ${video.anthologies!.first.name ?? ''}');
         } else {
           // 自动跳转到历史
-          final Anthology? anthology = video.anthologies!.firstWhereOrNull((e) => e.name == _recordModel!.anthologyName);
-          if (anthology != null) {
+          final int index = video.anthologies!.indexWhere((e) => e.name == _recordModel!.anthologyName);
+          if (index > - 1) {
+            final Anthology anthology = video.anthologies![index];
             url = anthology.url;
             name = anthology.name == null ? video.name : ('${video.name!}  ${anthology.name!}');
           } else {
@@ -170,6 +164,23 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     setState(() {});
   }
 
+  bool get isSingleVideo {
+    if (_videoModel == null || _videoModel!.anthologies == null) return false;
+
+    return _videoModel!.anthologies!.isNotEmpty && _videoModel!.anthologies!.length == 1 && _videoModel!.anthologies!.first.name == null;
+  }
+
+  Map<String?, List<Anthology>> get groupAnthologies {
+    final Map<String?, List<Anthology>> map = {};
+    if (_videoModel != null && _videoModel!.anthologies != null) {
+      for (final ant in _videoModel!.anthologies!) {
+        (map[ant.tag] ??= []).add(ant);
+      }
+    }
+    return map;
+  }
+
+
   @override
   void dispose() {
     _controller?.removeListener(_videoListener);
@@ -187,9 +198,10 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
     _cachePlayedSecond = _controller!.value.position.inSeconds;
 
     String? anthologyName;
-    if (!_isSingleVideo) {
-      final Anthology? anthology = _videoModel!.anthologies!.firstWhereOrNull((e) => e.url == _url);
-      if (anthology != null) {
+    if (!isSingleVideo) {
+      final int index = _videoModel!.anthologies!.indexWhere((e) => e.url == _url);
+      if (index > -1) {
+        final Anthology anthology = _videoModel!.anthologies![index];
         anthologyName = anthology.name;
       }
     }
@@ -383,49 +395,60 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       ),
     ]);
     // 添加选集
-    if (!_isSingleVideo) {
-      children.addAll([
-        const Padding(
-          padding: EdgeInsets.only(left: 16,),
-          child: Text('选集', style: TextStyle(
-              color: Colors.black,
-              fontSize: 18,
-              height: 1
-          )),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: video.anthologies!.map((e) {
-              return SizedBox(
-                height: 36,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    elevation: MaterialStateProperty.all(0),
-                    padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 8)),
-                    backgroundColor: MaterialStateProperty.all(_url != e.url ? Colors.grey[300] : null)
-                  ),
-                  child: Text(e.name ?? '', style: TextStyle(
-                    color: _url != e.url ? Colors.black : null,
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal
-                  ),),
-                  onPressed: () async {
-                    if (_url == e.url) return;
-
-                    _startPlay(e.url!, '${video.name!}  ${e.name!}');
-                  },
-                )
-              );
-            }).toList(),
+    if (!isSingleVideo) {
+      groupAnthologies.forEach((String? tag, ants) {
+        children.addAll([
+          Row(
+            children: [
+              const SizedBox(width: 16,),
+              const Text('选集', style: TextStyle(
+                color: Colors.black,
+                fontSize: 18,
+                height: 1
+              )),
+              const SizedBox(width: 6,),
+              if (tag != null)
+                Text('[$tag]', style: const TextStyle(
+                  color: Colors.redAccent,
+                  fontSize: 14,
+                  height: 1
+                )),
+            ],
           ),
-        ),
-        Divider(
-          color: Colors.grey.withOpacity(0.5),
-        ),
-      ]);
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: ants.map((e) {
+                return SizedBox(
+                    height: 36,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          elevation: MaterialStateProperty.all(0),
+                          padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 8)),
+                          backgroundColor: MaterialStateProperty.all(_url != e.url ? Colors.grey[300] : null)
+                      ),
+                      child: Text(e.name ?? '', style: TextStyle(
+                          color: _url != e.url ? Colors.black : null,
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal
+                      ),),
+                      onPressed: () async {
+                        if (_url == e.url) return;
+
+                        _startPlay(e.url!, '${video.name!}  ${e.name!}');
+                      },
+                    )
+                );
+              }).toList(),
+            ),
+          ),
+          Divider(
+            color: Colors.grey.withOpacity(0.5),
+          ),
+        ]);
+      });
     }
     // 添加简介
     children.addAll([

@@ -1,8 +1,8 @@
 [
   {
-    "name": "天空资源网",
-    "url": "https://caiji.tiankongapi.com",
-    "httpApi": "https://caiji.tiankongapi.com/inc/api.php",
-    "type": "XML接口"
+    "name": "闪电资源网",
+    "url": "https://shan01.com/",
+    "httpApi": "https://sdzyapi.com/api.php/provide/vod/at/xml/",
+    "type": "综合资源"
   }
 ]

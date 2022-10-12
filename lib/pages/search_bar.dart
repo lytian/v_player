@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:v_player/models/video_model.dart';
+import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/http_util.dart';
+import 'package:v_player/widgets/no_data.dart';
 import 'package:v_player/widgets/video_item.dart';
 
 class SearchBarDelegate extends SearchDelegate<String> {
@@ -71,36 +73,56 @@ class SearchBarDelegate extends SearchDelegate<String> {
               try {
                 final List<VideoModel> videoList = snapshot.data! as List<VideoModel>;
                 if (videoList.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Expanded(
-                          flex: 2,
-                          child: SizedBox(),
-                        ),
-                        SizedBox(
-                          width: 100.0,
-                          height: 100.0,
-                          child: Image.asset('assets/image/nodata.png'),
-                        ),
-                        Text(
-                          '没有找到视频',
-                          style: TextStyle(fontSize: 16.0, color: Colors.grey[400]),
-                        ),
-                        const Expanded(
-                          flex: 3,
-                          child: SizedBox(),
-                        ),
-                      ],
-                    ),
-                  );
+                  return const NoData(tip: '没有搜索到视频');
                 }
                 return ListView.builder(
-                    itemCount: videoList.length,
-                    itemBuilder: (context, index) {
-                      return VideoItem(video: videoList[index], type: 1,);
-                    }
+                  padding: const EdgeInsets.all(4),
+                  itemCount: videoList.length,
+                  itemBuilder: (context, index) {
+                    final video = videoList[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushNamed(Application.videoDetailPage, arguments: {
+                          'videoId': video.id,
+                        });
+                      },
+                      child: Container(
+                        height: 100,
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.only(top: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(3)
+                        ),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: AspectRatio(
+                                aspectRatio: 4 / 3,
+                                child: FadeInImage.assetNetwork(
+                                  placeholder: 'assets/image/placeholder-l.jpg',
+                                  image: video.pic ?? '',
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            ),
+                            const SizedBox(width: 10,),
+                            Expanded(child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(video.name ?? '暂无标题', style: const TextStyle(color: Colors.black, fontSize: 16), overflow: TextOverflow.ellipsis, maxLines: 2,),
+                                Text(video.note ?? '', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                              ],
+                            )),
+                            const SizedBox(width: 10,),
+                            const Icon(Icons.play_circle_outline, size: 32, color: Colors.grey,)
+                          ],
+                        ),
+                      ),
+                    );
+                  }
                 );
               } catch (e) {
                 return _buildText('数据解析错误');

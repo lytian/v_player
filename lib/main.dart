@@ -1,6 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/provider/app_info.dart';
@@ -11,6 +11,19 @@ import 'package:v_player/utils/application.dart';
 
 void main() {
   runApp(const MyApp());
+
+  // 全局设置EasyRefresh
+  EasyRefresh.defaultHeaderBuilder = () => const MaterialHeader();
+  EasyRefresh.defaultFooterBuilder = () => const ClassicFooter(
+    dragText: '上拉加载',
+    armedText: '释放加载',
+    readyText: '正在加载...',
+    processingText: '正在加载...',
+    processedText: '加载完成',
+    noMoreText: '没有更多数据',
+    failedText: '加载失败',
+    messageText: '更新于 %T',
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -18,7 +31,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color? _themeColor;
+    Color? themeColor;
 
     return MultiProvider(
       providers: [
@@ -31,17 +44,17 @@ class MyApp extends StatelessWidget {
         builder: (context, appInfo, _) {
           final String colorKey = appInfo.themeColor;
           if (themeColorMap[colorKey] != null) {
-            _themeColor = themeColorMap[colorKey];
+            themeColor = themeColorMap[colorKey];
           }
 
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               brightness: Brightness.light,
-              primaryColor: _themeColor,
+              primaryColor: themeColor,
               indicatorColor: Colors.white,
               appBarTheme: AppBarTheme(
-                backgroundColor: _themeColor,
+                backgroundColor: themeColor,
               ),
             ),
             builder: BotToastInit(),

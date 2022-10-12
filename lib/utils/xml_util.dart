@@ -47,16 +47,35 @@ mixin XmlUtil {
     final videos = document.findAllElements('video');
     if (videos.isEmpty) return null;
     final video = videos.first;
-    final String? str = getNodeCData(video.findElements('dl').first, 'dd');
+    // 视频源处理
+    final dl = video.findElements('dl').isEmpty ? null : video.findElements('dl').first;
+    if (dl == null) return null;
     final List<Anthology> anthologies = [];
-    if (str != null) {
-      str.split('#').forEach((s) {
-        if (s.contains('\$')) {
-          anthologies.add(Anthology(name: s.split('\$')[0], url: s.split('\$')[1]));
-        } else {
-          anthologies.add(Anthology(url: s));
-        }
-      });
+    for (final dd in dl.children) {
+      if (dd.children.isEmpty) break;
+      final String str = dd.children.first.text;
+      String? tag;
+      if (dd.attributes.isNotEmpty) {
+        tag = dd.attributes.first.value;
+      }
+      if (str.isNotEmpty) {
+        str.split('#').forEach((s) {
+          if (s.isNotEmpty) {
+            if (s.contains('\$')) {
+              anthologies.add(Anthology(
+                tag: tag,
+                name: s.split('\$')[0],
+                url: s.split('\$')[1])
+              );
+            } else {
+              anthologies.add(Anthology(
+                tag: tag,
+                url: s
+              ));
+            }
+          }
+        });
+      }
     }
     return VideoModel(
       id: getNodeText(video, 'id'),

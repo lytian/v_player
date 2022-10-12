@@ -90,20 +90,24 @@ class Anthology {
   Anthology({
     this.name,
     this.url,
+    this.tag,
   });
 
   Anthology.fromJSON(Map<String, dynamic> json) {
     name = json['name'] as String?;
     url = json['tid'] as String?;
+    tag = json['tag'] as String?;
   }
 
   String? name;
   String? url;
+  String? tag;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['name'] = name;
     data['url'] = url;
+    data['tag'] = tag;
     return data;
   }
 }

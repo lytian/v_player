@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/models/category_model.dart';
 import 'package:v_player/models/source_model.dart';
@@ -11,13 +13,12 @@ import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/http_util.dart';
 import 'package:v_player/widgets/animated_floating_action_button.dart';
 import 'package:v_player/widgets/no_data.dart';
-import 'package:v_player/widgets/video_item.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
 
   @override
-  _MainPageState createState() => _MainPageState();
+  State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
@@ -82,7 +83,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   Future<int> _getVideoList() async {
     int? hour; // 最近几个小时更新
     if (_type == null || _type!.isEmpty) {
-      hour = 72;
+      hour = 24 * 7;
     }
     final List<VideoModel> videos = await HttpUtil().getVideoList(pageNum: _pageNum, type: _type, hour: hour);
     if (!mounted) return 0;
@@ -101,8 +102,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       _firstLoading = true;
       _pageNum = 1;
     });
-    await _getCategoryList();
-    await _getVideoList();
+    try {
+      await _getCategoryList();
+      await _getVideoList();
+    } catch (err) {
+      rethrow;
+    }
 
     setState(() {
       _firstLoading = false;
@@ -139,7 +144,11 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             icon: const Icon(Icons.search),
             onPressed: () {
               if (_currentSource == null) return;
-              showSearch(context: context, delegate: SearchBarDelegate(hintText: '搜索【${_currentSource!.name}】的资源'));
+              showSearch(
+                useRootNavigator: true,
+                context: context,
+                delegate: SearchBarDelegate(hintText: '搜索【${_currentSource!.name}】的资源')
+              );
             },
           )
         ],
@@ -216,51 +225,26 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         }
         return false;
       },
-      child: EasyRefresh.custom(
+      child: EasyRefresh(
           controller: _controller,
-          slivers: <Widget>[
-            if (_isLandscape)
-              SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  return VideoItem(video: _videoList[index], type: 1,);
-                },
-                  childCount: _videoList.length,
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.all(8),
-                sliver: SliverGrid(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    return VideoItem(video: _videoList[index],);
+          child: _videoList.isEmpty ? const NoData(tip: '没有视频数据~') : (
+              _isLandscape ? ListView.builder(
+                  padding: const EdgeInsets.all(4),
+                  itemCount: _videoList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return _buildVideoItem(_videoList[index], true);
+                  }
+                ) : MasonryGridView.count(
+                  padding: const EdgeInsets.all(4),
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 4,
+                  crossAxisSpacing: 4,
+                  itemCount: _videoList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return _buildVideoItem(_videoList[index], false);
                   },
-                    childCount: _videoList.length,
-                  ),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 8,
-                      childAspectRatio: 9 / 15
-                  ),
-                ),
-              )
-          ],
-          emptyWidget: _videoList.isEmpty
-              ? const NoData(tip: '没有找到视频',)
-              : null,
-          header: ClassicalHeader(
-              refreshText: '下拉刷新',
-              refreshReadyText: '释放刷新',
-              refreshingText: '正在刷新...',
-              refreshedText: '已获取最新数据',
-              infoText: '更新于%T'),
-          footer: ClassicalFooter(
-              loadText: '上拉加载',
-              loadReadyText: '释放加载',
-              loadingText: '正在加载',
-              loadedText: '已加载结束',
-              noMoreText: '没有更多数据了~',
-              infoText: '更新于%T'),
+                )
+            ),
           onRefresh: () async {
             _pageNum = 1;
             await _getVideoList();
@@ -269,9 +253,98 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             _pageNum++;
             final int len = await _getVideoList();
             if (len < 20) {
-              _controller.finishLoad(noMore: true);
+              _controller.finishLoad(IndicatorResult.noMore);
             }
           })
+    );
+  }
+
+  Widget _buildVideoItem(VideoModel video, bool isLandscape) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).pushNamed(Application.videoDetailPage, arguments: {
+          'videoId': video.id,
+        });
+      },
+      child: Card(
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                if (isLandscape) AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: CachedNetworkImage(
+                    imageUrl: video.pic ?? '',
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Image.asset('assets/image/placeholder-l.jpg', fit: BoxFit.cover,),
+                    errorWidget: (context, url, error) => AspectRatio(
+                      aspectRatio: isLandscape ? 16 / 9 : 3 / 4,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage('assets/image/placeholder-l.jpg'),
+                              fit: BoxFit.cover
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
+                      ),
+                    ),
+                  ),
+                ) else CachedNetworkImage(
+                  imageUrl: video.pic ?? '',
+                  placeholder: (context, url) => AspectRatio(
+                    aspectRatio: 3 / 4,
+                    child: Image.asset('assets/image/placeholder-p.jpg', fit: BoxFit.cover,),
+                  ),
+                  errorWidget: (context, url, error) => AspectRatio(
+                    aspectRatio: 3 / 4,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/image/placeholder-p.jpg'),
+                          fit: BoxFit.cover
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
+                    ),
+                  ),
+                ),
+                if (video.note != null && video.note!.isNotEmpty)
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withAlpha(125),
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(5),
+                        ),
+                      ),
+                      child: Text(video.note!, overflow: TextOverflow.ellipsis, style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),),
+                    ),
+                  ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              child: Text(
+                video.name ?? '',
+                style: const TextStyle(fontSize: 15),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
