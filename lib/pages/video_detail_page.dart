@@ -5,7 +5,7 @@ import 'package:auto_orientation/auto_orientation.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/models/record_model.dart';
@@ -486,13 +486,15 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
       ),
       Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: HtmlWidget(
-            video.des ?? '',
-            textStyle: const TextStyle(
-                height: 1.8,
-                fontSize: 14,
+          child: Html(
+            data: video.des ?? '',
+            style: {
+              '*': Style(
+                lineHeight: LineHeight.number(1.5),
+                fontSize: FontSize.small,
                 color: Colors.black
-            ),
+              )
+            },
           )
       ),
     ]);

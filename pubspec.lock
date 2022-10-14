@@ -209,6 +209,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.3.0"
+  flutter_html:
+    dependency: "direct main"
+    description:
+      name: flutter_html
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.0.0-alpha.6"
   flutter_screen_wake:
     dependency: "direct main"
     description:
@@ -233,20 +240,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_widget_from_html_core:
-    dependency: "direct main"
-    description:
-      name: flutter_widget_from_html_core
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.8.5+3"
-  fwfh_text_style:
-    dependency: transitive
-    description:
-      name: fwfh_text_style
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.22.08+1"
   html:
     dependency: transitive
     description:
@@ -326,6 +319,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.5.0"
+  numerus:
+    dependency: transitive
+    description:
+      name: numerus
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.0.0"
   octo_image:
     dependency: transitive
     description:

@@ -278,7 +278,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     imageUrl: video.pic ?? '',
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Image.asset('assets/image/placeholder-l.jpg', fit: BoxFit.cover,),
-                    errorWidget: (context, url, error) => AspectRatio(
+                    errorWidget: (context, url, dynamic error) => AspectRatio(
                       aspectRatio: isLandscape ? 16 / 9 : 3 / 4,
                       child: Container(
                         decoration: const BoxDecoration(
@@ -298,7 +298,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     aspectRatio: 3 / 4,
                     child: Image.asset('assets/image/placeholder-p.jpg', fit: BoxFit.cover,),
                   ),
-                  errorWidget: (context, url, error) => AspectRatio(
+                  errorWidget: (context, url, dynamic error) => AspectRatio(
                     aspectRatio: 3 / 4,
                     child: Container(
                       decoration: const BoxDecoration(
