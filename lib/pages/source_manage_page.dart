@@ -14,7 +14,7 @@ class SourceManagePage extends StatefulWidget {
   const SourceManagePage({Key? key}) : super(key: key);
 
   @override
-  _SourceManagePageState createState() => _SourceManagePageState();
+  State<SourceManagePage> createState() => _SourceManagePageState();
 }
 
 class _SourceManagePageState extends State<SourceManagePage> {

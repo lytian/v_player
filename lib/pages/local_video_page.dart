@@ -9,13 +9,17 @@ import 'package:v_player/widgets/video_controls/video_controls.dart';
 import 'package:video_player/video_player.dart';
 
 class LocalVideoPage extends StatefulWidget {
-  const LocalVideoPage({Key? key, required this.localPath, required this.name}) : super(key: key);
+  const LocalVideoPage({
+    Key? key,
+    required this.localPath,
+    required this.name
+  }) : super(key: key);
 
   final String localPath;
   final String name;
 
   @override
-  _LocalVideoPageState createState() => _LocalVideoPageState();
+  State<LocalVideoPage> createState() => _LocalVideoPageState();
 }
 
 class _LocalVideoPageState extends State<LocalVideoPage> {

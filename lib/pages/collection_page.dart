@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:v_player/models/record_model.dart';
@@ -20,9 +21,9 @@ class _CollectionPageState extends State<CollectionPage> {
   int _pageNum = -1; // 从0开始
   List<RecordModel> _recordList = [];
 
-  Future<int> _getRecordList() async {
+  Future<void> _getRecordList() async {
     final List<RecordModel> list = await _db.getRecordList(pageNum: _pageNum, collected: 1);
-    if (!mounted) return 0;
+    if (!mounted) return;
     setState(() {
       if (_pageNum <= 0) {
         _recordList = list;
@@ -30,7 +31,7 @@ class _CollectionPageState extends State<CollectionPage> {
         _recordList += list;
       }
     });
-    return list.length;
+    _controller.finishLoad(list.length < 20 ? IndicatorResult.noMore : IndicatorResult.success);
   }
 
   @override
@@ -53,10 +54,7 @@ class _CollectionPageState extends State<CollectionPage> {
         },
         onLoad: () async {
           _pageNum++;
-          final int len = await _getRecordList();
-          if (len < 20) {
-            _controller.finishLoad(IndicatorResult.noMore);
-          }
+          await _getRecordList();
         },
         child: _recordList.isEmpty
           ? const NoData(tip: '没有收藏记录',)
@@ -79,13 +77,23 @@ class _CollectionPageState extends State<CollectionPage> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(3),
-                    child: FadeInImage.assetNetwork(
-                      placeholder: 'assets/image/placeholder-l.jpg',
-                      image: model.pic ?? '',
+                    child: CachedNetworkImage(
+                      width: 96,
+                      height: 72,
+                      imageUrl: model.pic ?? '',
                       fit: BoxFit.cover,
-                      width: 100,
-                      height: 75,
-                    ),
+                      placeholder: (context, url) => Image.asset('assets/image/placeholder-l.jpg', fit: BoxFit.cover,),
+                      errorWidget: (context, url, dynamic error) => Container(
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/image/placeholder-l.jpg'),
+                            fit: BoxFit.cover
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
+                      ),
+                    )
                   ),
                   title: Text(model.name ?? '暂无标题', style: const TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
                   subtitle: recordStr.isEmpty ? RichText(

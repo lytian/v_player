@@ -5,7 +5,7 @@ class MainLeftPage extends StatefulWidget {
   const MainLeftPage({Key? key}) : super(key: key);
 
   @override
-  _MainLeftPageState createState() => _MainLeftPageState();
+  State<MainLeftPage> createState() => _MainLeftPageState();
 }
 
 class _MainLeftPageState extends State<MainLeftPage> {

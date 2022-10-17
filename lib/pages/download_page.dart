@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +13,7 @@ class DownloadPage extends StatefulWidget {
   const DownloadPage({Key? key}) : super(key: key);
 
   @override
-  _DownloadPageState createState() => _DownloadPageState();
+  State<DownloadPage> createState() => _DownloadPageState();
 }
 
 class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderStateMixin {
@@ -35,7 +36,6 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
         _tabIndex = _tabController.index;
       });
     });
-
   }
 
   @override
@@ -105,19 +105,19 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
           Expanded(
               child: Consumer<DownloadTaskProvider>(
                 builder: (context, provider, _) {
-                  final List<DownloadModel> _successList = provider.downloadList.where((e) => e.status == DownloadStatus.success).toList();
-                  final List<DownloadModel> _downloadList = provider.downloadList.where((e) => e.status != DownloadStatus.success).toList();
-                  if (_successList.length != _checkSuccessList.length) {
-                    _checkSuccessList = List.filled(_successList.length, false);
+                  final List<DownloadModel> successList = provider.downloadList.where((e) => e.status == DownloadStatus.success).toList();
+                  final List<DownloadModel> downloadList = provider.downloadList.where((e) => e.status != DownloadStatus.success).toList();
+                  if (successList.length != _checkSuccessList.length) {
+                    _checkSuccessList = List.filled(successList.length, false);
                   }
-                  if (_downloadList.length != _checkDownloadList.length) {
-                    _checkDownloadList = List.filled(_downloadList.length, false);
+                  if (downloadList.length != _checkDownloadList.length) {
+                    _checkDownloadList = List.filled(downloadList.length, false);
                   }
                   return TabBarView(
                       controller: _tabController,
                       children: [
-                        _buildSuccessList(_successList),
-                        _buildDownloadList(_downloadList, provider.currentTask),
+                        _buildSuccessList(successList),
+                        _buildDownloadList(downloadList, provider.currentTask),
                       ]
                   );
                 },
@@ -194,13 +194,23 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
           contentPadding: EdgeInsets.zero,
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(3),
-            child: FadeInImage.assetNetwork(
-              placeholder: 'assets/image/placeholder-l.jpg',
-              image: model.pic ?? '',
+            child: CachedNetworkImage(
+              width: 96,
+              height: 72,
+              imageUrl: model.pic ?? '',
               fit: BoxFit.cover,
-              width: 100,
-              height: 75,
-            ),
+              placeholder: (context, url) => Image.asset('assets/image/placeholder-l.jpg', fit: BoxFit.cover,),
+              errorWidget: (context, url, dynamic error) => Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage('assets/image/placeholder-l.jpg'),
+                      fit: BoxFit.cover
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: const Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
+              ),
+            )
           ),
           title: Text(model.name ?? '暂无标题', style: const TextStyle(color: Colors.black, fontSize: 15), overflow: TextOverflow.ellipsis, maxLines: 2,),
           subtitle: Text(model.type ?? '无', style: const TextStyle(fontSize: 13),),
@@ -368,24 +378,24 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
 
   /// 删除下载
   void _deleteDownload() {
-    final List<DownloadModel> _models = [];
-    final List<DownloadModel> downloadList = context.read<DownloadTaskProvider>().downloadList;
+    final List<DownloadModel> models = [];
+    final List<DownloadModel> list = context.read<DownloadTaskProvider>().downloadList;
     if (_tabIndex == 0) {
-      final List<DownloadModel> _successList = downloadList.where((e) => e.status == DownloadStatus.success).toList();
+      final List<DownloadModel> successList = list.where((e) => e.status == DownloadStatus.success).toList();
       for (int i = 0; i < _checkSuccessList.length; i++) {
         if (_checkSuccessList[i]) {
-          _models.add(_successList[i]);
+          models.add(successList[i]);
         }
       }
     } else {
-      final List<DownloadModel> _downloadList = downloadList.where((e) => e.status != DownloadStatus.success).toList();
+      final List<DownloadModel> downloadList = list.where((e) => e.status != DownloadStatus.success).toList();
       for (int i = 0; i < _checkDownloadList.length; i++) {
         if (_checkDownloadList[i]) {
-          _models.add(_downloadList[i]);
+          models.add(downloadList[i]);
         }
       }
     }
-    if (_models.isEmpty) {
+    if (models.isEmpty) {
       BotToast.showText(text: '请选择待删除的视频');
       return;
     }
@@ -399,7 +409,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
               style: const TextStyle(color: Colors.black),
               children: [
                 const TextSpan(text: '确定删除 '),
-                TextSpan(text: _models.length == 1 ? _models[0].name : '这${_models.length}个视频', style: const TextStyle(color: Colors.orange)),
+                TextSpan(text: models.length == 1 ? models[0].name : '这${models.length}个视频', style: const TextStyle(color: Colors.orange)),
                 const TextSpan(text: ' 吗？'),
               ]
             ),
@@ -414,7 +424,7 @@ class _DownloadPageState extends State<DownloadPage> with SingleTickerProviderSt
             TextButton(
               child: const Text('确定'),
               onPressed: () async {
-                await context.read<DownloadTaskProvider>().deleteDownloads(_models);
+                await context.read<DownloadTaskProvider>().deleteDownloads(models);
                 setState(() {
                   _isEdit = false;
                 });

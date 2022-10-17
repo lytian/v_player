@@ -15,7 +15,7 @@ class SplashPage extends StatefulWidget {
   const SplashPage({Key? key}) : super(key: key);
 
   @override
-  _SplashPageState createState() => _SplashPageState();
+  State<SplashPage> createState() => _SplashPageState();
 }
 
 class _SplashPageState extends State<SplashPage> {
@@ -80,7 +80,6 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) {
     return Material(
         child: Stack(
-  //      fit: StackFit.expand,
         children: <Widget>[
           Image.asset(
           'assets/image/splash-bg.jpg',

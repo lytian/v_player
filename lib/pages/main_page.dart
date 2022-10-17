@@ -107,7 +107,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     } catch (err) {
       rethrow;
     }
-
     setState(() {
       _firstLoading = false;
     });
