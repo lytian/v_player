@@ -37,7 +37,7 @@ class _MainLeftPageState extends State<MainLeftPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          accountEmail: const Text('别看了，臭屌丝。有本事充钱啊！',
+          accountEmail: const Text('核心思想：白嫖。',
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 14,
