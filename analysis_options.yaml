@@ -14,3 +14,4 @@ linter:
     sort_pub_dependencies: false
     avoid_positional_boolean_parameters: false
     require_trailing_commas: false
+    avoid_dynamic_calls: false
