@@ -20,11 +20,11 @@ class SourceManagePage extends StatefulWidget {
 class _SourceManagePageState extends State<SourceManagePage> {
   final DBHelper _db = DBHelper();
   List<SourceModel> _sourceList = [];
-  final List<Map<String, Object>> _menuList = [
-    { "value": 0, "label": "添加资源" },
-    { "value": 1, "label": "从剪贴板导入" },
-    { "value": 2, "label": "导出到剪贴板" },
-  ];
+  final Map<int, String> _menuList = {
+    0: '添加资源',
+    1: '从剪贴板导入',
+    2: '导出到剪贴板'
+  };
 
   @override
   void initState() {
@@ -54,7 +54,7 @@ class _SourceManagePageState extends State<SourceManagePage> {
       appBar: AppBar(
         title: const Text('资源管理'),
         actions: <Widget>[
-          PopupMenuButton(
+          PopupMenuButton<int>(
             offset: const Offset(0, 56),
             onSelected: (v) {
               switch (v) {
@@ -73,10 +73,10 @@ class _SourceManagePageState extends State<SourceManagePage> {
               }
             },
             itemBuilder: (context) {
-              return _menuList.map((dynamic e) {
+              return _menuList.keys.map((int k) {
                 return PopupMenuItem(
-                  value: e["value"] as int,
-                  child: Text(e['label'] as String),
+                  value: k,
+                  child: Text(_menuList[k] ?? ''),
                 );
               }).toList();
             },
@@ -104,9 +104,7 @@ class _SourceManagePageState extends State<SourceManagePage> {
                       BotToast.showText(text: '空地址');
                       return;
                     }
-                    if (await canLaunch(model.url!)) {
-                      await launch(model.url!);
-                    } else {
+                    if (!await launchUrl(Uri.parse(model.url!))) {
                       BotToast.showText(text: '不能打开${model.url}');
                     }
                   },
