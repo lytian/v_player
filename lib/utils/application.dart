@@ -5,6 +5,7 @@ import 'package:v_player/pages/download_page.dart';
 import 'package:v_player/pages/local_video_page.dart';
 import 'package:v_player/pages/main_page.dart';
 import 'package:v_player/pages/play_record_page.dart';
+import 'package:v_player/pages/search_page.dart';
 import 'package:v_player/pages/setting_page.dart';
 import 'package:v_player/pages/source_form_page.dart';
 import 'package:v_player/pages/source_manage_page.dart';
@@ -25,6 +26,7 @@ mixin Application {
   static const String localVideoPage = '/localVideo';
   static const String collectionPage = '/collection';
   static const String playRecordPage = '/playRecord';
+  static const String searchPage = '/search';
 
   static final Map<String, WidgetBuilder> routes = {
     splashPage: (context) => const SplashPage(),
@@ -43,6 +45,10 @@ mixin Application {
     ),
     collectionPage: (context) => const CollectionPage(),
     playRecordPage: (context) => const PlayRecordPage(),
+    searchPage: (context, { dynamic arguments }) => SearchPage(
+      hintText: arguments['hintText'] as String?,
+      searchText: arguments['searchText'] as String?,
+    ),
   };
 
   static Route<dynamic>? generateRoute (RouteSettings settings) {

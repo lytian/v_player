@@ -7,7 +7,6 @@ import 'package:v_player/models/category_model.dart';
 import 'package:v_player/models/source_model.dart';
 import 'package:v_player/models/video_model.dart';
 import 'package:v_player/pages/main_left_page.dart';
-import 'package:v_player/pages/search_bar.dart';
 import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/application.dart';
 import 'package:v_player/utils/http_util.dart';
@@ -80,21 +79,21 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   /// 获取视频列表
-  Future<int> _getVideoList() async {
+  Future<void> _getVideoList() async {
     int? hour; // 最近几个小时更新
     if (_type == null || _type!.isEmpty) {
       hour = 24 * 7;
     }
-    final List<VideoModel> videos = await HttpUtil().getVideoList(pageNum: _pageNum, type: _type, hour: hour);
-    if (!mounted) return 0;
+    final List<VideoModel> list = await HttpUtil().getVideoList(pageNum: _pageNum, type: _type, hour: hour);
+    if (!mounted) return;
     setState(() {
       if (_pageNum <= 1) {
-        _videoList = videos;
+        _videoList = list;
       } else {
-        _videoList += videos;
+        _videoList += list;
       }
     });
-    return videos.length;
+    _controller.finishLoad(list.length < 20 ? IndicatorResult.noMore : IndicatorResult.success);
   }
 
   Future<void> _initData() async {
@@ -144,11 +143,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             icon: const Icon(Icons.search),
             onPressed: () {
               if (_currentSource == null) return;
-              showSearch(
-                useRootNavigator: true,
-                context: context,
-                delegate: SearchBarDelegate(hintText: '搜索【${_currentSource!.name}】的资源')
-              );
+              Navigator.of(context).pushNamed(Application.searchPage, arguments: {
+                'hintText': '搜索【${_currentSource!.name}】的资源'
+              });
             },
           )
         ],
@@ -228,33 +225,30 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       child: EasyRefresh(
           controller: _controller,
           child: _videoList.isEmpty ? const NoData(tip: '没有视频数据~') : (
-              _isLandscape ? ListView.builder(
-                  padding: const EdgeInsets.all(4),
-                  itemCount: _videoList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return _buildVideoItem(_videoList[index], true);
-                  }
-                ) : MasonryGridView.count(
-                  padding: const EdgeInsets.all(4),
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 4,
-                  crossAxisSpacing: 4,
-                  itemCount: _videoList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return _buildVideoItem(_videoList[index], false);
-                  },
-                )
-            ),
+            _isLandscape ? ListView.builder(
+                padding: const EdgeInsets.all(4),
+                itemCount: _videoList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildVideoItem(_videoList[index], true);
+                }
+              ) : MasonryGridView.count(
+                padding: const EdgeInsets.all(4),
+                crossAxisCount: 2,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+                itemCount: _videoList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildVideoItem(_videoList[index], false);
+                },
+              )
+          ),
           onRefresh: () async {
             _pageNum = 1;
             await _getVideoList();
           },
           onLoad: () async {
             _pageNum++;
-            final int len = await _getVideoList();
-            if (len < 20) {
-              _controller.finishLoad(IndicatorResult.noMore);
-            }
+            await _getVideoList();
           })
     );
   }
@@ -278,18 +272,15 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     imageUrl: video.pic ?? '',
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Image.asset('assets/image/placeholder-l.jpg', fit: BoxFit.cover,),
-                    errorWidget: (context, url, dynamic error) => AspectRatio(
-                      aspectRatio: isLandscape ? 16 / 9 : 3 / 4,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                              image: AssetImage('assets/image/placeholder-l.jpg'),
-                              fit: BoxFit.cover
-                          ),
+                    errorWidget: (context, url, dynamic error) => Container(
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage('assets/image/placeholder-l.jpg'),
+                            fit: BoxFit.cover
                         ),
-                        alignment: Alignment.center,
-                        child: const Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
                       ),
+                      alignment: Alignment.center,
+                      child: const Text('图片加载失败', style: TextStyle(color: Colors.redAccent),),
                     ),
                   ),
                 ) else CachedNetworkImage(
