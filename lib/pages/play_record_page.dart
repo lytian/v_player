@@ -16,14 +16,16 @@ class PlayRecordPage extends StatefulWidget {
 
 class _PlayRecordPageState extends State<PlayRecordPage> {
   final DBHelper _db = DBHelper();
-  final EasyRefreshController _controller = EasyRefreshController();
+  final EasyRefreshController _controller = EasyRefreshController(
+    controlFinishLoad: true
+  );
 
   int _pageNum = -1; // 从0开始
   List<RecordModel> _recordList = [];
 
-  Future<int> _getRecordList() async {
+  Future<void> _getRecordList() async {
     final List<RecordModel> list = await _db.getRecordList(pageNum: _pageNum, played: true);
-    if (!mounted) return 0;
+    if (!mounted) return;
     setState(() {
       if (_pageNum <= 0) {
         _recordList = list;
@@ -31,7 +33,7 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
         _recordList += list;
       }
     });
-    return list.length;
+    _controller.finishLoad(list.length < 20 ? IndicatorResult.noMore : IndicatorResult.success);
   }
 
   @override
@@ -108,10 +110,7 @@ class _PlayRecordPageState extends State<PlayRecordPage> {
           },
           onLoad: () async {
             _pageNum++;
-            final int len = await _getRecordList();
-            if (len < 20) {
-              _controller.finishLoad(IndicatorResult.noMore);
-            }
+            await _getRecordList();
           }
       ),
     );

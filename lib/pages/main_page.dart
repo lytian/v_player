@@ -93,7 +93,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         _videoList += list;
       }
     });
-    _controller.finishLoad(list.length < 20 ? IndicatorResult.noMore : IndicatorResult.success);
+    if (_controller.controlFinishLoad) {
+      _controller.finishLoad(list.length < 20 ? IndicatorResult.noMore : IndicatorResult.success);
+    }
   }
 
   Future<void> _initData() async {
