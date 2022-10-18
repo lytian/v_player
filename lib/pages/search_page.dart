@@ -78,7 +78,7 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
           ),
-          onSubmitted: (val) async {
+          onSubmitted: (val) {
             if (_searchController.text.isEmpty) {
               setState(() {
                 _videoList = [];
@@ -89,14 +89,9 @@ class _SearchPageState extends State<SearchPage> {
               _loading = true;
               _pageNum = 1;
             });
-            try {
-              await _search();
-            } catch (err) {
-              rethrow;
-            }
-            setState(() {
+            _search().whenComplete(() => setState(() {
               _loading = false;
-            });
+            }));
           },
         ),
       ),

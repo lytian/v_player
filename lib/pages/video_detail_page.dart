@@ -491,7 +491,7 @@ class _VideoDetailPageState extends State<VideoDetailPage> {
             style: {
               '*': Style(
                 lineHeight: LineHeight.number(1.5),
-                fontSize: FontSize.small,
+                fontSize: FontSize.medium,
                 color: Colors.black
               )
             },

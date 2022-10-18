@@ -107,7 +107,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       await _getCategoryList();
       await _getVideoList();
     } catch (err) {
-      rethrow;
+      // rethrow;
     }
     setState(() {
       _firstLoading = false;
@@ -152,8 +152,48 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         ],
         bottom: _buildCategoryNav(),
       ),
-      body: !_firstLoading ? _buildVideoList() : const Center(
-        child: CircularProgressIndicator()
+      body: NotificationListener<ScrollUpdateNotification>(
+        onNotification: (notification) {
+          if (notification.dragDetails != null && _buttonKey.currentState != null) {
+            if (notification.dragDetails!.delta.dy < 0 && _buttonKey.currentState!.isShow) {
+              _buttonKey.currentState!.hide();
+            } else if (notification.dragDetails!.delta.dy > 0 && !_buttonKey.currentState!.isShow) {
+              _buttonKey.currentState!.show();
+            }
+          }
+          return false;
+        },
+        child: EasyRefresh(
+          controller: _controller,
+          child: _firstLoading ? const Center(
+              child: CircularProgressIndicator()
+            ) : _videoList.isEmpty ? const NoData(tip: '没有视频数据~') : (
+              _isLandscape ? ListView.builder(
+                  padding: const EdgeInsets.all(4),
+                  itemCount: _videoList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return _buildVideoItem(_videoList[index], true);
+                  }
+              ) : MasonryGridView.count(
+                padding: const EdgeInsets.all(4),
+                crossAxisCount: 2,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+                itemCount: _videoList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildVideoItem(_videoList[index], false);
+                },
+              )
+          ),
+          onRefresh: () async {
+            _pageNum = 1;
+            await _getVideoList();
+          },
+          onLoad: () async {
+            _pageNum++;
+            await _getVideoList();
+          }
+        )
       ),
       floatingActionButton: AnimatedFloatingActionButton(
         key: _buttonKey,
@@ -208,49 +248,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           )
         ],
       ),
-    );
-  }
-
-  Widget _buildVideoList() {
-    return NotificationListener<ScrollUpdateNotification>(
-      onNotification: (notification) {
-        if (notification.dragDetails != null && _buttonKey.currentState != null) {
-          if (notification.dragDetails!.delta.dy < 0 && _buttonKey.currentState!.isShow) {
-            _buttonKey.currentState!.hide();
-          } else if (notification.dragDetails!.delta.dy > 0 && !_buttonKey.currentState!.isShow) {
-            _buttonKey.currentState!.show();
-          }
-        }
-        return false;
-      },
-      child: EasyRefresh(
-          controller: _controller,
-          child: _videoList.isEmpty ? const NoData(tip: '没有视频数据~') : (
-            _isLandscape ? ListView.builder(
-                padding: const EdgeInsets.all(4),
-                itemCount: _videoList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return _buildVideoItem(_videoList[index], true);
-                }
-              ) : MasonryGridView.count(
-                padding: const EdgeInsets.all(4),
-                crossAxisCount: 2,
-                mainAxisSpacing: 4,
-                crossAxisSpacing: 4,
-                itemCount: _videoList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return _buildVideoItem(_videoList[index], false);
-                },
-              )
-          ),
-          onRefresh: () async {
-            _pageNum = 1;
-            await _getVideoList();
-          },
-          onLoad: () async {
-            _pageNum++;
-            await _getVideoList();
-          })
     );
   }
 
