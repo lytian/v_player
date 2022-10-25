@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Constant {
+  static const String buglyAppId = 'e7ba83d535';
+
   static const String defaultThemeColor = 'deepPurple';
   static const String keyThemeColor = 'key_theme_color';
   static const String keyGuide = 'key_guide';

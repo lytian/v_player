@@ -35,6 +35,8 @@ dependencies:
   auto_orientation: ^2.2.1
   flutter_screen_wake: ^1.0.2
   volume_controller: ^2.0.4
+  flutter_bugly: ^0.4.4
+
   m3u8_downloader:
     git:
       url: https://github.com/lytian/m3u8_downloader.git

@@ -1,6 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bugly/flutter_bugly.dart';
 import 'package:provider/provider.dart';
 import 'package:v_player/common/constant.dart';
 import 'package:v_player/provider/app_info.dart';
@@ -10,7 +11,14 @@ import 'package:v_player/provider/source.dart';
 import 'package:v_player/utils/application.dart';
 
 void main() {
-  runApp(const MyApp());
+  FlutterBugly.postCatchedException(() {
+    WidgetsFlutterBinding.ensureInitialized();
+    runApp(const MyApp());
+    FlutterBugly.init(
+      androidAppId: Constant.buglyAppId,
+      iOSAppId: "your iOS app id",
+    );
+  });
 
   // 全局设置EasyRefresh
   EasyRefresh.defaultHeaderBuilder = () => const MaterialHeader();
