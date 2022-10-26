@@ -18,7 +18,9 @@ void main() {
       androidAppId: Constant.buglyAppId,
       iOSAppId: "your iOS app id",
     );
-  });
+  },
+  // 过滤Dio的Http日志
+  filterRegExp: '^(DioError [DioErrorType).*');
 
   // 全局设置EasyRefresh
   EasyRefresh.defaultHeaderBuilder = () => const MaterialHeader();
@@ -46,7 +48,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AppInfoProvider()),
         ChangeNotifierProvider(create: (_) => SourceProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        ChangeNotifierProvider(create: (_) => DownloadTaskProvider(context)),
+        ChangeNotifierProvider(create: (context) => DownloadTaskProvider(context)),
       ],
       child: Consumer<AppInfoProvider>(
         builder: (context, appInfo, _) {

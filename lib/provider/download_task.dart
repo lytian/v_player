@@ -61,11 +61,9 @@ class DownloadTaskProvider with ChangeNotifier {
   ///
   Future<void> initialize(BuildContext context) async {
     // 1. 初始化下载器
-    WidgetsFlutterBinding.ensureInitialized();
     await M3u8Downloader.initialize(
-      onSelect: () async {
-        Navigator.of(context).pushNamed(Application.downloadPage);
-        return null;
+      onSelect: () {
+        return Navigator.of(context).pushNamed(Application.downloadPage);
       },
     );
     await M3u8Downloader.config(
