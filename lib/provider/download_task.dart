@@ -32,6 +32,7 @@ class DownloadTaskProvider with ChangeNotifier {
   List<DownloadModel> get downloadList => _downloadList;
   DownloadTask? get currentTask => _currentTask;
 
+  @pragma('vm:entry-point')
   static void progressCallback(dynamic args) {
     final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
     if (send != null) {
@@ -39,6 +40,7 @@ class DownloadTaskProvider with ChangeNotifier {
       send.send(args);
     }
   }
+  @pragma('vm:entry-point')
   static void successCallback(dynamic args) {
     final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
     if (send != null) {
@@ -47,6 +49,7 @@ class DownloadTaskProvider with ChangeNotifier {
       BotToast.showText(text: '下载成功', align: Alignment.center);
     }
   }
+  @pragma('vm:entry-point')
   static void errorCallback(dynamic args) {
     final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
     if (send != null) {
