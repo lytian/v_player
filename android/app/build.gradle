@@ -41,7 +41,7 @@ android {
 
     defaultConfig {
         applicationId "com.vincent.vplayer"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -61,7 +61,7 @@ android {
             signingConfig signingConfigs.release
 
             minifyEnabled true
-            useProguard true
+//            useProguard true
 
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
