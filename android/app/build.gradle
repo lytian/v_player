@@ -41,7 +41,7 @@ android {
 
     defaultConfig {
         applicationId "com.vincent.vplayer"
-        minSdkVersion 19
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
